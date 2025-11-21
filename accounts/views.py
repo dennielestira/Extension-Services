@@ -79,10 +79,8 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
 
-            # Redirect based on account type
-            if user.account_type == AccountType.SUPER_ADMIN:
-                return redirect('super_admin_dashboard')
-            elif user.account_type == AccountType.CAMPUS_ADMIN:
+
+            if user.account_type == AccountType.CAMPUS_ADMIN:
                 return redirect('campus_admin_dashboard')
             elif user.account_type == AccountType.STAFF_EXTENSIONIST:
                 return redirect('staff_extensionist_dashboard')
@@ -273,7 +271,6 @@ def delete_extensionist(request, user_id):
 @login_required
 def user_hierarchy_view(request):
     context = {
-        'super_admins': CustomUser.objects.filter(account_type='Super Admin'),
         'campus_admins': CustomUser.objects.filter(account_type='Campus Admin'),
         'staff_extensionists': CustomUser.objects.filter(account_type='Staff Extensionist'),
         'department_coordinators': CustomUser.objects.filter(account_type='Department Coordinator'),
@@ -324,11 +321,7 @@ def list_extensionists(request):
         'grouped_extensionists': dict(grouped)
     })
 
-@login_required
-def super_admin_view(request):
-    if request.user.account_type != AccountType.SUPER_ADMIN:
-        return redirect('permission_denied')
-    return render(request, 'accounts/super_admin_dashboard.html')
+
 
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
@@ -1148,7 +1141,7 @@ def document_list(request):
         ('completed', 'Completed'),
     ]
 
-    if user.account_type in [AccountType.SUPER_ADMIN, AccountType.CAMPUS_ADMIN]:
+    if user.account_type in [ AccountType.CAMPUS_ADMIN]:
         all_statuses += [
             ('completion_recommended', 'Completion Recommended'),
             ('recommended', 'Recommended'),
@@ -1635,7 +1628,7 @@ def document_chat_list(request):
     account_type = user.account_type
     department = user.department
 
-    if account_type in [AccountType.SUPER_ADMIN, AccountType.CAMPUS_ADMIN, AccountType.STAFF_EXTENSIONIST]:
+    if account_type in [AccountType.CAMPUS_ADMIN, AccountType.STAFF_EXTENSIONIST]:
         documents = Document.objects.all()
     elif account_type in [AccountType.DEPARTMENT_COORDINATOR, AccountType.EXTENSIONIST]:
         documents = Document.objects.filter(department=department)

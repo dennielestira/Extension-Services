@@ -37,9 +37,8 @@
             <img src="{% static 'image/logo.png' %}" alt="CVSU Logo" style="width: 80px;">
             <img src="{% static 'image/logo2.png' %}" alt="CVSU Logo 2" style="width: 70px;">
         </div>
-        {% if request.user.account_type == 'Super Admin' %}
-    <a class="nav-link text-white fs-4" href="{% url 'super_admin_dashboard' %}">Dashboard</a>
-{% elif request.user.account_type == 'Campus Admin' %}
+
+{% if request.user.account_type == 'Campus Admin' %}
     <a class="nav-link text-white fs-4" href="{% url 'campus_admin_dashboard' %}">Dashboard</a>
 {% elif request.user.account_type == 'Staff Extensionist' %}
     <a class="nav-link text-white fs-4" href="{% url 'staff_extensionist_dashboard' %}">Dashboard</a>
