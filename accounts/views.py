@@ -2826,14 +2826,17 @@ def open_day_training_reports(request, quarter, year):
             "DEPARTMENT OF COMPUTER STUDIES":
                 "Bachelor of Science in Computer Science, Bachelor of Science in Information Technology",
 
-            "DEPARTMENT OF MANAGEMENT STUDIES BUSSINESS MANAGEMENT":
+            "DEPARTMENT OF ARTS AND SCIENCE":
                 "Bachelor of Science in Business Administration",
 
             "DEPARTMENT OF CRIMINOLOGY":
                 "Bachelor of Science in Criminology",
 
-            "DEPARTMENT OF MANAGEMENT STUDIES":
+            "DEPARTMENT OF MANAGEMENT STUDIES (HM)":
                 "Bachelor of Science in Hospitality Management",
+                
+            "DEPARTMENT OF MANAGEMENT STUDIES (BM)":
+                "Bachelor of Science in Business Management",
 
             "DEPARTMENT OF TEACHER EDUCATION":
                 "Bachelor of Science in Secondary Education",
@@ -2857,7 +2860,7 @@ def open_day_training_reports(request, quarter, year):
         },
     )
 
-    
+     
 import io
 import io
 from django.http import HttpResponse
@@ -2905,13 +2908,14 @@ def download_day_training_reports_excel(request, quarter, year):
                 "Bachelor of Science in Business Administration",
             "DEPARTMENT OF CRIMINOLOGY":
                 "Bachelor of Science in Criminology",
-            "DEPARTMENT OF MANAGEMENT STUDIES":
+            "DEPARTMENT OF MANAGEMENT STUDIES (HM)":
                 "Bachelor of Science in Hospitality Management",
+            "DEPARTMENT OF MANAGEMENT STUDIES (BM)":
+                "Bachelor of Science in Business Management",
             "DEPARTMENT OF TEACHER EDUCATION":
                 "Bachelor of Science in Secondary Education",
         }
         return mapping.get(dept, "")
-
     # Attach to entries
     for e in entries:
         e.related_curricular_offering = get_related_offering(e.department)

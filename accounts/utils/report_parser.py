@@ -22,9 +22,10 @@ MONTHS = {
 # Short code → full department name
 DEPARTMENT_NICKNAMES = {
     "DCS (IT-CS)": "DEPARTMENT OF COMPUTER STUDIES",
-    "DMS (HM-BM)": "DEPARTMENT OF MANAGEMENT STUDIES",
+    "DMS (HM)": "DEPARTMENT OF MANAGEMENT STUDIES (HM)",
+    "DMS (BM)": "DEPARTMENT OF MANAGEMENT STUDIES (BM)",
     "DC (Criminology)": "DEPARTMENT OF CRIMINOLOGY",
-    "DAS (Psychology)": "DEPARTMENT OF AGRICULTURAL SCIENCES",
+    "DAS (Psychology)": "DEPARTMENT OF ARTS AND SCIENCES",
     "DTE (Education)": "DEPARTMENT OF TEACHER EDUCATION",
 }
 CHECK_MARKS = ['yes', 'y', '✓', '✔', '☑', '■', '●', 'x', '✗', 'checked']

@@ -16,7 +16,8 @@ class AccountType(models.TextChoices):
 class Department(models.Model):
     name = models.CharField(max_length=100, choices=[
         ('DCS', 'DCS (IT-CS)'),
-        ('DMS', 'DMS (HM-BM)'),
+        ('DMS (HM)', 'DMS (HM)'),
+        ('DMS (BM)', 'DMS (BM)'),
         ('DC', 'DC (Criminology)'),
         ('DAS', 'DAS (Psychology)'),
         ('DTE', 'DTE (Education)')
