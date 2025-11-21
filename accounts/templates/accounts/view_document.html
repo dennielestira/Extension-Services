@@ -6,6 +6,16 @@
 
 {% block content %}
 
+<style>
+  .file-link {
+    display: inline-block;
+    max-width: 200px; /* adjust width for mobile */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: bottom;
+  }
+</style>
 
 <div class="row" >
     <!-- Document Info Card -->
@@ -344,74 +354,77 @@
     {% endif %}
     <!-- ✅ End Manage Section -->
 
-    {% if days %}
-      {% for day in days %}
-        <div class="card mb-3 shadow-sm border-0">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="fw-bold mb-0">{{ day.name }} — <small class="text-muted">{{ day.date }}</small></h6>
-              {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
-                <div>
-                  <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editDay{{ day.id }}">✏ Edit</button>
-                  <form method="post" class="d-inline">
-                    {% csrf_token %}
-                    <input type="hidden" name="day_id" value="{{ day.id }}">
-                    <button type="submit" name="delete_day" class="btn btn-sm btn-danger" onclick="return confirm('Delete this day?');">🗑 Delete</button>
-                  </form>
-                </div>
-              {% endif %}
-            </div>
+{% if days %}
+  {% for day in days %}
+    <div class="card mb-3 shadow-sm border-0">
+      <div class="card-body">
 
-            <!-- Edit Form -->
-            <div class="collapse mb-3" id="editDay{{ day.id }}">
-              <form method="post">
+        <!-- Day Header -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2">
+          <h6 class="fw-bold mb-2 mb-md-0">
+            {{ day.name }} — <small class="text-muted">{{ day.date }}</small>
+          </h6>
+          {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
+            <div class="d-flex flex-wrap gap-1">
+              <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editDay{{ day.id }}">✏ Edit</button>
+              <form method="post" class="d-inline">
                 {% csrf_token %}
                 <input type="hidden" name="day_id" value="{{ day.id }}">
-                {{ day_form.as_p }}
-                <button type="submit" name="edit_day" class="btn btn-primary btn-sm">Save</button>
+                <button type="submit" name="delete_day" class="btn btn-sm btn-danger" onclick="return confirm('Delete this day?');">🗑 Delete</button>
               </form>
             </div>
+          {% endif %}
+        </div>
 
-            <!-- Training Reports -->
-            <h6 class="fw-bold text-primary mb-2">📘 Training Reports</h6>
-            <div class="border rounded p-2 bg-light">
-            {% if day.training_reports.exists %}
-                {% for report in day.training_reports.all %}
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
+        <!-- Edit Form -->
+        <div class="collapse mb-3" id="editDay{{ day.id }}">
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="day_id" value="{{ day.id }}">
+            {{ day_form.as_p }}
+            <button type="submit" name="edit_day" class="btn btn-primary btn-sm">Save</button>
+          </form>
+        </div>
 
-                    {% if report.file %}
-                        <small class="text-muted ms-2">({{ report.file.name|cut:"training_reports/" }})</small>
-                    {% endif %}
-                    </div>
-                    <div>
-                    <a href="{{ report.file.url }}" download class="btn btn-outline-success btn-sm">⬇ Download</a>
-                    {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
-                        <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editReport{{ report.id }}">✏</button>
-                        <form method="post" class="d-inline">
-                        {% csrf_token %}
-                        <input type="hidden" name="report_id" value="{{ report.id }}">
-                        <button type="submit" name="delete_report" class="btn btn-sm btn-danger" onclick="return confirm('Delete this report?');">🗑</button>
-                        </form>
-                    {% endif %}
-                    </div>
+        <!-- Training Reports -->
+        <h6 class="fw-bold text-primary mb-2">📘 Training Reports</h6>
+        <div class="border rounded p-2 bg-light">
+          {% if day.training_reports.exists %}
+            {% for report in day.training_reports.all %}
+              <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-2">
+                <div class="mb-1 mb-md-0">
+                  {% if report.file %}
+                    <small class="text-muted">({{ report.file.name|cut:"training_reports/" }})</small>
+                  {% endif %}
                 </div>
-
-                <small class="text-muted d-block mb-2">Uploaded by {{ report.uploaded_by.full_name|default:"Unknown" }}</small>
-
-                <div class="collapse" id="editReport{{ report.id }}">
-                    <form method="post" enctype="multipart/form-data" class="border p-2 rounded bg-white mt-2">
-                    {% csrf_token %}
-                    <input type="hidden" name="report_id" value="{{ report.id }}">
-                    {{ report_form.as_p }}
-                    <button type="submit" name="edit_report" class="btn btn-primary btn-sm">Save Changes</button>
+                <div class="d-flex flex-wrap gap-1">
+                  <a href="{{ report.file.url }}" download class="btn btn-outline-success btn-sm">⬇ Download</a>
+                  {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
+                    <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editReport{{ report.id }}">✏</button>
+                    <form method="post" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="report_id" value="{{ report.id }}">
+                      <button type="submit" name="delete_report" class="btn btn-sm btn-danger" onclick="return confirm('Delete this report?');">🗑</button>
                     </form>
+                  {% endif %}
                 </div>
-                {% endfor %}
-            {% else %}
-                <em class="text-muted">No training report uploaded yet.</em>
-            {% endif %}
-            </div>
+              </div>
+
+              <small class="text-muted d-block mb-2">Uploaded by {{ report.uploaded_by.full_name|default:"Unknown" }}</small>
+
+              <div class="collapse" id="editReport{{ report.id }}">
+                <form method="post" enctype="multipart/form-data" class="border p-2 rounded bg-white mt-2">
+                  {% csrf_token %}
+                  <input type="hidden" name="report_id" value="{{ report.id }}">
+                  {{ report_form.as_p }}
+                  <button type="submit" name="edit_report" class="btn btn-primary btn-sm">Save Changes</button>
+                </form>
+              </div>
+            {% endfor %}
+          {% else %}
+            <em class="text-muted">No training report uploaded yet.</em>
+          {% endif %}
+        </div>
 
 <!-- Supporting Documents -->
 <div class="mt-3">
@@ -423,28 +436,28 @@
 
         <!-- File 1 -->
         {% if files.doc1 %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
+          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-1 mb-md-0">
               📎 Attendance Sheet:
-              <a href="{{ files.doc1.url }}" target="_blank">{{ files.doc1.name|cut:"day_files/" }}</a>
+              <a href="{{ files.doc1.url }}" target="_blank" class="file-link">{{ files.doc1.name|cut:"day_files/" }}</a>
               {% if files.doc1_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
 
-                <!-- Comments Dropdown -->
-                <div class="dropdown d-inline ms-2">
+                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
                   <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     💬 Comments
                   </button>
-                  <div class="dropdown-menu p-3" style="min-width: 600px; max-height: 300px; overflow-y: auto;">
+                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
                     {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                    <form method="post" enctype="multipart/form-data" class="mb-2">
-                      {% csrf_token %}
-                      <input type="hidden" name="day_id" value="{{ day.id }}">
-                      <input type="hidden" name="slot_name" value="day_doc1">
-                      <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                      <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                      <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                    </form>
+
+                      <form method="post" enctype="multipart/form-data" class="mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="day_id" value="{{ day.id }}">
+                        <input type="hidden" name="slot_name" value="day_doc1">
+                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
+                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
+                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
+                      </form>
                     {% endif %}
                     {% with has_comment=False %}
                       {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
@@ -476,24 +489,28 @@
 
         <!-- File 2 -->
         {% if files.doc2 %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
+          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-1 mb-md-0">
               📎 Photo Documentation:
-              <a href="{{ files.doc2.url }}" target="_blank">{{ files.doc2.name|cut:"day_files/" }}</a>
+              <a href="{{ files.doc2.url }}" target="_blank" class="file-link">{{ files.doc2.name|cut:"day_files/" }}</a>
               {% if files.doc2_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-                <div class="dropdown d-inline ms-2">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">💬 Comments</button>
-                  <div class="dropdown-menu p-3" style="min-width: 600px; max-height: 300px; overflow-y: auto;">
+
+                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    💬 Comments
+                  </button>
+                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
                     {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                    <form method="post" enctype="multipart/form-data" class="mb-2">
-                      {% csrf_token %}
-                      <input type="hidden" name="day_id" value="{{ day.id }}">
-                      <input type="hidden" name="slot_name" value="day_doc2">
-                      <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                      <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                      <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                    </form>
+
+                      <form method="post" enctype="multipart/form-data" class="mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="day_id" value="{{ day.id }}">
+                        <input type="hidden" name="slot_name" value="day_doc2">
+                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
+                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
+                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
+                      </form>
                     {% endif %}
                     {% with has_comment=False %}
                       {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
@@ -525,24 +542,28 @@
 
         <!-- File 3 -->
         {% if files.doc3 %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
+          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-1 mb-md-0">
               📎 Program:
               <a href="{{ files.doc3.url }}" target="_blank">{{ files.doc3.name|cut:"day_files/" }}</a>
               {% if files.doc3_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-                <div class="dropdown d-inline ms-2">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">💬 Comments</button>
-                  <div class="dropdown-menu p-3" style="min-width: 600px; max-height: 300px; overflow-y: auto;">
+
+                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    💬 Comments
+                  </button>
+                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
                     {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                    <form method="post" enctype="multipart/form-data" class="mb-2">
-                      {% csrf_token %}
-                      <input type="hidden" name="day_id" value="{{ day.id }}">
-                      <input type="hidden" name="slot_name" value="day_doc3">
-                      <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                      <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                      <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                    </form>
+
+                      <form method="post" enctype="multipart/form-data" class="mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="day_id" value="{{ day.id }}">
+                        <input type="hidden" name="slot_name" value="day_doc3">
+                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
+                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
+                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
+                      </form>
                     {% endif %}
                     {% with has_comment=False %}
                       {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
@@ -574,24 +595,28 @@
 
         <!-- File 4 -->
         {% if files.doc4 %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
+          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-1 mb-md-0">
               📎 Extra File Slot 1:
               <a href="{{ files.doc4.url }}" target="_blank">{{ files.doc4.name|cut:"day_files/" }}</a>
               {% if files.doc4_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-                <div class="dropdown d-inline ms-2">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">💬 Comments</button>
-                  <div class="dropdown-menu p-3" style="min-width: 600px; max-height: 300px; overflow-y: auto;">
+
+                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    💬 Comments
+                  </button>
+                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
                     {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                    <form method="post" enctype="multipart/form-data" class="mb-2">
-                      {% csrf_token %}
-                      <input type="hidden" name="day_id" value="{{ day.id }}">
-                      <input type="hidden" name="slot_name" value="day_doc4">
-                      <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                      <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                      <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                    </form>
+
+                      <form method="post" enctype="multipart/form-data" class="mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="day_id" value="{{ day.id }}">
+                        <input type="hidden" name="slot_name" value="day_doc4">
+                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
+                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
+                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
+                      </form>
                     {% endif %}
                     {% with has_comment=False %}
                       {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
@@ -623,24 +648,28 @@
 
         <!-- File 5 -->
         {% if files.doc5 %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            <div>
+          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="mb-1 mb-md-0">
               📎 Extra File Slot 2:
               <a href="{{ files.doc5.url }}" target="_blank">{{ files.doc5.name|cut:"day_files/" }}</a>
               {% if files.doc5_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-                <div class="dropdown d-inline ms-2">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">💬 Comments</button>
-                  <div class="dropdown-menu p-3" style="min-width: 600px; max-height: 300px; overflow-y: auto;">
+
+                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
+                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    💬 Comments
+                  </button>
+                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
                     {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                    <form method="post" enctype="multipart/form-data" class="mb-2">
-                      {% csrf_token %}
-                      <input type="hidden" name="day_id" value="{{ day.id }}">
-                      <input type="hidden" name="slot_name" value="day_doc5">
-                      <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                      <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                      <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                    </form>
+
+                      <form method="post" enctype="multipart/form-data" class="mb-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="day_id" value="{{ day.id }}">
+                        <input type="hidden" name="slot_name" value="day_doc5">
+                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
+                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
+                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
+                      </form>
                     {% endif %}
                     {% with has_comment=False %}
                       {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
@@ -672,8 +701,9 @@
 
       </ul>
 
-      <!-- Revision & Edit Buttons -->
+      <!-- Revision Controls -->
       {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+
         <div class="mt-3">
           <button class="btn btn-sm btn-secondary mb-2 toggle-day-revision-btn">Show Revision Controls</button>
           <div class="day-revision-controls" style="display:none;">

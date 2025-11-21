@@ -21,15 +21,14 @@ html, body {
     align-items: center;
     flex-wrap: wrap;
 
-    /* NEW/UPDATED */
-    width: calc(100% - 250px); /* Leave space for sidebar */
+    width: calc(100% - 250px);
     margin-left: 250px;
 }
 
 .topbar span {
     font-size: 16px;
     text-align: center;
-    width: 100%; /* Ensure the span takes up the full width */
+    width: 100%;
 }
 
 /* Dropdown Menu */
@@ -59,6 +58,7 @@ html, body {
     height: 100vh;
     overflow-y: auto;
     transition: transform 0.3s ease;
+    -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
 }
 
 .sidebar .nav-link,
@@ -148,18 +148,18 @@ html, body {
 
 .content-wrapper {
     width: 100%;
-    max-width: none; /* Remove limit */
-    margin: 0;       /* Remove centering */
+    max-width: none;
+    margin: 0;
     padding: 20px;
     background-color: transparent;
     border-radius: 8px;
     box-shadow: none;
 }
+
 .content-wrapper.full-width {
     max-width: none;
     margin: 0;
 }
-
 
 .background-statue {
     position: absolute;
@@ -174,27 +174,30 @@ html, body {
 hr {
     border-color: rgba(255, 255, 255, 0.2);
 }
-    .rotate-icon,
-    .rotate-icon-doc {
-        transition: transform 0.3s ease;
-    }
-    .rotate-icon.rotate,
-    .rotate-icon-doc.rotate {
-        transform: rotate(180deg);
-    }
+
+.rotate-icon,
+.rotate-icon-doc {
+    transition: transform 0.3s ease;
+}
+
+.rotate-icon.rotate,
+.rotate-icon-doc.rotate {
+    transform: rotate(180deg);
+}
+
 /* Responsive Adjustments */
 @media (max-width: 991px) {
     .sidebar {
         transform: translateX(-100%);
+        height: calc(100vh - 60px); /* fits under topbar */
+        overflow-y: auto;
+        position: fixed;
+        top: 60px;
         transition: transform 0.3s ease;
     }
 
     .sidebar.active {
         transform: translateX(0);
-        position: fixed;
-        top: 60px;
-        width: 250px;
-        z-index: 1050;
     }
 
     .main-content {
@@ -203,7 +206,6 @@ hr {
         background-size: 700px;
     }
 
-    /* ✅ Restore topbar to full width */
     .topbar {
         width: 100% !important;
         margin-left: 0 !important;
@@ -227,7 +229,6 @@ hr {
         display: none;
     }
 }
-
 
 @media (max-width: 576px) {
     .main-content {
@@ -261,5 +262,3 @@ hr {
     background-color: #d1e7dd;
     border-top-right-radius: 0;
 }
-
-
