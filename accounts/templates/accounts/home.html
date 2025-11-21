@@ -105,6 +105,7 @@
             {% elif user.account_type == 'Campus Admin' %}
                 <!--<li><a class="nav-link text-white" href="{% url 'campus_admin' %}">Campus Admin Dashboard</a></li>-->
                 <li><a class="nav-link text-white" href="{% url 'list_annual_reports' %}">Annual Reports</a></li>
+                <li><a class="nav-link text-white" href="{% url 'register' %}">Add Staff</a></li>
                 <!--<li><a class="nav-link text-white" href="{% url 'list_quarterly_reports' %}">Quarterly Reports</a></li>-->
             {% elif user.account_type == 'Staff Extensionist' %}
                 <!--<li><a class="nav-link text-white" href="{% url 'staff_extensionist' %}">Staff Dashboard</a></li>-->
