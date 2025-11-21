@@ -2826,8 +2826,8 @@ def open_day_training_reports(request, quarter, year):
             "DEPARTMENT OF COMPUTER STUDIES":
                 "Bachelor of Science in Computer Science, Bachelor of Science in Information Technology",
 
-            "DEPARTMENT OF ARTS AND SCIENCE":
-                "Bachelor of Science in Business Administration",
+            "DEPARTMENT OF ARTS AND SCIENCES":
+                "Bachelor of Science in Arts and Sciences",
 
             "DEPARTMENT OF CRIMINOLOGY":
                 "Bachelor of Science in Criminology",
@@ -2904,8 +2904,8 @@ def download_day_training_reports_excel(request, quarter, year):
         mapping = {
             "DEPARTMENT OF COMPUTER STUDIES":
                 "Bachelor of Science in Computer Science, Bachelor of Science in Information Technology",
-            "DEPARTMENT OF MANAGEMENT STUDIES BUSSINESS MANAGEMENT":
-                "Bachelor of Science in Business Administration",
+            "DEPARTMENT OF ARTS AND SCIENCES":
+                "Bachelor of Science in Arts and Sciences",
             "DEPARTMENT OF CRIMINOLOGY":
                 "Bachelor of Science in Criminology",
             "DEPARTMENT OF MANAGEMENT STUDIES (HM)":
