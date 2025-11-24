@@ -2638,25 +2638,51 @@ def preview_day_training_reports(request, quarter, year):
                 department=uploader.department
             ).first()
 
-        contact_person = parsed.get("contact_person")
-        number_email = parsed.get("number_email")
+        # ---------- related curricular offering ----------
+        def get_related_offering(dept):
+            if not dept:
+                return ""
+            dept = dept.strip().upper()
+            mapping = {
+                "DEPARTMENT OF COMPUTER STUDIES":
+                    "Bachelor of Science in Computer Science, Bachelor of Science in Information Technology",
+                "DEPARTMENT OF ARTS AND SCIENCES":
+                    "Bachelor of Science in Arts and Sciences",
+                "DEPARTMENT OF CRIMINOLOGY":
+                    "Bachelor of Science in Criminology",
+                "DEPARTMENT OF MANAGEMENT STUDIES (HM)":
+                    "Bachelor of Science in Hospitality Management",
+                "DEPARTMENT OF MANAGEMENT STUDIES (BM)":
+                    "Bachelor of Science in Business Management",
+                "DEPARTMENT OF TEACHER EDUCATION":
+                    "Bachelor of Science in Secondary Education",
+            }
+            return mapping.get(dept, "")
 
-        # 🛠️ Store coordinator info at time of report creation
-        coordinator_name = None
-        coordinator_email = None
-
-        if uploader:
-            if uploader.account_type == "Extensionist" and dept_coordinator:
-                # Store the current coordinator's info permanently
+        # ----------------- FROZEN FIELDS LOGIC -----------------
+        if existing:
+            # Freeze old information forever
+            coordinator_name = existing.coordinator_name
+            coordinator_email = existing.coordinator_email
+            contact_person = existing.contact_person
+            number_email = existing.number_email
+            department_value = existing.department
+            related_curricular_offering = getattr(existing, "related_curricular_offering", "")
+        else:
+            # New upload = assign current coordinator
+            if uploader and uploader.account_type == "Extensionist" and dept_coordinator:
                 coordinator_name = dept_coordinator.get_full_name()
                 coordinator_email = dept_coordinator.email
-
-                # For display in report
                 contact_person = coordinator_name
                 number_email = coordinator_email
             else:
-                contact_person = contact_person or getattr(uploader, "get_full_name", lambda: uploader.username)()
-                number_email = number_email or getattr(uploader, "email", "")
+                contact_person = parsed.get("contact_person") or (
+                    uploader.get_full_name() if hasattr(uploader, "get_full_name") else uploader.username
+                )
+                number_email = parsed.get("number_email") or getattr(uploader, "email", "")
+
+            # Assign offering only once
+            related_curricular_offering = get_related_offering(department_value)
 
         # ---------- compute totals ----------
         total_participants = parsed.get("total_participants")
@@ -2684,6 +2710,7 @@ def preview_day_training_reports(request, quarter, year):
         # ---------- common fields ----------
         common_fields = {
             "department": department_value,
+            "related_curricular_offering": related_curricular_offering,
             "contact_person": contact_person,
             "number_email": number_email,
             "coordinator_name": coordinator_name,
@@ -2728,11 +2755,21 @@ def preview_day_training_reports(request, quarter, year):
         }
 
         if existing:
+            # Never overwrite frozen fields
+            frozen_fields = [
+                "coordinator_name",
+                "coordinator_email",
+                "contact_person",
+                "number_email",
+                "department",
+                "related_curricular_offering",
+            ]
+
             for field, value in common_fields.items():
-                # ⚠️ Don't overwrite coordinator info once it's saved
-                if field in ["coordinator_name", "coordinator_email"] and getattr(existing, field):
+                if field in frozen_fields:
                     continue
                 setattr(existing, field, value)
+
             existing.save()
             updated += 1
         else:
@@ -2740,6 +2777,7 @@ def preview_day_training_reports(request, quarter, year):
             created += 1
 
     return {"created": created, "updated": updated}
+
 
 @login_required
 def quarterly_reports_detail(request, quarter, year):

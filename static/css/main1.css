@@ -6,7 +6,9 @@ html, body {
     overflow-y: auto;
 }
 
+/* --------------------------- */
 /* Topbar */
+/* --------------------------- */
 .topbar {
     background-color: #22b14c;
     color: white;
@@ -15,7 +17,7 @@ html, body {
     font-weight: 600;
     font-size: 26px;
     height: 60px;
-    z-index: 1000;
+    z-index: 1100;
     position: fixed;
     display: flex;
     align-items: center;
@@ -31,7 +33,9 @@ html, body {
     width: 100%;
 }
 
-/* Dropdown Menu */
+/* --------------------------- */
+/* Dropdown */
+/* --------------------------- */
 .dropdown-menu-green {
     background-color: #22b14c !important;
 }
@@ -44,7 +48,9 @@ html, body {
     background-color: #1a8d3c !important;
 }
 
+/* --------------------------- */
 /* Sidebar */
+/* --------------------------- */
 .sidebar {
     background-color: #35791F;
     color: white;
@@ -55,10 +61,10 @@ html, body {
     left: 0;
     z-index: 1050;
     width: 250px;
-    height: 100vh;
-    overflow-y: auto;
+    height: 100vh;              /* ALWAYS full height */
+    overflow-y: auto;           /* ALWAYS scrollable */
+    -webkit-overflow-scrolling: touch;
     transition: transform 0.3s ease;
-    -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
 }
 
 .sidebar .nav-link,
@@ -77,6 +83,7 @@ html, body {
     margin-left: 10px;
 }
 
+/* Sidebar header */
 .sidebar-header {
     display: flex;
     flex-direction: column;
@@ -95,6 +102,7 @@ html, body {
     margin-bottom: 10px;
 }
 
+/* Sidebar menu */
 .sidebar-menu {
     flex-grow: 1;
     overflow-y: auto;
@@ -125,7 +133,9 @@ html, body {
     background-color: rgba(255, 255, 255, 0.15);
 }
 
+/* --------------------------- */
 /* Main Content */
+/* --------------------------- */
 .main-content {
     margin-left: 250px;
     margin-top: 60px;
@@ -185,15 +195,17 @@ hr {
     transform: rotate(180deg);
 }
 
-/* Responsive Adjustments */
+/* --------------------------- */
+/* Responsive */
+/* --------------------------- */
 @media (max-width: 991px) {
+
+    /* Sidebar becomes slide-in menu */
     .sidebar {
         transform: translateX(-100%);
-        height: calc(100vh - 60px); /* fits under topbar */
-        overflow-y: auto;
-        position: fixed;
-        top: 60px;
-        transition: transform 0.3s ease;
+        top: 0;
+        height: 100vh;            /* full height for tablet */
+        overflow-y: auto;         /* scroll enabled */
     }
 
     .sidebar.active {
@@ -213,6 +225,10 @@ hr {
         height: auto;
         font-size: 22px;
         padding: 10px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1100;
     }
 
     .topbar span {
@@ -231,6 +247,7 @@ hr {
 }
 
 @media (max-width: 576px) {
+
     .main-content {
         background-size: 500px;
     }
@@ -249,6 +266,7 @@ hr {
     }
 }
 
+/* Chat bubbles */
 #chat-messages .rounded {
     border-radius: 18px;
 }
