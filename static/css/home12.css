@@ -280,3 +280,32 @@ hr {
     background-color: #d1e7dd;
     border-top-right-radius: 0;
 }
+
+/* Desktop: Keep original position next to sidebar */
+#chat-list-panel {
+    top: 100px;
+    left: 250px;
+    width: 300px;
+    height: 400px;
+}
+
+/* Mobile ONLY: Center on screen */
+@media (max-width: 991px) {
+    #chat-list-panel {
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90% !important;
+        max-width: 350px;
+        height: 60vh;
+        max-height: 500px;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 576px) {
+    #chat-list-panel {
+        width: 95% !important;
+        height: 70vh;
+    }
+}

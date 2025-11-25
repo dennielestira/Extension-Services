@@ -180,31 +180,29 @@ section {
 .album-card:hover img { transform: scale(1.05); }
 .album-card:hover .overlay { opacity: 1; }
 
-/* --------------------------- */
-/* Album Modal Styles */
-/* --------------------------- */
+/* Album Modal Styles - FIXED VERSION */
 
 .album-modal {
-    display: none; /* Hidden by default */
+    display: none;
     position: fixed;
     z-index: 1050;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.7); /* semi-transparent background */
-    padding: 20px;
-    box-sizing: border-box;
-    padding-top: 100px;
+    overflow: hidden; /* Changed from auto */
+    background-color: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
 }
 
 .album-modal-inner {
     background-color: #347002;
-    margin: auto;
     border-radius: 8px;
-    max-width: 90%; /* smaller width */
-    max-height: 90%; /* smaller height */
+    width: 90%;
+    max-width: 1200px;
+    height: 85vh;
+    max-height: 800px;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -217,24 +215,22 @@ section {
     right: 15px;
     font-size: 28px;
     font-weight: bold;
-    color: #333;
+    color: #fff;
     cursor: pointer;
     z-index: 25;
 }
 
-/* Modal Body */
 .album-modal-body {
     display: flex;
     flex-direction: row;
     width: 100%;
-    height: 100%;
+    flex: 1;
     overflow: hidden;
     gap: 10px;
-    padding: 10px;
+    padding: 50px 10px 70px 10px; /* Top padding for close button, bottom for nav */
     box-sizing: border-box;
 }
 
-/* Left side: Image + Navigation */
 .album-left {
     flex: 1 1 60%;
     display: flex;
@@ -255,19 +251,19 @@ section {
 
 .album-modal-image {
     max-width: 100%;
-    max-height: 80vh;
+    max-height: 65vh;
     border-radius: 6px;
     object-fit: contain;
 }
 
-/* Photo navigation buttons */
+/* Photo navigation buttons - INSIDE the image */
 .photo-nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     font-size: 30px;
-    color: #080808;
-    background-color: rgba(0,0,0,0.4);
+    color: #fff;
+    background-color: rgba(0,0,0,0.5);
     border: none;
     border-radius: 50%;
     width: 40px;
@@ -292,22 +288,28 @@ section {
     right: 10px;
 }
 
-/* Photo actions overlay */
+.photo-actions {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 20;
+    display: flex;
+    gap: 6px;
+}
+
 .photo-actions a,
 .photo-actions button {
     font-size: 14px;
     padding: 3px 8px;
 }
 
-/* Photo counter */
 .photo-counter {
     margin-top: 5px;
     text-align: center;
     font-size: 14px;
-    color: #000000;
+    color: #fff;
 }
 
-/* Right side: Album info */
 .album-right {
     flex: 1 1 40%;
     display: flex;
@@ -321,35 +323,25 @@ section {
     margin-top: 0;
     font-size: 20px;
     word-wrap: break-word;
+    color: #fff;
 }
 
 .album-right p {
     font-size: 14px;
-    color: #000000;
+    color: #fff;
     word-wrap: break-word;
 }
 
-/* Dropdown actions styling */
-.dropdown-menu {
-    min-width: 150px;
-}
-
-.dropdown-item {
-    font-size: 14px;
-    padding: 5px 10px;
-}
-
-/* Album navigation outside box */
-/* Album Navigation Outside Modal */
+/* Album navigation - INSIDE modal at the bottom */
 .album-modal-nav {
-    position: fixed; /* fixed outside modal */
-    bottom: 20px; /* distance from bottom */
+    position: absolute;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     justify-content: space-between;
-    width: 250px; /* width for both buttons */
-    z-index: 1100; /* above modal overlay */
+    width: 250px;
+    z-index: 30;
     font-size: 16px;
     font-weight: 600;
     color: #fff;
@@ -371,23 +363,6 @@ section {
 }
 
 /* Responsive adjustments */
-@media (max-width: 576px) {
-    .album-modal-nav {
-        width: 180px;
-        font-size: 14px;
-    }
-    .album-modal-nav .album-prev,
-    .album-modal-nav .album-next {
-        padding: 6px 10px;
-        font-size: 14px;
-    }
-}
-
-
-/* --------------------------- */
-/* Responsive Adjustments */
-/* --------------------------- */
-
 @media (max-width: 992px) {
     .album-modal-body {
         flex-direction: column;
@@ -417,8 +392,16 @@ section {
     .album-right p {
         font-size: 12px;
     }
+    .album-modal-nav {
+        width: 180px;
+        font-size: 14px;
+    }
+    .album-modal-nav .album-prev,
+    .album-modal-nav .album-next {
+        padding: 6px 10px;
+        font-size: 14px;
+    }
 }
-
 
 /* --------------------------- */
 /* VIDEO GALLERY */
