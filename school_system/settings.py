@@ -78,13 +78,20 @@ TIME_ZONE = 'Asia/Manila'
 
 ROOT_URLCONF = 'school_system.urls'
 
-# Cloudinary Configuration
+# Cloudinary Configuration (for direct uploads)
 cloudinary.config(
     cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'duq7cyfbj'),
     api_key=os.environ.get('CLOUDINARY_API_KEY', '572297561115596'),
     api_secret=os.environ.get('CLOUDINARY_API_SECRET', 'hoMdkYfUcAZHJxwAaYyUrSO1NTU'),
     secure=True
 )
+
+# Cloudinary Storage Configuration (required by django-cloudinary-storage)
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'duq7cyfbj'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '572297561115596'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'hoMdkYfUcAZHJxwAaYyUrSO1NTU'),
+}
 
 # Storage Configuration
 MEDIA_URL = '/media/'
