@@ -95,9 +95,9 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', 'hoMdkYfUcAZHJxwAaYyUrSO1NTU'),
 }
 
-# Storage Configuration
+# Storage Configuration - USE CUSTOM STORAGE FOR ZIP/PDF/ALL FILES
 MEDIA_URL = '/media/'
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'accounts.storage.RawMediaCloudinaryStorage'
 
 TEMPLATES = [
     {
