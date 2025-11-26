@@ -12,6 +12,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +43,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
 EMAIL_HOST_PASSWORD = 'gosu czfs cnzq uwao'
 DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -48,6 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'accounts',
     'django.contrib.humanize',
 ]
@@ -71,8 +78,17 @@ TIME_ZONE = 'Asia/Manila'
 
 ROOT_URLCONF = 'school_system.urls'
 
+# Cloudinary Configuration
+cloudinary.config(
+    cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME', 'duq7cyfbj'),
+    api_key=os.environ.get('CLOUDINARY_API_KEY', '572297561115596'),
+    api_secret=os.environ.get('CLOUDINARY_API_SECRET', 'hoMdkYfUcAZHJxwAaYyUrSO1NTU'),
+    secure=True
+)
+
+# Storage Configuration
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 TEMPLATES = [
     {
