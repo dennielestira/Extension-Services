@@ -367,9 +367,9 @@ def campus_admin_view(request):
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Processing'),
+        ('completion_processing', 'Completion Ongoing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -522,9 +522,9 @@ def staff_extensionist_view(request):
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Processing'),
+        ('completion_processing', 'Completion Ongoing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -646,9 +646,9 @@ def department_coordinator_view(request):
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Processing'),
+        ('completion_processing', 'Completion Ongoing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -766,9 +766,9 @@ def extensionist_view(request):
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-        ('rejected', 'Rejected'),
+
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Processing'),
+        ('completion_processing', 'Completion Ongoing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -1170,9 +1170,8 @@ def document_list(request):
 
     all_statuses = [
         ('pending', 'Pending'),
-        ('rejected', 'Rejected'),
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Processing'),
+        ('completion_processing', 'Completion Ongoing'),
         ('completed', 'Completed'),
     ]
 

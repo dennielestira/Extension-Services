@@ -88,21 +88,21 @@
 
             {% if user.account_type == 'Campus Admin' %}
                 <li><a class="nav-link text-white" href="{% url 'recommended_documents' %}">Recommended</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Processing</a></li>
+                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Ongoing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
                 <li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
             {% elif user.account_type == 'Staff Extensionist' %}
                 <li><a class="nav-link text-white" href="{% url 'pending_documents' %}">Pending</a></li>
                 <li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Processing</a></li>
+                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Ongoing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
             {% elif user.account_type == 'Department Coordinator' %}
                 <li><a class="nav-link text-white" href="{% url 'pending_documents' %}">Pending</a></li>
                 <li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>
                 <li><a class="nav-link text-white" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Processing</a></li>
+                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Ongoing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
             {% elif user.account_type == 'Extensionist' %}
                 <li><a class="nav-link text-white" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
@@ -186,12 +186,12 @@
  {% if user.account_type == 'Super Admin' %}
                 
             {% elif user.account_type == 'Campus Admin' %}
-                <li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>-->
             {% elif user.account_type == 'Staff Extensionist' %}
-                <li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>
+                <!--#<li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>-->
             {% elif user.account_type == 'Department Coordinator' %}
 
-                <li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>-->
             {% else %}
 
             {% endif %}
