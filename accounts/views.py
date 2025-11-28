@@ -6,9 +6,9 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 from networkx import center
 from accounts.utils import QUARTER_CHOICES, get_month_range
-from .forms import  CustomUserCreationForm, DayRevisionFeedbackForm, DayTrainingReportForm, DepartmentCoordinatorRegistrationForm,  DocumentCommentForm, DocumentDayFileForm, DocumentDayForm, ExtensionistRegistrationForm, LinkageForm, RevisionFeedbackForm
+from .forms import  CustomUserCreationForm, DayRevisionFeedbackForm, DayTrainingReportForm, DepartmentCoordinatorRegistrationForm,  DocumentCommentForm, DocumentDayFileForm, DocumentDayForm, ExtensionistRegistrationForm, LinkageForm, MOAResourceForm, RevisionFeedbackForm
 from django.http import Http404, HttpResponse, HttpResponseForbidden
-from .models import  AccountType, CompletionRevisionFeedback, DayRevisionFeedback, Department,  DocumentComment, DocumentDay, DocumentDayFile, DocumentFile, Document, DocumentRevisionFeedback, Linkage
+from .models import  AccountType, CompletionRevisionFeedback, DayRevisionFeedback, Department,  DocumentComment, DocumentDay, DocumentDayFile, DocumentFile, Document, DocumentRevisionFeedback, Linkage, MOAResource
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import DocumentUploadForm, CompletionUploadForm
@@ -349,7 +349,7 @@ from django.shortcuts import render, redirect
 from django.utils.timezone import now
 from datetime import timedelta
 from .models import Document, Department, AccountType
-
+ 
 @login_required
 def campus_admin_view(request):
     if request.user.account_type != AccountType.CAMPUS_ADMIN:
@@ -387,30 +387,30 @@ def campus_admin_view(request):
         "Activity_Proposal": "Activity Proposal",
         "Work_and_Financial_Plan": "Work & Financial Plan",
         "Plan_of_Activities": "Plan of Activities",
-        "doc4": "Extra Document 1",
-        "doc5": "Extra Document 2",
-        "doc6": "Extra Document 3",
-        "doc7": "Extra Document 4",
-        "doc8": "Extra Document 5",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
+        "doc6": "Supporting Document 3",
+        "doc7": "Supporting Document 4",
+        "doc8": "Supporting Document 5",
     }
 
     DAYFILE_NICKNAMES = {
         "doc1": "Attendance Sheet ",
         "doc2": "Photo Documentation",
         "doc3": "Program",
-        "doc4": "Extra File Slot 1",
-        "doc5": "Extra File Slot 2",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
     }
 
     COMPLETION_NICKNAMES = {
         "completion_doc1": "Approved Letter Request",
         "completion_doc2": "Accomplished/Evaluation Form",
-        "completion_doc3": "Extra Document 1",
-        "completion_doc4": "Extra Document 2",
-        "completion_doc5": "Extra Document 3",
-        "completion_doc6": "Extra Document 4",
-        "completion_doc7": "Extra Document 5",
-        "completion_doc8": "Extra Document 6",
+        "completion_doc3": "Supporting Document 1",
+        "completion_doc4": "Supporting Document 2",
+        "completion_doc5": "Supporting Document 3",
+        "completion_doc6": "Supporting Document 4",
+        "completion_doc7": "Supporting Document 5",
+        "completion_doc8": "Supporting Document 6",
     }
 
     # ✅ Department revisions section
@@ -464,13 +464,37 @@ def campus_admin_view(request):
             "name": dept.name,
             "documents_with_revisions": revision_docs,
         })
-
+    moa_list = MOAResource.objects.all().order_by('-uploaded_at')
     # ✅ Render the template
     return render(request, 'accounts/campus_admin_dashboard.html', {
         'recent_updates': recent_updates,
         'status_data': status_data,
         'departments': dept_data,
+        'moa_list': moa_list,
+        'moa_form': MOAResourceForm(),
     })
+@login_required
+def upload_moa(request):
+    if request.method == 'POST':
+        form = MOAResourceForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+    return redirect('campus_admin_dashboard')
+@login_required
+def delete_moa(request, moa_id):
+    moa = MOAResource.objects.get(id=moa_id)
+    moa.delete()
+    return redirect('campus_admin_dashboard')
+@login_required
+def edit_moa(request, moa_id):
+    moa = MOAResource.objects.get(id=moa_id)
+    if request.method == 'POST':
+        form = MOAResourceForm(request.POST, request.FILES, instance=moa)
+        if form.is_valid():
+            form.save()
+            return redirect('campus_admin_dashboard')
+
+    return render(request, 'accounts/edit_moa.html', {'form': MOAResourceForm(instance=moa)})
 
 from django.utils.timezone import now
 from datetime import timedelta
@@ -513,35 +537,35 @@ def staff_extensionist_view(request):
         ).order_by('-status_updated_at')[:10]
         status_data.append({'label': label, 'code': code, 'documents': docs})
 
-    # Nicknames
+    # ✅ Nicknames for document file labels
     INITIAL_NICKNAMES = {
         "Activity_Proposal": "Activity Proposal",
         "Work_and_Financial_Plan": "Work & Financial Plan",
         "Plan_of_Activities": "Plan of Activities",
-        "doc4": "Invitation Letter",
-        "doc5": "Pre-test/Post-test",
-        "doc6": "Evaluation Form",
-        "doc7": "Accomplishment Report",
-        "doc8": "Supporting Document",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
+        "doc6": "Supporting Document 3",
+        "doc7": "Supporting Document 4",
+        "doc8": "Supporting Document 5",
     }
 
     DAYFILE_NICKNAMES = {
-        "doc1": "Supporting Document 1",
-        "doc2": "Supporting Document 2",
-        "doc3": "Supporting Document 3",
-        "doc4": "Supporting Document 4",
-        "doc5": "Supporting Document 5",
+        "doc1": "Attendance Sheet ",
+        "doc2": "Photo Documentation",
+        "doc3": "Program",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
     }
 
     COMPLETION_NICKNAMES = {
-        "completion_doc1": "Activity Report",
-        "completion_doc2": "Training Summary",
-        "completion_doc3": "Attendance Sheet",
-        "completion_doc4": "Photos",
-        "completion_doc5": "Certificate of Completion",
-        "completion_doc6": "Evaluation Summary",
-        "completion_doc7": "Financial Report",
-        "completion_doc8": "MOA/Partner Document",
+        "completion_doc1": "Approved Letter Request",
+        "completion_doc2": "Accomplished/Evaluation Form",
+        "completion_doc3": "Supporting Document 1",
+        "completion_doc4": "Supporting Document 2",
+        "completion_doc5": "Supporting Document 3",
+        "completion_doc6": "Supporting Document 4",
+        "completion_doc7": "Supporting Document 5",
+        "completion_doc8": "Supporting Document 6",
     }
 
     # Department revisions
@@ -588,11 +612,13 @@ def staff_extensionist_view(request):
             "name": dept.name,
             "documents_with_revisions": revision_docs,
         })
+        moa_list = MOAResource.objects.all().order_by('-uploaded_at')
 
     return render(request, 'accounts/staff_extensionist_dashboard.html', {
         'recent_updates': recent_updates,
         'status_data': status_data,
         'departments': dept_data,
+        'moa_list': moa_list,
     })
 
 
@@ -636,35 +662,35 @@ def department_coordinator_view(request):
         ).order_by('-status_updated_at')[:10]
         status_data.append({'label': label, 'code': code, 'documents': docs})
 
-    # Nicknames
+    # ✅ Nicknames for document file labels
     INITIAL_NICKNAMES = {
         "Activity_Proposal": "Activity Proposal",
         "Work_and_Financial_Plan": "Work & Financial Plan",
         "Plan_of_Activities": "Plan of Activities",
-        "doc4": "Invitation Letter",
-        "doc5": "Pre-test/Post-test",
-        "doc6": "Evaluation Form",
-        "doc7": "Accomplishment Report",
-        "doc8": "Supporting Document",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
+        "doc6": "Supporting Document 3",
+        "doc7": "Supporting Document 4",
+        "doc8": "Supporting Document 5",
     }
 
     DAYFILE_NICKNAMES = {
-        "doc1": "Supporting Document 1",
-        "doc2": "Supporting Document 2",
-        "doc3": "Supporting Document 3",
-        "doc4": "Supporting Document 4",
-        "doc5": "Supporting Document 5",
+        "doc1": "Attendance Sheet ",
+        "doc2": "Photo Documentation",
+        "doc3": "Program",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
     }
 
     COMPLETION_NICKNAMES = {
-        "completion_doc1": "Activity Report",
-        "completion_doc2": "Training Summary",
-        "completion_doc3": "Attendance Sheet",
-        "completion_doc4": "Photos",
-        "completion_doc5": "Certificate of Completion",
-        "completion_doc6": "Evaluation Summary",
-        "completion_doc7": "Financial Report",
-        "completion_doc8": "MOA/Partner Document",
+        "completion_doc1": "Approved Letter Request",
+        "completion_doc2": "Accomplished/Evaluation Form",
+        "completion_doc3": "Supporting Document 1",
+        "completion_doc4": "Supporting Document 2",
+        "completion_doc5": "Supporting Document 3",
+        "completion_doc6": "Supporting Document 4",
+        "completion_doc7": "Supporting Document 5",
+        "completion_doc8": "Supporting Document 6",
     }
 
     # Documents with revisions
@@ -702,6 +728,7 @@ def department_coordinator_view(request):
                 "name": doc.name,
                 "revision_files": revision_files
             })
+        moa_list = MOAResource.objects.all().order_by('-uploaded_at')
 
     return render(request, 'accounts/department_coordinator_dashboard.html', {
         'recent_updates': recent_updates,
@@ -710,7 +737,8 @@ def department_coordinator_view(request):
             "id": department.id,
             "name": department.get_name_display(),
             "documents_with_revisions": documents_with_revisions
-        }]
+        }],
+        'moa_list': moa_list,
     })
 
 
@@ -1229,22 +1257,26 @@ def view_document(request, document_id):
         # -----------------------
         # COMPLETION UPLOAD
         # -----------------------
-        elif "upload_completion" in request.POST and can_upload_completion:
+        elif "upload_completion" in request.POST:
             slot_choice = request.POST.get("completion_slot_choice")
             uploaded_file = request.FILES.get("selected_file")
-            valid_slots = [f"completion_doc{i}" for i in range(1, 9)]
 
-            if slot_choice in valid_slots and uploaded_file:
+            # Only upload file if a slot + file are provided
+            if slot_choice and uploaded_file:
                 if not existing_completion:
                     existing_completion = DocumentFile(document=document)
+
                 handle_file_upload(existing_completion, slot_choice, uploaded_file)
-                document.status = "completion_processing"
-                document.save()
-                clear_feedback(document)
-                messages.success(request, f"{slot_choice.replace('_', ' ').title()} uploaded successfully.")
-            else:
-                messages.error(request, "Invalid slot or file.")
+
+            # Status will still update even with no slot / no file
+            document.status = "completion_processing"
+            document.save()
+
+            clear_feedback(document)
+            messages.success(request, "Completion submitted. Now under processing.")
             return redirect("view_document", document_id=document.id)
+
+
 
         elif "save_completion_changes" in request.POST and can_upload_completion:
             slot_choice = request.POST.get("completion_slot_choice")
@@ -2669,6 +2701,10 @@ def preview_day_training_reports(request, quarter, year):
             department_value = existing.department
             related_curricular_offering = getattr(existing, "related_curricular_offering", "")
         else:
+            # Default fallback
+            coordinator_name = ""
+            coordinator_email = ""
+
             # New upload = assign current coordinator
             if uploader and uploader.account_type == "Extensionist" and dept_coordinator:
                 coordinator_name = dept_coordinator.get_full_name()
@@ -2677,9 +2713,10 @@ def preview_day_training_reports(request, quarter, year):
                 number_email = coordinator_email
             else:
                 contact_person = parsed.get("contact_person") or (
-                    uploader.get_full_name() if hasattr(uploader, "get_full_name") else uploader.username
+                    uploader.get_full_name() if hasattr(uploader, "get_full_name") else getattr(uploader, "username", "")
                 )
                 number_email = parsed.get("number_email") or getattr(uploader, "email", "")
+
 
             # Assign offering only once
             related_curricular_offering = get_related_offering(department_value)

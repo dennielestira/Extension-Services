@@ -7,7 +7,6 @@
     <title>Login - Cavite State University Extension Services</title>
     <link rel="stylesheet" href="{% static 'css/login.css' %}">
     <style>
-        /* Simple styling for the back button */
         .back-btn {
             display: inline-block;
             margin-bottom: 20px;
@@ -21,16 +20,25 @@
         .back-btn:hover {
             background-color: #0d8331;
         }
+
+        .privacy-box {
+            background: #f8f8f8;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        .privacy-box span {
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 <div class="header d-flex justify-content-center align-items-center px-3 mb-3">
-    <span>Cavite State University Extension Services</span>
+    <span>Cavite State University Extension Service - Bacoor Campus</span>
 </div>
 
 <div class="login-container">
-    <!-- Back button above login box -->
-    
 
     <div class="login-box">
         <div class="login-form">
@@ -38,21 +46,26 @@
                 <img src="{% static 'image/logo.png' %}" alt="CVSU Logo">
                 <img src="{% static 'image/logo2.png' %}" alt="CVSU Logo 2">
             </div>
-            <form method="POST">
+
+            <form method="POST" onsubmit="return validatePrivacy()">
                 {% csrf_token %}
+
                 {% if form.non_field_errors %}
                     <div style="color: red; margin-bottom: 10px;">
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
-                <div>
-                    {{ form.username.label_tag }}
-                    {{ form.username }}
+
+                <div>{{ form.username.label_tag }} {{ form.username }}</div>
+                <div>{{ form.password.label_tag }} {{ form.password }}</div>
+
+                <div class="privacy-box">
+                    <input type="checkbox" id="privacy_check">
+                    I agree and understand that my personal information will be collected,
+                    stored, and used solely for the purpose of accessing the Cavite State University Extension Services System.
+                    I acknowledge that my data will be handled in accordance with the Data Privacy Act of 2012.
                 </div>
-                <div>
-                    {{ form.password.label_tag }}
-                    {{ form.password }}
-                </div>
+
                 <div class="submit">
                     <a class="back-btn" href="{% url 'home2' %}">← Back</a>
                     <button type="submit">Login</button>
@@ -61,5 +74,17 @@
         </div>
     </div>
 </div>
+
+<script>
+    function validatePrivacy() {
+        let checkbox = document.getElementById("privacy_check");
+        if (!checkbox.checked) {
+            alert("Please agree to the Data Privacy Consent before logging in.");
+            return false; // Block form submission
+        }
+        return true; // Continue login
+    }
+</script>
+
 </body>
 </html>

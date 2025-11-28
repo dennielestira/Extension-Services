@@ -280,3 +280,11 @@ class CompletionRevisionFeedbackForm(forms.ModelForm):
         widgets = {
             'comment': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Enter revision comment'}),
         }
+        
+from django import forms
+from .models import MOAResource
+
+class MOAResourceForm(forms.ModelForm):
+    class Meta:
+        model = MOAResource
+        fields = ['title', 'logo', 'pdf_file']

@@ -7,31 +7,75 @@ html, body {
 }
 
 /* --------------------------- */
-/* Topbar */
+/* Topbar (Desktop Layout) */
 /* --------------------------- */
 .topbar {
+    position: fixed;
+    top: 0;
+    left: 250px;               /* same width as sidebar */
+    width: calc(100% - 250px); /* take remaining space only */
+    height: 60px;
     background-color: #22b14c;
     color: white;
-    padding: 8px 16px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 26px;
-    height: 60px;
-    z-index: 1100;
-    position: fixed;
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-
-    width: calc(100% - 250px);
-    margin-left: 250px;
+    justify-content: center;   /* title finally centers perfectly */
+    padding: 0 16px;
+    z-index: 1000;
+    font-size: 18px;
+    font-weight: 600;
 }
 
-.topbar span {
-    font-size: 16px;
+/* Title stays centered (no absolute needed) */
+.topbar .topbar-title {
+    flex-grow: 1;
     text-align: center;
-    width: 100%;
+    font-size: clamp(14px, 2.5vw, 18px);
 }
+
+/* Logout button stays visible */
+.topbar .btn-logout {
+    position: relative;
+    z-index: 2000;            /* ensures it sits above title area */
+}
+
+.topbar .navbar-toggler {
+    padding: 0.25rem 0.5rem;
+    font-size: 18px;
+}
+
+
+@media (max-width: 991px) {
+    .topbar {
+        left: 0 !important;
+        width: 100% !important;
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+    }
+
+    .topbar .topbar-title {
+        order: 0; /* first item */
+        width: 100%;
+        text-align: center;
+        margin-bottom: 8px; /* space below title */
+        font-size: clamp(12px, 4vw, 16px);
+    }
+
+    .topbar .d-flex.gap-2 {
+        order: 1; /* buttons below title */
+        justify-content: flex-end; /* align to right */
+        width: 100%;
+        gap: 10px;
+    }
+
+    .topbar .navbar-toggler {
+        /* optional: adjust size for mobile */
+        padding: 0.25rem 0.5rem;
+        font-size: 18px;
+    }
+}
+
 
 /* --------------------------- */
 /* Dropdown */

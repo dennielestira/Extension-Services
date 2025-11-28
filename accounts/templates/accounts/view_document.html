@@ -57,7 +57,6 @@
 
                 {% if user.account_type == 'Campus Admin' and document.status == 'recommended' %}
                     <a href="{% url 'approve_document' document.id %}" class="btn btn-sm btn-success me-2 mb-2">✅ Approve</a>
-                    <a href="{% url 'reject_document' document.id %}" class="btn btn-sm btn-danger me-2 mb-2">❌ Reject</a>
                     <a href="{% url 'need_revision_document' document.id %}" class="btn btn-sm btn-warning me-2 mb-2">↩️ Return for Revision</a>
                 {% endif %}
 
@@ -70,12 +69,12 @@
 
                 {% if user.account_type == 'Staff Extensionist' and document.status not in 'recommended ongoing completion_recommended completion_rejected completed pending' %}
                     <a href="{% url 'recommend_completion' document.id %}" class="btn btn-sm btn-success">✅ Recommend</a>
-                    <a href="{% url 'reject_completion' document.id %}" class="btn btn-sm btn-danger">❌ Reject</a>
+                    <a href="{% url 'reject_completion' document.id %}" class="btn btn-sm btn-danger">❌ Need Revisions</a>
                 {% endif %}
 
                 {% if user.account_type == 'Campus Admin' and document.status not in 'recommended ongoing completion_rejected completed pending' %}
                     <a href="{% url 'approve_completion' document.id %}" class="btn btn-sm btn-success">✅ Approve</a>
-                    <a href="{% url 'reject_completion' document.id %}" class="btn btn-sm btn-danger">❌ Reject</a>
+                    <a href="{% url 'reject_completion' document.id %}" class="btn btn-sm btn-danger">❌ Need Revisions</a>
                 {% endif %}
             </div>
         </div>
@@ -264,11 +263,11 @@
             <option value="Activity_Proposal">Activity Proposal</option>
             <option value="Work_and_Financial_Plan">Work_and_Financial_Plan</option>
             <option value="Plan_of_Activities">Plan_of_Activities</option>
-            <option value="doc4">Extra Document 1</option>
-            <option value="doc5">Extra Document 2</option>
-            <option value="doc6">Extra Document 3</option>
-            <option value="doc7">Extra Document 4</option>
-            <option value="doc8">Extra Document 5</option>
+            <option value="doc4">Supporting Document 1</option>
+            <option value="doc5">Supporting Document 2</option>
+            <option value="doc6">Supporting Document 3</option>
+            <option value="doc7">Supporting Document 4</option>
+            <option value="doc8">Supporting Document 5</option>
         </select>
     </div>
 
@@ -368,8 +367,8 @@
                     <option value="doc1">Attendance Sheet</option>
                     <option value="doc2">Photo Documentation</option>
                     <option value="doc3">Program</option>
-                    <option value="doc4">Extra File Slot 1</option>
-                    <option value="doc5">Extra File Slot 2</option>
+                    <option value="doc4">Supporting Document 1</option>
+                    <option value="doc5">Supporting Document 2</option>
                   </select>
                 </div>
               </div>
@@ -636,7 +635,7 @@
         {% if files.doc4 %}
           <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
             <div class="mb-1 mb-md-0">
-              📎 Extra File Slot 1:
+              📎 Supporting Document 1:
               <a href="{{ files.doc4.url }}" target="_blank" class="file-link">{{ files.doc4.name|cut:"day_files/" }}</a>
               {% if files.doc4_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
@@ -689,7 +688,7 @@
         {% if files.doc5 %}
           <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
             <div class="mb-1 mb-md-0">
-              📎 Extra File Slot 2:
+              📎 Supporting Document 2:
               <a href="{{ files.doc5.url }}" target="_blank" class="file-link">{{ files.doc5.name|cut:"day_files/" }}</a>
               {% if files.doc5_status == "revision" %}
                 <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
@@ -754,8 +753,8 @@
                 <option value="day_doc1">Attendance sheet</option>
                 <option value="day_doc2">Photo Documentation</option>
                 <option value="day_doc3">Program</option>
-                <option value="day_doc4">Extra Slot 1</option>
-                <option value="day_doc5">Extra Slot 2</option>
+                <option value="day_doc4">Supporting Document 1</option>
+                <option value="day_doc5">Supporting Document 2</option>
               </select>
               <button type="submit" name="make_day_revision" class="btn btn-sm btn-warning">🚩 Mark for Revision</button>
             </form>
@@ -839,7 +838,7 @@
                       {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
                         <form method="post" enctype="multipart/form-data" class="mb-2">
                           {% csrf_token %}
-                          <input type="hidden" name="completion_slot" value="{{ name }}">
+                          <input type="hidden" name="completion_ocument" value="{{ name }}">
 
                           <textarea name="revision_comment" class="form-control mb-2"
                                     rows="4" placeholder="Add a comment..." required></textarea>
@@ -929,46 +928,50 @@
                         </div>
                     {% endif %}
 
-                    <form method="post" enctype="multipart/form-data" id="completionForm">
-                        {% csrf_token %}
+<!-- COMPLETION UPLOAD FORM -->
+<form method="post" enctype="multipart/form-data" id="completionForm">
+    {% csrf_token %}
 
-                        <div class="mb-3">
-                            <label for="completion_slot_choice" class="form-label fw-bold">Select Completion Document Slot:</label>
-                            <select class="form-select" name="completion_slot_choice" id="completion_slot_choice" required>
-                                <option value="">-- Select Slot --</option>
-                                <option value="completion_doc1">Approved Letter Request</option>
-                                <option value="completion_doc2">Accomplished / Evaluation Form</option>
-                                <option value="completion_doc3">Austhotity to go</option>
-                                <option value="completion_doc4">Extra Document 1</option>
-                                <option value="completion_doc5">Extra Document 2</option>
-                                <option value="completion_doc6">Extra Document 3</option>
-                                <option value="completion_doc7">Extra Document 4</option>
-                                <option value="completion_doc8">Extra Document 5</option>
-                            </select>
-                        </div>
+    <div class="mb-3">
+        <label for="completion_slot_choice" class="form-label fw-bold">Select Completion Document Slot:</label>
+        <select class="form-select" name="completion_slot_choice" id="completion_slot_choice" required>
+            <option value="">-- Select Slot --</option>
+            <option value="completion_doc1">Approved Letter Request</option>
+            <option value="completion_doc2">Accomplished / Evaluation Form</option>
+            <option value="completion_doc3">Authority to Go</option>
+            <option value="completion_doc4">Supporting Document 1</option>
+            <option value="completion_doc5">Supporting Document 2</option>
+            <option value="completion_doc6">Supporting Document 3</option>
+            <option value="completion_doc7">Supporting Document 4</option>
+            <option value="completion_doc8">Supporting Document 5</option>
+        </select>
+    </div>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Upload File:</label>
-                            <input type="file" name="selected_file" class="form-control" required>
-                        </div>
+    <div class="mb-3">
+        <label class="form-label fw-bold">Upload File:</label>
+        <input type="file" name="selected_file" class="form-control" required>
+    </div>
 
-                        <div class="mt-4 d-flex gap-2">
-                            {% if user.account_type == 'Department Coordinator' %}
-                                <button type="submit" name="upload_completion" class="btn btn-primary" onclick="return confirmCompletion();">
-                                    📎 Submit Completion File
-                                </button>
-                            {% endif %}
-                            <button type="submit" name="save_completion_changes" class="btn btn-secondary">
-                                💾 Save Changes
-                            </button>
-                        </div>
-                    </form>
+    <!-- LEAVE ONLY SAVE INSIDE -->
+    <button type="submit" name="save_completion_changes" class="btn btn-secondary">
+        💾 Save Changes
+    </button>
+</form>
+
+
 
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!--  SUBMIT COMPLETION — OUTSIDE FORM -->
+{% if user.account_type == 'Department Coordinator' %}
+<button class="btn btn-primary mt-3" onclick="submitCompletionFinal()">
+    📎 Submit Completion File (Finalize)
+</button>
+{% endif %}
 {% endif %}
 
 <!-- JS Toggle -->
@@ -1072,7 +1075,19 @@ function updateExistingFileName(dayId) {
       });
     });
   });
+function submitCompletionFinal() {
+    let form = document.getElementById("completionForm");
 
+    if (!confirm("Submit completion and update status?")) return;
+
+    const hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.name = "upload_completion";
+    hidden.value = "1";
+    form.appendChild(hidden);
+
+    form.submit();
+}
 </script>
 
 

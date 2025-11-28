@@ -110,7 +110,9 @@ urlpatterns = [
         views.download_day_training_reports_excel,
         name="download_day_training_reports_excel",
     ),
-
+    path('upload-moa/', views.upload_moa, name='upload_moa'),
+    path('delete-moa/<int:moa_id>/', views.delete_moa, name='delete_moa'),
+    path('edit-moa/<int:moa_id>/', views.edit_moa, name='edit_moa'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

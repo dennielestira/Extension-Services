@@ -10,7 +10,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{% static 'css/home12.css' %}">
+    <link rel="stylesheet" href="{% static 'css/topbar.css' %}">
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/5/w3.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -21,12 +21,28 @@
 <body> 
 
 <!-- Topbar -->
-<div class="topbar text-white d-flex justify-content-between align-items-center px-3">
-    <span>Cavite State University Extension Service - Bacoor Campus</span>
-    <button class="navbar-toggler d-lg-none" type="button" id="sidebarToggle" aria-label="Toggle navigation">
-        <i class="fas fa-bars text-white"></i>
-    </button>
+<div class="topbar d-flex align-items-center justify-content-between px-3">
+    <!-- Center: Title -->
+    <div class="topbar-title flex-grow-1 text-center">
+        Cavite State University Extension Service - Bacoor Campus
+    </div>
+
+    <!-- Right: Logout + Sidebar Toggle -->
+    <div class="d-flex align-items-center gap-2">
+               <button class="navbar-toggler d-lg-none" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+            <i class="fas fa-bars text-white"></i>
+        </button>
+        <a href="{% url 'logout' %}" class="btn btn-outline-light btn-logout">
+            Logout
+        </a>
+ 
+    </div>
 </div>
+
+
+
+
+
 
 <!-- Sidebar -->
 <div class="sidebar text-white d-flex flex-column d-lg-flex"
@@ -183,7 +199,7 @@
                         <!-- 📩 Chat Trigger Button -->
             <li><a class="nav-link text-white" href="{% url 'home2' %}">Edit public Website</a></li>
             {% if user.is_authenticated %}
-    <li><a class="nav-link text-white" href="{% url 'logout' %}">Logout</a></li>
+
 {% endif %}
 
         </ul>

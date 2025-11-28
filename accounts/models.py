@@ -472,7 +472,7 @@ class DayTrainingEntry(models.Model):
     amount_charged_to_cvsu = models.CharField(max_length=255, blank=True, default='0')
     amount_charged_to_partner_agency = models.CharField(max_length=255, blank=True, default='0')
     venue = models.TextField(blank=True)
-
+    related_curricular_offering = models.CharField(max_length=255, blank=True, null=True)
 
     # computed fields
     total_score = models.FloatField(null=True, blank=True)
@@ -550,3 +550,14 @@ class CompletionRevisionFeedback(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+from django.db import models
+
+class MOAResource(models.Model):
+    title = models.CharField(max_length=255)
+    logo = models.ImageField(upload_to='moa_logos/')
+    pdf_file = models.FileField(upload_to='moa_pdfs/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
