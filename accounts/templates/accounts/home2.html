@@ -266,33 +266,64 @@
   </div>
 </div>
 
-<section class="image-showcase" id="image">
+<section class="image-showcase">
 
-  <div class="showcase-container">
+    <h2>Showcase Gallery</h2>
 
-    <div class="showcase-item"><img src="/static/image/20.jpg" alt="Image 1"></div>
-    <div class="showcase-item"><img src="/static/image/rank.png" alt="Image 2"></div>
-    <div class="showcase-item"><img src="/static/image/19.jpg" alt="Image 3"></div>
-    <div class="showcase-item"><img src="/static/image/15.jpg" alt="Image 4"></div>
-    <div class="showcase-item"><img src="/static/image/18.jpg" alt="Image 5"></div>
-    <div class="showcase-item"><img src="/static/image/17.jpg" alt="Image 6"></div>
-    <div class="showcase-item"><img src="/static/image/16.jpg" alt="Image 7"></div>
-    <div class="showcase-item"><img src="/static/image/13.jpg" alt="Image 8"></div>
-    <div class="showcase-item"><img src="/static/image/14.jpg" alt="Image 9"></div>
-    <div class="showcase-item"><img src="/static/image/12.jpg" alt="Image 10"></div>
-    <div class="showcase-item"><img src="/static/image/11.jpg" alt="Image 11"></div>
-    <div class="showcase-item"><img src="/static/image/10.jpg" alt="Image 12"></div>
-    <div class="showcase-item"><img src="/static/image/9.jpg" alt="Image 13"></div>
-    <div class="showcase-item"><img src="/static/image/8.jpg" alt="Image 14"></div>
-    <div class="showcase-item"><img src="/static/image/7.jpg" alt="Image 15"></div>
-    <div class="showcase-item"><img src="/static/image/6.jpg" alt="Image 16"></div>
-    <div class="showcase-item"><img src="/static/image/5.jpg" alt="Image 17"></div>
-    <div class="showcase-item"><img src="/static/image/3.jpg" alt="Image 18"></div>
-    <div class="showcase-item"><img src="/static/image/4.jpg" alt="Image 19"></div>
-    <div class="showcase-item"><img src="/static/image/2.jpg" alt="Image 20"></div>
+    <!-- Upload Form -->
+    {% if user.is_authenticated %}
+    <form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data" style="margin-bottom:20px;">
+        {% csrf_token %}
+        <input type="file" name="image" accept="image/*" required>
+        <button type="submit" class="upload-btn">Upload</button>
+    </form>
+    {% endif %}
 
-  </div>
+    <!-- Images -->
+<div id="image-list" class="showcase-container">
+    {% for img in showcase_images %}
+    <div class="showcase-item" data-id="{{ img.id }}" style="position:relative;">
+        <img src="{{ img.image.url }}" alt="Showcase Image">
+
+        {% if user.is_authenticated %}
+        <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; flex-direction:column;">
+            
+            <!-- Move Up / Down -->
+            <form method="post" action="{% url 'move_showcase_image' img.id 'up' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-secondary">↑</button>
+            </form>
+            <form method="post" action="{% url 'move_showcase_image' img.id 'down' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-secondary">↓</button>
+            </form>
+
+            <!-- Edit Image -->
+            <form method="post" action="{% url 'edit_showcase_image' img.id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label class="btn btn-sm btn-warning" style="margin:0; cursor:pointer;">
+                    ✎ Edit
+                    <input type="file" name="image" accept="image/*" onchange="this.form.submit();" style="display:none;">
+                </label>
+            </form>
+
+            <!-- Delete -->
+            <a href="{% url 'delete_image' img.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this image?')">✕</a>
+        </div>
+        {% endif %}
+    </div>
+    {% empty %}
+    <p class="empty-msg">No showcase photos yet.</p>
+    {% endfor %}
+</div>
+
+
+
+
+
 </section>
+
+
 <div class="fb-section text-center">
   <a href="https://www.facebook.com/BACOOREx" target="_blank">
     <img src="{% static 'image/image.png' %}" alt="Facebook" class="fb-logo">
@@ -635,6 +666,29 @@ function loadVideos(event, page){
             videos = Array.from(document.querySelectorAll(".media-card video"));
         });
 }
+//======= DRAG & DROP SORTING =======
+new Sortable(document.getElementById("image-list"), {
+    animation: 180,
+    onEnd: function () {
+        let order = [];
+        document.querySelectorAll(".image-card").forEach(card=>{
+            order.push(card.dataset.id);
+        });
+
+        // Save to DB using AJAX POST
+        fetch("{% url 'reorder_images' %}",{
+            method: "POST",
+            headers: {'X-CSRFToken': '{{ csrf_token }}','Content-Type':'application/x-www-form-urlencoded'},
+            body: new URLSearchParams({ 'order[]': order })
+        })
+    }
+});
+document.querySelectorAll('[id^="edit-file-"]').forEach(input => {
+    input.addEventListener('change', function() {
+        const submitBtn = document.getElementById(`edit-submit-${this.id.split('-')[2]}`);
+        if(this.files.length > 0) submitBtn.click();
+    });
+});
 </script>
 
 {% endblock %}

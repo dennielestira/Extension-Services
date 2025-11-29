@@ -561,3 +561,14 @@ class MOAResource(models.Model):
 
     def __str__(self):
         return self.title
+
+
+from django.db import models
+
+class ShowcaseImage(models.Model):
+    image = models.ImageField(upload_to="showcase/")
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['position']  # Show ordered images
+

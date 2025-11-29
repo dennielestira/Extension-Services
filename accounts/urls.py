@@ -113,6 +113,12 @@ urlpatterns = [
     path('upload-moa/', views.upload_moa, name='upload_moa'),
     path('delete-moa/<int:moa_id>/', views.delete_moa, name='delete_moa'),
     path('edit-moa/<int:moa_id>/', views.edit_moa, name='edit_moa'),
+    path('image/upload/', views.upload_image, name="upload_image"),
+    path('delete/<int:image_id>/', views.delete_image, name="delete_image"),
+    path('reorder/', views.reorder_images, name="reorder_images"),
+    path('showcase/move/<int:image_id>/<str:direction>/', views.move_showcase_image, name='move_showcase_image'),
+    path('showcase/edit/<int:image_id>/', views.edit_showcase_image, name='edit_showcase_image'),
+
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -2317,37 +2317,40 @@ from .forms import MediaForm
 
 
 
-
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from .models import Media, PhotoAlbum
+from .models import Media, PhotoAlbum, ShowcaseImage  # add ShowcaseImage
 
 def home2(request):
     # ----------------- Photos (gallery) -----------------
     photos = Media.objects.filter(media_type='photo').order_by('-id')
-    photos_per_page = 9  # 3 rows × 3 columns
+    photos_per_page = 9
     paginator = Paginator(photos, photos_per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     # ----------------- Videos (gallery) -----------------
     videos = Media.objects.filter(media_type='video').order_by('-id')
-    videos_per_page = 4  # 2 rows × 2 columns
+    videos_per_page = 4
     video_paginator = Paginator(videos, videos_per_page)
     video_page_number = request.GET.get('video_page')
     video_page_obj = video_paginator.get_page(video_page_number)
 
     # ----------------- Photo Albums -----------------
     albums_list = PhotoAlbum.objects.prefetch_related('photos').all().order_by('-created_at')
-    albums_per_page = 9  # 3 rows × 3 columns
+    albums_per_page = 9
     album_paginator = Paginator(albums_list, albums_per_page)
     album_page_number = request.GET.get('album_page')
     albums_page = album_paginator.get_page(album_page_number)
+
+    # ----------------- Showcase Images -----------------
+    showcase_images = ShowcaseImage.objects.all().order_by('position') # new
 
     return render(request, 'accounts/home2.html', {
         'page_obj': page_obj,
         'video_page_obj': video_page_obj,
         'albums': albums_page,
+        'showcase_images': showcase_images,  # pass to template
     })
 
 
@@ -3294,3 +3297,67 @@ def download_day_training_reports_excel(request, quarter, year):
     )
     response["Content-Disposition"] = f'attachment; filename="DayTrainingReports_{quarter}_{year}.xlsx"'
     return response
+
+
+from django.shortcuts import redirect, get_object_or_404
+from django.http import JsonResponse
+from .models import ShowcaseImage
+
+from django.shortcuts import redirect, render
+from .models import ShowcaseImage
+
+def upload_image(request):
+    if request.method == "POST" and request.FILES.get("image"):
+        # Get max current position
+        last = ShowcaseImage.objects.all().order_by('-position').first()
+        pos = last.position + 1 if last else 0
+        ShowcaseImage.objects.create(image=request.FILES["image"], position=pos)
+        return redirect("home2")
+    return redirect("home2")
+
+
+def delete_image(request, image_id):
+    img = get_object_or_404(ShowcaseImage, id=image_id)
+    img.delete()
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+def reorder_images(request):
+    if request.method == "POST":
+        order_list = request.POST.getlist("order[]")
+        for index, img_id in enumerate(order_list):
+            ShowcaseImage.objects.filter(id=img_id).update(position=index)
+        return JsonResponse({"status": "success"})
+    return JsonResponse({"status": "failed"}, status=400)
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import ShowcaseImage
+
+def move_showcase_image(request, image_id, direction):
+    if request.method == "POST":
+        img = get_object_or_404(ShowcaseImage, id=image_id)
+        if direction == "up":
+            prev_img = ShowcaseImage.objects.filter(position__lt=img.position).order_by('-position').first()
+            if prev_img:
+                # Swap positions
+                img.position, prev_img.position = prev_img.position, img.position
+                img.save()
+                prev_img.save()
+        elif direction == "down":
+            next_img = ShowcaseImage.objects.filter(position__gt=img.position).order_by('position').first()
+            if next_img:
+                # Swap positions
+                img.position, next_img.position = next_img.position, img.position
+                img.save()
+                next_img.save()
+    return redirect(request.META.get("HTTP_REFERER", "/"))
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import ShowcaseImage
+
+def edit_showcase_image(request, image_id):
+    if request.method == "POST" and request.FILES.get("image"):
+        img = get_object_or_404(ShowcaseImage, id=image_id)
+        img.image = request.FILES["image"]  # replace image
+        img.save()  # keep the same position
+    return redirect(request.META.get("HTTP_REFERER", "/"))
