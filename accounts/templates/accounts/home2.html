@@ -465,35 +465,61 @@ function loadVideoLazy(){
 /*       Album Functions      */
 /* ========================== */
 function initAlbums(){
-    albums = Array.from(document.querySelectorAll(".album-card")).map(card => {
+    const albumCards = document.querySelectorAll(".album-card");
+    
+    albums = Array.from(albumCards).map((card, index) => {
         const albumId = card.dataset.albumId;
         const coverImg = card.querySelector("img");
         const albumTitle = coverImg ? coverImg.dataset.albumTitle : "Untitled Album";
         const photos = Array.from(card.querySelectorAll(".album-photos img"));
 
-        // Store original src for lazy loading - DON'T clear the src
+        // IMPORTANT: Don't modify the src attributes, just ensure dataset.src exists
         photos.forEach(p => { 
-            if(!p.dataset.src && p.src) {
-                p.dataset.src = p.src; 
+            if(!p.dataset.src) {
+                // If dataset.src doesn't exist, copy from src attribute
+                p.dataset.src = p.getAttribute('src') || p.src;
             }
         });
         
         // Also store cover src
-        if(coverImg && !coverImg.dataset.src && coverImg.src) {
-            coverImg.dataset.src = coverImg.src;
+        if(coverImg && !coverImg.dataset.src) {
+            coverImg.dataset.src = coverImg.getAttribute('src') || coverImg.src;
         }
         
-        return { id: albumId, title: albumTitle, cover: coverImg, photos: photos };
+        console.log(`Album ${index}: ID=${albumId}, Title=${albumTitle}, Photos=${photos.length}`);
+        
+        return { id: albumId, title: albumTitle, cover: coverImg, photos: photos, index: index };
     });
 
-    document.querySelectorAll(".album-card img").forEach((img, idx) => {
-        img.addEventListener("click", () => openAlbumModal(idx));
+    // Make the ENTIRE album card clickable, not just the image
+    albumCards.forEach((card, idx) => {
+        card.style.cursor = "pointer"; // Show pointer cursor
+        
+        // Remove any existing listeners by cloning the node
+        const newCard = card.cloneNode(true);
+        card.parentNode.replaceChild(newCard, card);
+        
+        // Add fresh click listener
+        newCard.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`Clicked album card at index: ${idx}`);
+            openAlbumModal(idx);
+        });
     });
     
     console.log("Initialized albums:", albums.length);
 }
 
 function openAlbumModal(albumIndex, photoIndex=0){
+    console.log("Opening album modal - Album Index:", albumIndex, "Photo Index:", photoIndex);
+    
+    // Validate album index
+    if(albumIndex < 0 || albumIndex >= albums.length) {
+        console.error("Invalid album index:", albumIndex);
+        return;
+    }
+    
     // Set indices FIRST before any operations
     currentAlbumIndex = albumIndex;
     currentPhotoIndex = photoIndex;
@@ -501,21 +527,11 @@ function openAlbumModal(albumIndex, photoIndex=0){
     const modal = document.getElementById("albumModal");
     const modalImg = document.getElementById("modalAlbumImage");
     
-    // Completely reset modal state
-    modal.style.display = "none";
-    modalImg.src = '';
-    modalImg.alt = '';
-    
-    // Force browser to process the reset
-    void modal.offsetHeight;
-    
-    // Now show modal
+    // Show modal immediately
     modal.style.display = "flex";
     
-    // Load content after modal is visible
-    setTimeout(() => {
-        loadPhotoLazy();
-    }, 10);
+    // Load content
+    loadPhotoLazy();
 }
 
 function loadPhotoLazy(){
@@ -525,7 +541,10 @@ function loadPhotoLazy(){
         return;
     }
 
-    const photoList = album.photos.length ? album.photos : [album.cover];
+    console.log("Loading album:", album.title, "Photos count:", album.photos.length);
+    
+    // Use photos if available, otherwise fall back to cover
+    const photoList = album.photos.length > 0 ? album.photos : [album.cover];
     
     // Ensure photoIndex is within bounds
     if(currentPhotoIndex < 0) currentPhotoIndex = 0;
@@ -540,18 +559,22 @@ function loadPhotoLazy(){
     
     const modalImg = document.getElementById("modalAlbumImage");
 
-    // Get source - try dataset.src first, then src
-    const newSrc = photo.dataset.src || photo.src || photo.getAttribute('src');
+    // Get source - try multiple methods to ensure we get the URL
+    let newSrc = photo.dataset.src || photo.getAttribute('src') || photo.src;
     
-    console.log("Loading photo:", newSrc); // Debug log
+    console.log("Loading photo source:", newSrc); // Debug log
     
-    if(newSrc) {
+    if(newSrc && newSrc !== '') {
         modalImg.src = newSrc;
+        modalImg.alt = photo.alt || photo.dataset.description || album.title;
     } else {
-        console.error("No source found for photo");
+        console.error("No valid source found for photo at index:", currentPhotoIndex);
+        // Try to show cover as fallback
+        if(album.cover && album.cover.src) {
+            modalImg.src = album.cover.src;
+            modalImg.alt = album.title;
+        }
     }
-    
-    modalImg.alt = photo.alt || album.title;
 
     // Update text content
     const caption = document.getElementById("modalAlbumCaption");
@@ -559,8 +582,13 @@ function loadPhotoLazy(){
     const counter = document.getElementById("modalPhotoCounter");
     
     if(caption) caption.innerText = album.title || "Untitled Album";
-    if(description) description.innerText = photo.dataset.description || "No description";
-    if(counter) counter.innerText = photoList.length > 1 ? `Photo ${currentPhotoIndex+1} of ${photoList.length}` : "Cover";
+    if(description) {
+        const photoDesc = photo.dataset.description || photo.getAttribute('data-description') || "No description";
+        description.innerText = photoDesc;
+    }
+    if(counter) {
+        counter.innerText = photoList.length > 1 ? `Photo ${currentPhotoIndex+1} of ${photoList.length}` : "Cover";
+    }
 
     // Update Album Buttons
     const editAlbumBtn = document.getElementById("modalEditAlbumBtn");
@@ -582,14 +610,16 @@ function loadPhotoLazy(){
     const editPhotoBtn = document.getElementById("modalEditPhotoBtn");
     const deletePhotoForm = document.getElementById("modalDeletePhotoForm");
     
-    if(photo.dataset.photoId){
+    const photoId = photo.dataset.photoId || photo.getAttribute('data-photo-id');
+    
+    if(photoId){
         if(editPhotoBtn) { 
             editPhotoBtn.style.display = "inline-block"; 
-            editPhotoBtn.href = editPhotoBtn.dataset.templateUrl.replace("0", photo.dataset.photoId);
+            editPhotoBtn.href = editPhotoBtn.dataset.templateUrl.replace("0", photoId);
         }
         if(deletePhotoForm) { 
             deletePhotoForm.style.display = "inline-block"; 
-            deletePhotoForm.action = deletePhotoForm.dataset.templateUrl.replace("0", photo.dataset.photoId);
+            deletePhotoForm.action = deletePhotoForm.dataset.templateUrl.replace("0", photoId);
         }
     } else {
         if(editPhotoBtn) editPhotoBtn.style.display = "none";
@@ -599,14 +629,16 @@ function loadPhotoLazy(){
 
 function changeAlbumPhoto(step){
     const album = albums[currentAlbumIndex];
-    const photoList = album.photos.length ? album.photos : [album.cover];
+    const photoList = album.photos.length > 0 ? album.photos : [album.cover];
     currentPhotoIndex = (currentPhotoIndex + step + photoList.length) % photoList.length;
+    console.log("Changed to photo index:", currentPhotoIndex);
     loadPhotoLazy();
 }
 
 function changeAlbum(step){
     currentAlbumIndex = (currentAlbumIndex + step + albums.length) % albums.length;
     currentPhotoIndex = 0;
+    console.log("Changed to album index:", currentAlbumIndex);
     loadPhotoLazy();
 }
 
@@ -614,10 +646,12 @@ function closeAlbumModal(){
     const modal = document.getElementById("albumModal");
     const modalImg = document.getElementById("modalAlbumImage");
     
+    console.log("Closing album modal");
+    
     // Hide modal first
     modal.style.display = "none";
     
-    // Clear image and reset state completely
+    // Clear image
     modalImg.src = '';
     modalImg.alt = '';
     
@@ -629,11 +663,6 @@ function closeAlbumModal(){
     if(caption) caption.innerText = '';
     if(description) description.innerText = '';
     if(counter) counter.innerText = '';
-    
-    // Reset any inline styles
-    modal.style.overflow = '';
-    
-    // Don't reset indices here - let openAlbumModal set them
 }
 
 /* ========================== */
