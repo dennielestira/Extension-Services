@@ -64,7 +64,7 @@ class Document(models.Model):
         ('rejected', 'Rejected'),
         ('ongoing', 'Ongoing'),
         ('completed', 'Completed'),
-        ('completion_processing', 'Completion Ongoing'),
+        ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
     ]
 

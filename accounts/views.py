@@ -369,7 +369,7 @@ def campus_admin_view(request):
         ('approved', 'Approved'),
 
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Ongoing'),
+        ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -524,7 +524,7 @@ def staff_extensionist_view(request):
         ('approved', 'Approved'),
 
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Ongoing'),
+        ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -648,7 +648,7 @@ def department_coordinator_view(request):
         ('approved', 'Approved'),
 
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Ongoing'),
+        ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -768,7 +768,7 @@ def extensionist_view(request):
         ('approved', 'Approved'),
 
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Ongoing'),
+        ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
         ('completed', 'Completed'),
     ]
@@ -1171,7 +1171,7 @@ def document_list(request):
     all_statuses = [
         ('pending', 'Pending'),
         ('ongoing', 'Ongoing'),
-        ('completion_processing', 'Completion Ongoing'),
+        ('completion_processing', 'Completion Reviewing'),
         ('completed', 'Completed'),
     ]
 
