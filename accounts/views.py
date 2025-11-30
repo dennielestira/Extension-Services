@@ -260,7 +260,7 @@ def delete_extensionist(request, user_id):
         user_to_delete = get_object_or_404(User, id=user_id)
         
         # Add your permission logic here, e.g. only allow certain users to delete
-        if request.user.account_type not in ['Campus Coordinator', 'Staff Extensionist']:
+        if request.user.account_type not in ['Campus Extension Coordinator', 'Staff Extensionist']:
             messages.error(request, "You don't have permission to delete users.")
             return redirect('extensionists_list')  # Change to your listing view name
         
@@ -281,7 +281,7 @@ def user_hierarchy_view(request):
     return render(request, 'accounts/user_hierarchy.html', context)
 @login_required
 def delete_user(request, user_id):
-    allowed_roles = ['Campus Dean', 'Campus Coordinator', 'Staff Extensionist']
+    allowed_roles = ['Campus Dean', 'Campus Extension Coordinator', 'Staff Extensionist']
     
     # Debug log to check the user's role
     print(f"Current user's role: {request.user.get_account_type_display()}")

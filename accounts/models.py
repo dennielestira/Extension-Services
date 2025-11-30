@@ -7,8 +7,7 @@ from datetime import datetime
 from django.utils.timezone import now
 
 class AccountType(models.TextChoices):
-    SUPER_ADMIN = 'Super Admin', 'Campus Dean'
-    CAMPUS_ADMIN = 'Campus Admin', 'Campus Coordinator'
+    CAMPUS_ADMIN = 'Campus Admin', 'Campus Extension Coordinator'
     STAFF_EXTENSIONIST = 'Staff Extensionist', 'Staff Extensionist'
     DEPARTMENT_COORDINATOR = 'Department Coordinator', 'Department Coordinator'
     EXTENSIONIST = 'Extensionist', 'Extensionist'
