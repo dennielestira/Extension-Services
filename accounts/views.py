@@ -2315,11 +2315,9 @@ from django.contrib.auth.decorators import login_required
 from .models import Media
 from .forms import MediaForm
 
-
-
 from django.core.paginator import Paginator
 from django.shortcuts import render
-from .models import Media, PhotoAlbum, ShowcaseImage  # add ShowcaseImage
+from .models import Media, PhotoAlbum, ShowcaseImage
 
 def home2(request):
     # ----------------- Photos (gallery) -----------------
@@ -2331,6 +2329,8 @@ def home2(request):
 
     # ----------------- Videos (gallery) -----------------
     videos = Media.objects.filter(media_type='video').order_by('-id')
+    total_videos = videos.count()  # <-- IMPORTANT LINE
+
     videos_per_page = 4
     video_paginator = Paginator(videos, videos_per_page)
     video_page_number = request.GET.get('video_page')
@@ -2344,13 +2344,14 @@ def home2(request):
     albums_page = album_paginator.get_page(album_page_number)
 
     # ----------------- Showcase Images -----------------
-    showcase_images = ShowcaseImage.objects.all().order_by('position') # new
+    showcase_images = ShowcaseImage.objects.all().order_by('position')
 
     return render(request, 'accounts/home2.html', {
         'page_obj': page_obj,
         'video_page_obj': video_page_obj,
         'albums': albums_page,
-        'showcase_images': showcase_images,  # pass to template
+        'showcase_images': showcase_images,
+        'total_videos': total_videos,  # <-- FIXED
     })
 
 
@@ -2474,18 +2475,32 @@ def album_photos_api(request, album_id):
 
 
 
+from django.contrib import messages
+
 @login_required
 def media_upload(request):
+    # Count total videos uploaded (you can also filter by user if needed)
+    video_limit = 2
+    current_videos = Media.objects.filter(media_type='video').count()   # adjust field name if different
+
     if request.method == 'POST':
+        if current_videos >= video_limit:
+            messages.error(request, f"Upload limit reached! You can only upload {video_limit} videos. Delete one first.")
+            return redirect('home2')
+
         form = MediaForm(request.POST, request.FILES)
         if form.is_valid():
             media = form.save(commit=False)
             media.uploaded_by = request.user
             media.save()
+            messages.success(request, "Video uploaded successfully!")
             return redirect('home2')
+
     else:
         form = MediaForm()
+
     return render(request, 'accounts/media_form.html', {'form': form})
+
 
 @login_required
 def media_edit(request, pk):

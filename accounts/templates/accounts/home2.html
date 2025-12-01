@@ -14,7 +14,7 @@
 <!-- Media Gallery Header -->
 <section id="media-gallery">
     <div class="gallery-header">
-        <h2>Cavite State University Extension Service - Bacoor Campus</h2>
+        <h2>Cavite State University Extension Services - Bacoor Campus</h2>
 
     </div>
 </section>
@@ -181,13 +181,27 @@
 
 
 
-
 <!-- Videos Section -->
 <section id="videos">
     <h3 class="section-title">Videos</h3>
+
+    {% comment %}
+    Show Upload button ONLY if user is Campus Admin OR Staff Extensionist
+    AND only show if uploaded videos are less than 2
+    {% endcomment %}
+    
+    {% if user.account_type == 'Campus Admin' or user.account_type == 'Staff Extensionist' %}
         {% if user.is_authenticated %}
-        <a href="{% url 'media_upload' %}" class="upload-btn">+ Upload New</a>
+            {% if total_videos < 2 %}
+                <a href="{% url 'media_upload' %}" class="upload-btn">+ Upload New</a>
+            {% else %}
+                <p class="limit-warning" style="color:red; font-size:14px;">
+                    Maximum of 2 videos reached. Delete one to upload again.
+                </p>
+            {% endif %}
         {% endif %}
+    {% endif %}
+
     <div class="media-grid">
         {% for video in video_page_obj %}
         <div class="media-card">
@@ -201,27 +215,32 @@
                 Your browser does not support the video tag.
             </video>
             <p>{{ video.title }}</p>
-            {% if user.is_authenticated %}
-            <div class="action-links d-flex justify-content-center gap-2">
-                <a href="{% url 'media_edit' video.pk %}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-edit"></i> Edit
-                </a>
-                <form method="post" action="{% url 'media_delete' video.pk %}" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Are you sure you want to delete {{ video.title }}?');">
-                        <i class="fas fa-trash-alt"></i> Delete
-                    </button>
-                </form>
-            </div>
+
+            {% if user.account_type == 'Campus Admin' or user.account_type == 'Staff Extensionist' %}
+                {% if user.is_authenticated %}
+                <div class="action-links d-flex justify-content-center gap-2">
+                    <a href="{% url 'media_edit' video.pk %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+
+                    <form method="post" action="{% url 'media_delete' video.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm"
+                            onclick="return confirm('Are you sure you want to delete {{ video.title }}?');">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
             {% endif %}
         </div>
         {% empty %}
-        <p class="empty-msg">No videos uploaded.</p>
+            <p class="empty-msg">No videos uploaded.</p>
         {% endfor %}
     </div>
 
-<!-- Video Pagination -->
+
+<!-- Video Pagination 
 <div class="pagination">
     {% if video_page_obj.has_previous %}
         <a href="?video_page={{ video_page_obj.previous_page_number }}#videos" class="page-btn">← Previous</a>
@@ -234,7 +253,7 @@
     {% if video_page_obj.has_next %}
         <a href="?video_page={{ video_page_obj.next_page_number }}#videos" class="page-btn">Next →</a>
     {% endif %}
-</div>
+</div>-->
 
 </section>
 
@@ -260,15 +279,16 @@
       </div>
     </div>
 
-    <!-- navigation -->
+    <!-- navigation 
     <span class="album-modal-nav album-prev" onclick="changeVideo(-1)">&#10094; Prev</span>
-    <span class="album-modal-nav album-next" onclick="changeVideo(1)">Next &#10095;</span>
+    <span class="album-modal-nav album-next" onclick="changeVideo(1)">Next &#10095;</span>-->
   </div>
 </div>
 
 <section class="image-showcase">
 
     <h2>Showcase Gallery</h2>
+{% if user.account_type == 'Campus Admin' or user.account_type == 'Staff Extensionist' %}
 
     <!-- Upload Form -->
     {% if user.is_authenticated %}
@@ -278,12 +298,13 @@
         <button type="submit" class="upload-btn">Upload</button>
     </form>
     {% endif %}
-
+{% endif %}
     <!-- Images -->
 <div id="image-list" class="showcase-container">
     {% for img in showcase_images %}
     <div class="showcase-item" data-id="{{ img.id }}" style="position:relative;">
         <img src="{{ img.image.url }}" alt="Showcase Image">
+        {% if user.account_type == 'Campus Admin' or user.account_type == 'Staff Extensionist' %}
 
         {% if user.is_authenticated %}
         <div style="position:absolute; top:10px; right:10px; display:flex; gap:5px; flex-direction:column;">
@@ -310,6 +331,7 @@
             <!-- Delete -->
             <a href="{% url 'delete_image' img.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this image?')">✕</a>
         </div>
+        {% endif %}
         {% endif %}
     </div>
     {% empty %}

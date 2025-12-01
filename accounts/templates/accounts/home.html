@@ -24,7 +24,7 @@
 <div class="topbar d-flex align-items-center justify-content-between px-3">
     <!-- Center: Title -->
     <div class="topbar-title flex-grow-1 text-center">
-        Cavite State University Extension Service - Bacoor Campus
+        Cavite State University Extension Services - Bacoor Campus
     </div>
 
     <!-- Right: Logout + Sidebar Toggle -->
@@ -90,17 +90,17 @@
                 <li><a class="nav-link text-white" href="{% url 'recommended_documents' %}">Recommended</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
-                <li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>-->
                 <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
             {% elif user.account_type == 'Staff Extensionist' %}
                 <li><a class="nav-link text-white" href="{% url 'pending_documents' %}">Pending</a></li>
-                <li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>-->
                 <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
             {% elif user.account_type == 'Department Coordinator' %}
                 <li><a class="nav-link text-white" href="{% url 'pending_documents' %}">Pending</a></li>
-                <li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>-->
                 <li><a class="nav-link text-white" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
                 <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
