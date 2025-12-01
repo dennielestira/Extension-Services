@@ -1215,7 +1215,27 @@ def handle_file_upload(instance, slot_name, uploaded_file):
     if hasattr(instance, status_field):
         setattr(instance, status_field, "normal")
     instance.save()
+    
+from django.utils import timezone
 
+def handle_file_upload(instance, slot_choice, uploaded_file, user=None):
+    """
+    Handle file upload and track uploader info
+    """
+    if hasattr(instance, slot_choice):
+        setattr(instance, slot_choice, uploaded_file)
+        
+        # Store uploader info if available
+        if user:
+            uploader_field = f"{slot_choice}_uploaded_by"
+            timestamp_field = f"{slot_choice}_uploaded_at"
+            
+            if hasattr(instance, uploader_field):
+                setattr(instance, uploader_field, user)
+            if hasattr(instance, timestamp_field):
+                setattr(instance, timestamp_field, timezone.now())
+        
+        instance.save()
 # -------------------------------
 # VIEW
 # -------------------------------
@@ -1285,13 +1305,13 @@ def view_document(request, document_id):
             if slot_choice in valid_slots and uploaded_file:
                 if not existing_completion:
                     existing_completion = DocumentFile(document=document)
-                handle_file_upload(existing_completion, slot_choice, uploaded_file)
+                handle_file_upload(existing_completion, slot_choice, uploaded_file, user)  # ← Added user
                 clear_feedback(document)
                 messages.success(request, f"{slot_choice.replace('_', ' ').title()} updated successfully.")
             else:
                 messages.error(request, "Invalid slot or file.")
             return redirect("view_document", document_id=document.id)
-
+        
         elif "mark_revision_completion" in request.POST and can_comment:
             slot_choice = request.POST.get("revision_doc")
             valid_slots = [f"completion_doc{i}" for i in range(1, 9)]
@@ -1329,7 +1349,7 @@ def view_document(request, document_id):
             uploaded_file = request.FILES.get("initial_selected_file")
             valid_slots = ["Activity_Proposal", "Work_and_Financial_Plan", "Plan_of_Activities"] + [f"doc{i}" for i in range(4, 9)]
             if slot_choice in valid_slots and uploaded_file:
-                handle_file_upload(document, slot_choice, uploaded_file)
+                handle_file_upload(document, slot_choice, uploaded_file, user)  # ← Added user
                 clear_feedback(document)
                 messages.success(request, f"{slot_choice.replace('_', ' ').title()} uploaded successfully.")
             else:
@@ -1482,10 +1502,14 @@ def view_document(request, document_id):
 
             day = get_object_or_404(DocumentDay, id=day_id, document=document)
             day_files, _ = DocumentDayFile.objects.get_or_create(day=day)
-            handle_file_upload(day_files, slot, uploaded_file)
+
+            # ← Pass user here
+            handle_file_upload(day_files, slot, uploaded_file, user)
+
             clear_feedback(document)
             messages.success(request, f"{slot.capitalize()} uploaded successfully for {day.title}.")
             return redirect("view_document", document_id=document.id)
+
 
         elif "delete_day_files" in request.POST:
             day_id = get_post_id(request, "day_id")
@@ -1543,36 +1567,53 @@ def view_document(request, document_id):
 
     # --- Context & File Lists ---
     file_list = [
-        ('Activity_Proposal', 'Activity Proposal', document.Activity_Proposal, document.Activity_Proposal_status),
-        ('Work_and_Financial_Plan', 'Work and Financial Plan', document.Work_and_Financial_Plan, document.Work_and_Financial_Plan_status),
-        ('Plan_of_Activities', 'Plan of Activities', document.Plan_of_Activities, document.Plan_of_Activities_status),
-        ('doc4', 'Extra Document 1', document.doc4, document.doc4_status),
-        ('doc5', 'Extra Document 2', document.doc5, document.doc5_status),
-        ('doc6', 'Extra Document 3', document.doc6, document.doc6_status),
-        ('doc7', 'Extra Document 4', document.doc7, document.doc7_status),
-        ('doc8', 'Extra Document 5', document.doc8, document.doc8_status),
+        ('Activity_Proposal', 'Activity Proposal', document.Activity_Proposal, document.Activity_Proposal_status,
+        document.Activity_Proposal_uploaded_by, document.Activity_Proposal_uploaded_at),
+        ('Work_and_Financial_Plan', 'Work and Financial Plan', document.Work_and_Financial_Plan, document.Work_and_Financial_Plan_status,
+        document.Work_and_Financial_Plan_uploaded_by, document.Work_and_Financial_Plan_uploaded_at),
+        ('Plan_of_Activities', 'Plan of Activities', document.Plan_of_Activities, document.Plan_of_Activities_status,
+        document.Plan_of_Activities_uploaded_by, document.Plan_of_Activities_uploaded_at),
+        ('doc4', 'Extra Document 1', document.doc4, document.doc4_status,
+        document.doc4_uploaded_by, document.doc4_uploaded_at),
+        ('doc5', 'Extra Document 2', document.doc5, document.doc5_status,
+        document.doc5_uploaded_by, document.doc5_uploaded_at),
+        ('doc6', 'Extra Document 3', document.doc6, document.doc6_status,
+        document.doc6_uploaded_by, document.doc6_uploaded_at),
+        ('doc7', 'Extra Document 4', document.doc7, document.doc7_status,
+        document.doc7_uploaded_by, document.doc7_uploaded_at),
+        ('doc8', 'Extra Document 5', document.doc8, document.doc8_status,
+        document.doc8_uploaded_by, document.doc8_uploaded_at),
     ]
+
     if existing_completion:
         completion_file_list = [
-            ('completion_doc1', 'Approve Letter Request', existing_completion.completion_doc1, existing_completion.completion_doc1_status),
-            ('completion_doc2', 'Accomplished/Evaluation Form', existing_completion.completion_doc2, existing_completion.completion_doc2_status),
-            ('completion_doc3', 'Extra Document 1', existing_completion.completion_doc3, existing_completion.completion_doc3_status),
-            ('completion_doc4', 'Extra Document 2', existing_completion.completion_doc4, existing_completion.completion_doc4_status),
-            ('completion_doc5', 'Extra Document 3', existing_completion.completion_doc5, existing_completion.completion_doc5_status),
-            ('completion_doc6', 'Extra Document 4', existing_completion.completion_doc6, existing_completion.completion_doc6_status),
-            ('completion_doc7', 'Extra Document 5', existing_completion.completion_doc7, existing_completion.completion_doc7_status),
-            ('completion_doc8', 'Extra Document 6', existing_completion.completion_doc8, existing_completion.completion_doc8_status),
+            ('completion_doc1', 'Approve Letter Request', existing_completion.completion_doc1, existing_completion.completion_doc1_status,
+            existing_completion.completion_doc1_uploaded_by, existing_completion.completion_doc1_uploaded_at),
+            ('completion_doc2', 'Accomplished/Evaluation Form', existing_completion.completion_doc2, existing_completion.completion_doc2_status,
+            existing_completion.completion_doc2_uploaded_by, existing_completion.completion_doc2_uploaded_at),
+            ('completion_doc3', 'Extra Document 1', existing_completion.completion_doc3, existing_completion.completion_doc3_status,
+            existing_completion.completion_doc3_uploaded_by, existing_completion.completion_doc3_uploaded_at),
+            ('completion_doc4', 'Extra Document 2', existing_completion.completion_doc4, existing_completion.completion_doc4_status,
+            existing_completion.completion_doc4_uploaded_by, existing_completion.completion_doc4_uploaded_at),
+            ('completion_doc5', 'Extra Document 3', existing_completion.completion_doc5, existing_completion.completion_doc5_status,
+            existing_completion.completion_doc5_uploaded_by, existing_completion.completion_doc5_uploaded_at),
+            ('completion_doc6', 'Extra Document 4', existing_completion.completion_doc6, existing_completion.completion_doc6_status,
+            existing_completion.completion_doc6_uploaded_by, existing_completion.completion_doc6_uploaded_at),
+            ('completion_doc7', 'Extra Document 5', existing_completion.completion_doc7, existing_completion.completion_doc7_status,
+            existing_completion.completion_doc7_uploaded_by, existing_completion.completion_doc7_uploaded_at),
+            ('completion_doc8', 'Extra Document 6', existing_completion.completion_doc8, existing_completion.completion_doc8_status,
+            existing_completion.completion_doc8_uploaded_by, existing_completion.completion_doc8_uploaded_at),
         ]
     else:
         completion_file_list = [
-            ('completion_doc1', 'Approve Letter Request', None, None),
-            ('completion_doc2', 'Accomplished/Evaluation Form', None, None),
-            ('completion_doc3', 'Extra Document 1', None, None),
-            ('completion_doc4', 'Extra Document 2', None, None),
-            ('completion_doc5', 'Extra Document 3', None, None),
-            ('completion_doc6', 'Extra Document 4', None, None),
-            ('completion_doc7', 'Extra Document 5', None, None),
-            ('completion_doc8', 'Extra Document 6', None, None),
+            ('completion_doc1', 'Approve Letter Request', None, None, None, None),
+            ('completion_doc2', 'Accomplished/Evaluation Form', None, None, None, None),
+            ('completion_doc3', 'Extra Document 1', None, None, None, None),
+            ('completion_doc4', 'Extra Document 2', None, None, None, None),
+            ('completion_doc5', 'Extra Document 3', None, None, None, None),
+            ('completion_doc6', 'Extra Document 4', None, None, None, None),
+            ('completion_doc7', 'Extra Document 5', None, None, None, None),
+            ('completion_doc8', 'Extra Document 6', None, None, None, None),
         ]
 
 

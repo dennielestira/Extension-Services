@@ -99,7 +99,54 @@ class Document(models.Model):
 
     doc8 = models.FileField(upload_to='documents/', null=True, blank=True)
     doc8_status = models.CharField(max_length=20, default="normal")  # NEW
+     # Tracking fields for initial documents
+    Activity_Proposal_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, 
+        null=True, blank=True, related_name='activity_proposal_uploads'
+    )
+    Activity_Proposal_uploaded_at = models.DateTimeField(null=True, blank=True)
     
+    Work_and_Financial_Plan_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='wfp_uploads'
+    )
+    Work_and_Financial_Plan_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    Plan_of_Activities_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='poa_uploads'
+    )
+    Plan_of_Activities_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc4_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='doc4_uploads'
+    )
+    doc4_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc5_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='doc5_uploads'
+    )
+    doc5_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc6_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='doc6_uploads'
+    )
+    doc6_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc7_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='doc7_uploads'
+    )
+    doc7_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc8_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='doc8_uploads'
+    )
+    doc8_uploaded_at = models.DateTimeField(null=True, blank=True)
 
     is_archived = models.BooleanField(default=False)
 
@@ -189,7 +236,54 @@ class DocumentFile(models.Model):
     completion_doc7_status = models.CharField(max_length=20, default="normal")  
     completion_doc8 = models.FileField(upload_to='documents/completion/', null=True, blank=True) 
     completion_doc8_status = models.CharField(max_length=20, default="normal")  
+    # Tracking fields for completion documents
+    completion_doc1_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc1_uploads'
+    )
+    completion_doc1_uploaded_at = models.DateTimeField(null=True, blank=True)
     
+    completion_doc2_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc2_uploads'
+    )
+    completion_doc2_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    completion_doc3_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc3_uploads'
+    )
+    completion_doc3_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    completion_doc4_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc4_uploads'
+    )
+    completion_doc4_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    completion_doc5_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc5_uploads'
+    )
+    completion_doc5_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    completion_doc6_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc6_uploads'
+    )
+    completion_doc6_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    completion_doc7_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc7_uploads'
+    )
+    completion_doc7_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    completion_doc8_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='completion_doc8_uploads'
+    )
+    completion_doc8_uploaded_at = models.DateTimeField(null=True, blank=True)
 
 from django.contrib.auth import get_user_model
 
@@ -500,6 +594,37 @@ class DocumentDayFile(models.Model):
     doc3_status = models.CharField(max_length=20, default="normal")
     doc4_status = models.CharField(max_length=20, default="normal")
     doc5_status = models.CharField(max_length=20, default="normal")
+    
+     # Individual tracking for each doc slot
+    doc1_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='day_doc1_uploads'
+    )
+    doc1_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc2_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='day_doc2_uploads'
+    )
+    doc2_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc3_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='day_doc3_uploads'
+    )
+    doc3_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc4_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='day_doc4_uploads'
+    )
+    doc4_uploaded_at = models.DateTimeField(null=True, blank=True)
+    
+    doc5_uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='day_doc5_uploads'
+    )
+    doc5_uploaded_at = models.DateTimeField(null=True, blank=True)
     # track who uploaded and when
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
