@@ -99,7 +99,7 @@ class Document(models.Model):
 
     doc8 = models.FileField(upload_to='documents/', null=True, blank=True)
     doc8_status = models.CharField(max_length=20, default="normal")  # NEW
-
+    
 
     is_archived = models.BooleanField(default=False)
 
