@@ -244,7 +244,8 @@
 </div>
 
 
-{% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' and document.status == 'pending' or document.status == 'ongoing' %}
+{% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %} 
+{% if document.status == 'pending' or document.status == 'ongoing' %}
 
     <!-- Start Card for Editing Initial Uploads -->
     <div class="card card-large mt-4">
@@ -288,7 +289,7 @@
     </div>
     <!-- End Card for Editing Initial Uploads -->
 {% endif %}
-
+{% endif %}
 {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' and document.status == 'ongoing' %}
 <div class="card shadow-sm mt-3 border-0">
   <div class="card-body">
@@ -296,11 +297,12 @@
     <h5 class="card-title mb-3 fw-bold">🗓 Days</h5>
 
     <!-- ✅ Manage Days & Reports Section -->
-    {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' or user.account_type == 'Staff Extensionist' %}
+    {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' or user.account_type == 'Staff Extensionist'%} 
+    {% if document.status == 'ongoing' %}
       <button class="btn btn-sm btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#dayUploadForms">
         📤 Manage Days & Reports
       </button>
-
+      {% endif %}
       <div class="collapse" id="dayUploadForms">
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body bg-light rounded">
@@ -404,7 +406,8 @@
           <h6 class="fw-bold mb-2 mb-md-0">
             {{ day.title }} — <small class="text-muted">{{ day.date }}</small>
           </h6>
-          {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' and document.status == 'ongoing' %}
+          {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
+          {% if document.status == 'ongoing' %}
             <div class="d-flex flex-wrap gap-1">
               <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editDay{{ day.id }}">✏ Edit</button>
               <form method="post" class="d-inline">
@@ -413,6 +416,7 @@
                 <button type="submit" name="delete_day" class="btn btn-sm btn-danger" onclick="return confirm('Delete this day?');">🗑 Delete</button>
               </form>
             </div>
+          {% endif %}
           {% endif %}
         </div>
 
@@ -439,13 +443,15 @@
                 </div>
                 <div class="d-flex flex-wrap gap-1">
                   <a href="{{ report.file.url }}" download class="btn btn-outline-success btn-sm">⬇ Download</a>
-                  {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' and document.status == 'ongoing' %}
+                  {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %} 
+                  {% if document.status == 'ongoing' %}
                     <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editReport{{ report.id }}">✏</button>
                     <form method="post" class="d-inline">
                       {% csrf_token %}
                       <input type="hidden" name="report_id" value="{{ report.id }}">
                       <button type="submit" name="delete_report" class="btn btn-sm btn-danger" onclick="return confirm('Delete this report?');">🗑</button>
                     </form>
+                  {% endif %}
                   {% endif %}
                 </div>
               </div>
