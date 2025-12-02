@@ -26,7 +26,7 @@
     {% if user.is_authenticated %}
     <div class="upload-buttons" style="margin-bottom: 15px;">
         <!-- Button to upload a new album -->
-        <a href="{% url 'album_upload' %}" class="btn btn-primary">+ Upload Album</a>
+        <a href="{% url 'album_upload' %}" class="btn btn-success">+ Upload Album</a>
     </div>
     {% endif %}
 
@@ -285,9 +285,8 @@
   </div>
 </div>
 
-<section class="image-showcase">
+<section class="image-showcase" id="image-showcase">
 
-    <h2>Showcase Gallery</h2>
 {% if user.account_type == 'Campus Admin' or user.account_type == 'Staff Extensionist' %}
 
     <!-- Upload Form -->
@@ -295,7 +294,8 @@
     <form action="{% url 'upload_image' %}" method="post" enctype="multipart/form-data" style="margin-bottom:20px;">
         {% csrf_token %}
         <input type="file" name="image" accept="image/*" required>
-        <button type="submit" class="upload-btn">Upload</button>
+        <button type="submit" class="btn btn-success">Upload</button>
+
     </form>
     {% endif %}
 {% endif %}

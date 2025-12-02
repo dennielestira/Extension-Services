@@ -142,14 +142,15 @@ h2 {
     <h2>Templates
 
     </h2>
-{% if user.is_authenticated and user.account_type in 'Campus Admin,Staff Extensionist' %}
+{% if user.is_authenticated and user.account_type == 'Campus Admin' or user.account_type == 'Staff Extensionist' %}
     <a href="{% url 'template_upload' %}" class="btn btn-primary">+ Upload New Template</a>
 
+    <span id="settings-btn" title="Toggle Edit/Delete Buttons">
+        ⚙️
+    </span>
+{% endif %}
 
-            <span id="settings-btn" title="Toggle Edit/Delete Buttons">
-            ⚙️
-        </span>
-        {% endif %}
+
     <div class="template-grid">
         {% for template in templates %}
         <div class="template-card">

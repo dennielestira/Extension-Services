@@ -1224,18 +1224,25 @@ def handle_file_upload(instance, slot_choice, uploaded_file, user=None):
     """
     if hasattr(instance, slot_choice):
         setattr(instance, slot_choice, uploaded_file)
-        
+
         # Store uploader info if available
         if user:
             uploader_field = f"{slot_choice}_uploaded_by"
             timestamp_field = f"{slot_choice}_uploaded_at"
-            
+            status_field = f"{slot_choice}_status"
+
             if hasattr(instance, uploader_field):
                 setattr(instance, uploader_field, user)
+
             if hasattr(instance, timestamp_field):
                 setattr(instance, timestamp_field, timezone.now())
-        
+
+            # NEW: auto set status so NOT NULL constraint is satisfied
+            if hasattr(instance, status_field):
+                setattr(instance, status_field, "uploaded")   # or pending, draft, etc.
+
         instance.save()
+
 # -------------------------------
 # VIEW
 # -------------------------------
@@ -2569,14 +2576,21 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Template
 from .forms import TemplateForm
+from django.http import HttpResponseForbidden
+
+ALLOWED_ROLES = ['Campus Admin', 'Staff Extensionist']
 
 @login_required
 def template_list(request):
     templates = Template.objects.all()
     return render(request, 'accounts/template_list.html', {'templates': templates})
 
+
 @login_required
 def template_upload(request):
+    if request.user.account_type not in ALLOWED_ROLES:
+        return HttpResponseForbidden("You are not allowed to upload templates.")
+
     if request.method == 'POST':
         form = TemplateForm(request.POST, request.FILES)
         if form.is_valid():
@@ -2588,9 +2602,14 @@ def template_upload(request):
         form = TemplateForm()
     return render(request, 'accounts/template_form.html', {'form': form, 'action': 'Upload'})
 
+
 @login_required
 def template_edit(request, pk):
     template = get_object_or_404(Template, pk=pk)
+
+    if request.user.account_type not in ALLOWED_ROLES:
+        return HttpResponseForbidden("You are not allowed to edit templates.")
+
     if request.method == 'POST':
         form = TemplateForm(request.POST, request.FILES, instance=template)
         if form.is_valid():
@@ -2599,6 +2618,7 @@ def template_edit(request, pk):
     else:
         form = TemplateForm(instance=template)
     return render(request, 'accounts/template_form.html', {'form': form, 'action': 'Edit'})
+
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from .models import Template  # replace with your actual model name

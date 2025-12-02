@@ -252,9 +252,15 @@
         <div class="card-body">
             <h5 class="card-title">Edit Initial Uploaded Files</h5>
 
-            <button class="btn btn-sm btn-info" type="button" data-bs-toggle="collapse" data-bs-target="#editInitialUploadForm" aria-expanded="false" aria-controls="editInitialUploadForm">
-                ✏️ Edit Initial Uploaded Files
-            </button>
+<button class="btn btn-sm btn-success" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#editInitialUploadForm" 
+        aria-expanded="false" 
+        aria-controls="editInitialUploadForm">
+    ✏️ Edit Initial Uploaded Files
+</button>
+
 
             <div class="collapse mt-3" id="editInitialUploadForm">
                 <form method="post" enctype="multipart/form-data">
@@ -299,9 +305,13 @@
     <!-- ✅ Manage Days & Reports Section -->
     {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' or user.account_type == 'Staff Extensionist'%} 
     {% if document.status == 'ongoing' %}
-      <button class="btn btn-sm btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#dayUploadForms">
-        📤 Manage Days & Reports
-      </button>
+<button class="btn btn-sm btn-success mb-3" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#dayUploadForms">
+    📤 Manage Days & Reports
+</button>
+
       {% endif %}
       <div class="collapse" id="dayUploadForms">
         <div class="card border-0 shadow-sm mb-4">
@@ -343,7 +353,7 @@
     <input type="file" name="report_file" class="form-control" accept=".doc,.docx" required>
   </div>
 
-  <button type="submit" name="upload_day_report" class="btn btn-primary btn-sm">Upload Report</button>
+  <button type="submit" name="upload_day_report" class="btn btn-success btn-sm">Upload Report</button>
 </form>
 
 
@@ -383,7 +393,7 @@
               </div>
 
               <div class="mt-3 text-end">
-                <button type="submit" name="upload_day_files" class="btn btn-primary btn-sm">
+                <button type="submit" name="upload_day_files" class="btn btn-success btn-sm">
                   📎 Upload
                 </button>
                 <button type="reset" class="btn btn-outline-secondary btn-sm">Reset</button>
@@ -967,9 +977,15 @@
     <div class="card-body p-3">
         <h5 class="card-title mb-3">📂 Upload or Edit Completion Document</h5>
 
-        <button class="btn btn-sm btn-info mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#completionUploadForm" aria-expanded="false" aria-controls="completionUploadForm">
-            📤 Manage Completion Documents
-        </button>
+<button class="btn btn-success mb-3" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#completionUploadForm" 
+        aria-expanded="false" 
+        aria-controls="completionUploadForm">
+    📤 Manage Completion Documents
+</button>
+
 
         <div class="collapse mt-3" id="completionUploadForm">
             <div class="card card-large">
@@ -1022,7 +1038,7 @@
 
 <!--  SUBMIT COMPLETION — OUTSIDE FORM -->
 {% if user.account_type == 'Department Coordinator' %}
-<button class="btn btn-primary mt-3" onclick="submitCompletionFinal()">
+<button class="btn btn-success mt-3" onclick="submitCompletionFinal()">
     📎 Submit Completion File (Finalize)
 </button>
 {% endif %}
