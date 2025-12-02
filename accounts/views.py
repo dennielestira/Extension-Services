@@ -160,6 +160,11 @@ def register_extensionist(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.account_type = 'Extensionist'
+            
+            # ✅ Automatically set department from coordinator's department
+            if hasattr(request.user, 'department') and request.user.department:
+                user.department = request.user.department
+            
             user.save()
             # ✅ Success message for this specific form
             messages.success(request, 'Extensionist account has been successfully created.')
@@ -169,6 +174,12 @@ def register_extensionist(request):
             messages.error(request, 'There was an error creating the account. Please check the form and try again.')
     else:
         form = ExtensionistRegistrationForm()
+        
+        # ✅ Pre-fill department field with coordinator's department and make it read-only
+        if hasattr(request.user, 'department') and request.user.department:
+            form.fields['department'].initial = request.user.department
+            form.fields['department'].widget.attrs['readonly'] = True
+            form.fields['department'].disabled = True
 
     # ✅ Only keep error-type messages for rendering (hide unrelated ones)
     storage = messages.get_messages(request)
