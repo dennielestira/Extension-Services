@@ -47,6 +47,7 @@ from reportlab.platypus import Spacer
 from reportlab.lib.units import inch
 import json
 from django.contrib.auth import logout
+from accounts.models import AccountType
 
 
 def base(request):
@@ -870,6 +871,21 @@ def permission_denied(request):
 
 @login_required
 def upload_document(request):
+
+    # Allow only Department Coordinator and Staff Extensionist
+    allowed_roles = [
+        AccountType.DEPARTMENT_COORDINATOR,
+        AccountType.STAFF_EXTENSIONIST,
+    ]
+
+    if request.user.account_type not in allowed_roles:
+        return redirect('permission_denied')
+
+    # Department is optional for Staff Extensionist but required for Coordinator
+    if request.user.account_type == AccountType.DEPARTMENT_COORDINATOR:
+        if not getattr(request.user, 'department', None):
+            return redirect('permission_denied')
+
     print(f"[DEBUG] User: {request.user.username} ({request.user.account_type})")
 
     if request.method == 'POST':
@@ -880,24 +896,20 @@ def upload_document(request):
         if form.is_valid():
             document = form.save(commit=False)
             document.uploaded_by = request.user
-            document.uploaded_by_name = request.user.get_full_name() or request.user.username  # fallback name
+            document.uploaded_by_name = request.user.get_full_name() or request.user.username
 
-            # Make department optional
+            # Department for Coordinator; optional for Staff Extensionist
             document.department = getattr(request.user, 'department', None)
 
-            # Optional: mark document as "public" if no department
-            if not document.department:
-                document.is_public = True  # assuming you have this field in your model
-            else:
-                document.is_public = False
+            # If no department is attached, mark document as public
+            document.is_public = document.department is None
 
             document.save()
 
-            # Optional email notification
+            # -------- EMAIL NOTIFICATION --------
             try:
                 from django.core.mail import send_mail
                 from django.conf import settings
-                from accounts.models import CustomUser, AccountType
 
                 subject = f"📄 New Document Uploaded: {document.name}"
                 message = f"""
@@ -905,7 +917,7 @@ Hi Staff Extensionist,
 
 Uploaded by: {document.uploaded_by.username} ({document.uploaded_by.email})
 
-Title: *{document.name}*
+Title: {document.name}
 Department: {document.department.name if document.department else 'N/A'}
 
 Please review it in the system.
@@ -913,24 +925,29 @@ Please review it in the system.
 Best,
 The System ✨
 """
+
                 recipients = [
-                    user.email for user in CustomUser.objects.filter(account_type=AccountType.STAFF_EXTENSIONIST)
+                    user.email
+                    for user in CustomUser.objects.filter(
+                        account_type=AccountType.STAFF_EXTENSIONIST
+                    )
                     if user.email
                 ]
 
                 if recipients:
                     send_mail(
-                        subject=subject,
-                        message=message,
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=recipients,
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        recipients,
                         fail_silently=False,
                     )
             except Exception as e:
-                print(f"[DEBUG] Email failed: {e}")
+                print("[DEBUG] Email failed:", e)
 
             messages.success(request, "Document uploaded successfully.")
             return redirect('pending_documents')
+
     else:
         form = DocumentUploadForm()
 
@@ -1250,6 +1267,21 @@ def handle_file_upload(instance, slot_choice, uploaded_file, user=None):
 def view_document(request, document_id):
     document = get_object_or_404(Document, id=document_id)
     user = request.user
+
+    # -------------------------------
+    # ACCESS CONTROL: VIEW DOCUMENT
+    # -------------------------------
+    super_roles = ["Campus Admin", "Staff Extensionist"]
+    dept_roles = ["Department Coordinator", "Extensionist"]
+
+    if user.account_type in super_roles:
+        pass
+    elif user.account_type in dept_roles:
+        if document.department != getattr(user, "department", None):
+            return redirect("permission_denied")
+    else:
+        return redirect("permission_denied")
+
 
     # Permissions
     can_upload_completion = user.account_type in ["Department Coordinator", "Extensionist", "Staff Extensionist"] and document.status == "ongoing"
@@ -1828,15 +1860,25 @@ def create_annual_report(request):
         form = AnnualReportForm()
     return render(request, 'accounts/create_annual_report.html', {'form': form})
 
+@login_required
 def view_report(request, report_id):
     report = get_object_or_404(AnnualReport, id=report_id)
-    activities = report.activities.order_by('order')  # Use 'order' field to reflect drag-and-drop
+    user = request.user
+
+    # -------------------------------
+    # ACCESS CONTROL
+    # -------------------------------
+    allowed_roles = ["Campus Admin", "Staff Extensionist"]
+
+    if user.account_type not in allowed_roles:
+        return redirect('permission_denied')
+
+    # -------------------------------
+    # ORIGINAL LOGIC
+    # -------------------------------
+    activities = report.activities.order_by('order')
 
     processed_activities = []
-    last_extensionist = None
-    count = 0
-
-    # Convert queryset to list to allow index slicing
     activities_list = list(activities)
 
     i = 0
@@ -1844,7 +1886,6 @@ def view_report(request, report_id):
         current_act = activities_list[i]
         current_ext = current_act.extensionist
 
-        # Count how many consecutive activities have the same extensionist
         span = 1
         for j in range(i + 1, len(activities_list)):
             if activities_list[j].extensionist == current_ext:
@@ -1852,7 +1893,6 @@ def view_report(request, report_id):
             else:
                 break
 
-        # Append with rowspan to the first item of the group
         for k in range(span):
             processed_activities.append({
                 'activity': activities_list[i + k],
@@ -1867,6 +1907,7 @@ def view_report(request, report_id):
         'processed_activities': processed_activities
     }
     return render(request, 'accounts/view_report.html', context)
+
 
 @csrf_exempt
 def reorder_activities(request):
@@ -2951,7 +2992,18 @@ def quarterly_reports_detail(request, quarter, year):
 
 @login_required
 def open_day_training_reports(request, quarter, year):
-    """Show parsed day training entries for a quarter + year."""
+
+    # ------------------------------------
+    # ACCESS CONTROL: Only Campus Admin and Staff Extensionist
+    # ------------------------------------
+    allowed_roles = ["Campus Admin", "Staff Extensionist"]
+
+    if request.user.account_type not in allowed_roles:
+        return redirect('permission_denied')
+
+    # ------------------------------------
+    # ORIGINAL FUNCTION LOGIC
+    # ------------------------------------
     start_month, end_month = get_month_range(quarter)
 
     reports = DayTrainingReport.objects.filter(
@@ -2960,14 +3012,11 @@ def open_day_training_reports(request, quarter, year):
         day__date__month__lte=end_month,
     )
 
-    # Entries grouped per department, newest first inside each department
-    entries = DayTrainingEntry.objects.filter(report__in=reports).order_by(
-        "department", "-created_at"
-    )
+    entries = DayTrainingEntry.objects.filter(
+        report__in=reports
+    ).order_by("department", "-created_at")
 
-    # -------------------------------
     # Auto-fill Related Curricular Offering
-    # -------------------------------
     def get_related_offering(dept):
         if not dept:
             return ""
@@ -2986,7 +3035,7 @@ def open_day_training_reports(request, quarter, year):
 
             "DEPARTMENT OF MANAGEMENT STUDIES (HM)":
                 "Bachelor of Science in Hospitality Management",
-                
+
             "DEPARTMENT OF MANAGEMENT STUDIES (BM)":
                 "Bachelor of Science in Business Management",
 
@@ -2996,10 +3045,8 @@ def open_day_training_reports(request, quarter, year):
 
         return mapping.get(dept, "")
 
-    # Attach auto-filled field to each entry
     for e in entries:
         e.related_curricular_offering = get_related_offering(e.department)
-
 
     return render(
         request,
@@ -3011,6 +3058,7 @@ def open_day_training_reports(request, quarter, year):
             "entries": entries,
         },
     )
+
 
      
 import io

@@ -21,10 +21,11 @@
       <span class="mb-2 mb-md-0">Uploaded Training Reports</span>
       <div>
         <!-- Open Button -->
+         {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
 <a href="{% url 'open_day_training_reports' quarter year %}" class="btn btn-light btn-sm">
   <i class="bi bi-folder2-open"></i> Open
 </a>
-
+{% endif %}
       </div>
     </div>
 

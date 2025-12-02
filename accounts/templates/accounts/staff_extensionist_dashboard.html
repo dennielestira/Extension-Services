@@ -16,36 +16,166 @@
         color: white;
         border-radius: 15px;
         text-align: center;
+        position: relative;
     }
+    
     .dashboard-title {
         font-weight: bold;
         font-size: 2rem;
     }
+    
     .dashboard-description {
         font-size: 1.1rem;
         opacity: 0.9;
     }
 
-    .btn-logout {
-        border-radius: 30px;
-        padding: 10px 20px;
-        font-weight: bold;
-        transition: 0.3s ease;
+    /* Help Button */
+    .help-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #22b14c, #0d8331);
+        color: white;
+        border: none;
+        font-size: 24px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        cursor: pointer;
+        z-index: 1000;
+        transition: 0.3s;
     }
-    .btn-logout:hover {
-        background-color: white;
-        color: #dc3545;
+    
+    .help-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.4);
     }
 
+    /* Help Modal */
+    .help-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        z-index: 2000;
+        overflow-y: auto;
+    }
+
+    .help-modal-content {
+        background: white;
+        max-width: 700px;
+        margin: 50px auto;
+        border-radius: 15px;
+        padding: 30px;
+        position: relative;
+    }
+
+    .help-close {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+    }
+
+    .help-section {
+        margin-bottom: 25px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        border-left: 4px solid #22b14c;
+    }
+
+    .help-section h4 {
+        color: #1b5e20;
+        margin-bottom: 10px;
+    }
+
+    /* Tooltip */
+    .info-icon {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        background: #ffffff;
+        color: #1b5e20;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 20px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: help;
+        margin-left: 5px;
+        position: relative;
+    }
+
+    .info-icon:hover::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        white-space: nowrap;
+        font-size: 12px;
+        font-weight: normal;
+        z-index: 1001;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    .info-icon:hover::before {
+        content: '';
+        position: absolute;
+        bottom: 115%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #333;
+    }
+
+    /* First Time User Banner */
+    .welcome-banner {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    .welcome-banner h5 {
+        color: #856404;
+        margin-bottom: 10px;
+    }
+
+    .welcome-banner button {
+        background: #ffc107;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    /* Existing styles... */
     .main-card {
         background: white;
         border-radius: 12px;
         padding: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         min-height: 60vh;
+        display: flex;
+        flex-direction: column;
     }
 
-    /* Upload Button */
     .upload-toggle-btn {
         background: #ffffff;
         color: #1b5e20;
@@ -55,11 +185,11 @@
         box-shadow: 0 3px 6px rgba(0,0,0,0.15);
         transition: 0.3s;
     }
+
     .upload-toggle-btn:hover {
         background: #c8e6c9;
     }
 
-    /* Upload Box */
     .moa-upload-box {
         background: #ffffff;
         border: 1px solid #cfd8dc;
@@ -85,11 +215,11 @@
         border: none;
         transition: 0.3s;
     }
+
     .upload-btn:hover {
         background: #1b5e20;
     }
 
-    /* =============== MOA LOGO GRID =============== */
     .pdf-logos {
         margin-top: 25px;
         display: grid;
@@ -98,18 +228,16 @@
         justify-items: center;
     }
 
-.pdf-logos img {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    border-radius: 10px;
-    padding: 8px;
-    /* change background to match dashboard card */
-    background: linear-gradient(135deg, #22b14c, #0d8331);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    transition: 0.2s;
-}
-
+    .pdf-logos img {
+        width: 90px;
+        height: 90px;
+        object-fit: contain;
+        border-radius: 10px;
+        padding: 8px;
+        background: linear-gradient(135deg, #22b14c, #0d8331);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }
 
     .pdf-logos img:hover {
         transform: scale(1.08);
@@ -121,7 +249,6 @@
         font-weight: 600;
     }
 
-    /* Hide/Show Controls */
     .moa-controls {
         display: none;
         margin-top: 5px;
@@ -138,10 +265,11 @@
         border: none;
         transition: 0.2s;
     }
+
     .toggle-edit-btn:hover {
         background: #00695c;
     }
-    /* Page layout */
+
     .content-wrapper, .main-card, .container-fluid {
         max-width: 1100px !important;
         margin: 0 auto !important;
@@ -149,33 +277,21 @@
         padding-right: 15px;
     }
 
-    /* Main card */
-    .main-card {
-        background: white;
-        border-radius: 12px;
-        padding: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        min-height: 60vh;  /* ✅ flexible instead of fixed */
-        display: flex;
-        flex-direction: column;
-    }
-
-    /* Flex layout inside */
     .main-card .row {
         flex: 1;
         display: flex;
-        flex-wrap: wrap; /* ✅ allow stacking */
+        flex-wrap: wrap;
         gap: 15px;
     }
+
     .main-card .col-lg-5,
     .main-card .col-lg-7 {
         display: flex;
         flex-direction: column;
-        flex: 1 1 100%; /* ✅ take full width by default on small */
+        flex: 1 1 100%;
         min-height: 0;
     }
 
-    /* Updates scroll */
     .updates-box {
         flex: 1;
         overflow-y: auto;
@@ -184,17 +300,15 @@
         line-height: 1.3;
         border-radius: 6px;
         background: #fff;
-        max-height: 300px; /* ✅ prevent oversized boxes on mobile */
+        max-height: 300px;
     }
 
-    /* Status grid */
     .status-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* ✅ responsive */
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 10px;
     }
 
-    /* Status box */
     .status-box {
         padding: 8px;
         border-radius: 6px;
@@ -218,18 +332,17 @@
         line-height: 1.3;
     }
 
-    /* Scrollbar style */
     .updates-box::-webkit-scrollbar,
     .status-content::-webkit-scrollbar {
         width: 5px;
     }
+
     .updates-box::-webkit-scrollbar-thumb,
     .status-content::-webkit-scrollbar-thumb {
         background: #bbb;
         border-radius: 3px;
     }
 
-    /* Status colors */
     .status-pending { background-color: #fff8e1; }
     .status-recommended { background-color: #e8f5e9; }
     .status-approved { background-color: #e3f2fd; }
@@ -239,7 +352,34 @@
     .status-completion-recommended { background-color: #e8f5e9; }
     .status-completed { background-color: #f1f8e9; }
 
-    /* ✅ Responsive tweaks */
+    .department-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+    }
+
+    .department-box {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 12px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .department-box:hover {
+        background: #f1f1f1;
+    }
+
+    .revision-card {
+        display: none;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #fff8e1;
+        border: 1px solid #ffcc80;
+    }
+
     @media (max-width: 992px) {
         .dashboard-title { font-size: 1.6rem; }
         .dashboard-description { font-size: 1rem; }
@@ -248,99 +388,77 @@
     @media (max-width: 768px) {
         .dashboard-title { font-size: 1.4rem; }
         .updates-box { max-height: 250px; }
+        .help-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+        }
     }
 
     @media (max-width: 576px) {
         .dashboard-title { font-size: 1.2rem; }
         .dashboard-description { font-size: 0.95rem; }
-        .status-grid { grid-template-columns: 1fr; } /* ✅ single column on phones */
+        .status-grid { grid-template-columns: 1fr; }
         .updates-box { max-height: 200px; }
     }
-    .department-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-}
-.department-box {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.department-box:hover {
-    background: #f1f1f1;
-}
-.revision-card {
-    display: none;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    background: #fff8e1;
-    border: 1px solid #ffcc80;
-}
-.revision-warning {
-    color: #d32f2f;
-    font-weight: bold;
-    margin-left: 5px;
-}
 </style>
 
-
 <div class="container-fluid py-3">
-        <div class="dashboard-card p-4 shadow-lg mb-5">
-<h1 class="dashboard-title mb-3">
-    Welcome, <span class="role">{{ user.full_name }}</span> 
-    <span style="cursor:pointer;" onclick="toggleMainButtons()">👋</span>
-</h1>
+    <!-- Welcome Banner for First Time Users -->
+    <div class="welcome-banner" id="welcomeBanner">
+        <h5>👋 Welcome to Your Dashboard!</h5>
+        <p>New here? Click the buttons below to learn how to use this dashboard.</p>
+        <button onclick="showHelpModal()">📖 View Tutorial</button>
+        <button onclick="dismissWelcome()">✓ Got it!</button>
+    </div>
 
-        <p class="dashboard-description">This is the Extensionist Dashboard where you can track and manage your assigned documents.</p>
+    <div class="dashboard-card p-4 shadow-lg mb-5">
+        <h1 class="dashboard-title mb-3">
+            Welcome, <span class="role">{{ user.full_name }}</span> 
+            <span style="cursor:pointer;" onclick="toggleMainButtons()" title="Click to show/hide controls">👋</span>
+            <span class="info-icon" data-tooltip="Click the wave emoji to show upload & edit controls">ℹ️</span>
+        </h1>
+
+        <p class="dashboard-description">
+            This is the Department Coordinator Dashboard where you can track and manage your assigned documents.
+            <span class="info-icon" data-tooltip="Track document status, upload MOAs, and manage revisions">ℹ️</span>
+        </p>
         
         <!-- Upload toggle button -->
-<button class="upload-toggle-btn mt-3" onclick="toggleMOAUpload()" style="display:none;">
-    📤 Upload New MOA File
-</button>
-
-
+        <button class="upload-toggle-btn mt-3" onclick="toggleMOAUpload()" style="display:none;">
+            📤 Upload New MOA File
+            <span class="info-icon" data-tooltip="Upload Memorandum of Agreement documents">ℹ️</span>
+        </button>
 
         <!-- Upload Box -->
         <div id="moa-upload-box" class="moa-upload-box" style="display:none;">
             <h4 style="color:#1b5e20;">Upload MOA Logo & PDF</h4>
-
             <form action="{% url 'upload_moa' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-
                 <label class="mt-2">MOA Title:</label>
-                <input type="text" name="title" class="form-control mb-3" required>
-
+                <input type="text" name="title" class="form-control mb-3" required placeholder="Enter MOA title">
                 <label>Logo Image:</label>
                 <input type="file" name="logo" accept="image/*" class="form-control mb-3" required>
-
                 <label>PDF File:</label>
                 <input type="file" name="pdf_file" accept="application/pdf" class="form-control mb-4" required>
-
                 <button class="upload-btn">Upload</button>
             </form>
         </div>
 
         <!-- Hide/Show Edit Delete -->
-<button class="toggle-edit-btn" onclick="toggleMOAControls()" style="display:none;">
-    🛠 Show / Hide Edit & Delete
-</button>
-
+        <button class="toggle-edit-btn" onclick="toggleMOAControls()" style="display:none;">
+            🛠 Show / Hide Edit & Delete
+        </button>
 
         <!-- MOA Logos -->
         <div class="pdf-logos">
             {% if moa_list %}
                 {% for moa in moa_list %}
                     <div class="text-center">
-                        <a href="{{ moa.pdf_file.url }}" target="_blank">
+                        <a href="{{ moa.pdf_file.url }}" target="_blank" title="Click to view {{ moa.title }}">
                             <img src="{{ moa.logo.url }}" alt="{{ moa.title }}">
                         </a>
-
                         <div class="moa-title">{{ moa.title }}</div>
-
                         <div class="moa-controls">
                             <a href="{% url 'edit_moa' moa.id %}" class="text-primary">Edit</a> |
                             <a href="{% url 'delete_moa' moa.id %}" class="text-danger"
@@ -352,7 +470,6 @@
                 <p class="text-light mt-3">No MOA files uploaded yet.</p>
             {% endif %}
         </div>
-
     </div>
 
     <!-- Main Card -->
@@ -360,7 +477,10 @@
         <div class="row g-3">
             <!-- Left -->
             <div class="col-lg-5">
-                <div class="section-title"><b>📄 All Document Updates</b></div>
+                <div class="section-title">
+                    <b>📄 All Document Updates</b>
+                    <span class="info-icon" data-tooltip="Recent changes to documents in your department">ℹ️</span>
+                </div>
                 <div class="updates-box">
                     {% if recent_updates %}
                         {% for doc in recent_updates %}
@@ -384,7 +504,10 @@
                                 status-{{ slabel }}
                             {% endwith %}
                         ">
-                            <div class="status-title">{{ status.label }}</div>
+                            <div class="status-title">
+                                {{ status.label }}
+                                <span class="info-icon" data-tooltip="Documents in {{ status.label }} status" style="font-size:10px;">ℹ️</span>
+                            </div>
                             <div class="status-content">
                                 {% if status.documents %}
                                     {% for doc in status.documents %}
@@ -406,7 +529,10 @@
 
 <!-- Department Revision Section -->
 <div class="mt-5">
-    <h4>📂 Department Revisions</h4>
+    <h4>
+        📂 Department Revisions
+        <span class="info-icon" data-tooltip="Documents that need revision - click boxes to see details">ℹ️</span>
+    </h4>
     <div class="department-grid">
         {% for dept in departments %}
             <div class="department-box" onclick="toggleRevisionCard('{{ dept.id }}')">
@@ -440,12 +566,91 @@
     </div>
 </div>
 
+<!-- Floating Help Button -->
+<button class="help-btn" onclick="showHelpModal()" title="Need help?">❓</button>
+
+<!-- Help Modal -->
+<div class="help-modal" id="helpModal" onclick="closeHelpModal(event)">
+    <div class="help-modal-content" onclick="event.stopPropagation()">
+        <span class="help-close" onclick="closeHelpModal()">&times;</span>
+        <h2 style="color:#1b5e20; margin-bottom:20px;">📚 Dashboard Guide</h2>
+
+        <div class="help-section">
+            <h4>🎯 Getting Started</h4>
+            <p><strong>Wave Emoji (👋):</strong> Click the wave emoji next to your name to show/hide the upload and edit controls.</p>
+            <p><strong>Info Icons (ℹ️):</strong> Hover over any info icon to get quick tips about that feature.</p>
+        </div>
+
+        <div class="help-section">
+            <h4>📤 Uploading MOA Files</h4>
+            <p>1. Click the wave emoji to reveal controls</p>
+            <p>2. Click "Upload New MOA File" button</p>
+            <p>3. Fill in the title, select logo image and PDF file</p>
+            <p>4. Click "Upload" to save</p>
+        </div>
+
+        <div class="help-section">
+            <h4>✏️ Editing & Deleting MOAs</h4>
+            <p>1. Click the wave emoji to reveal controls</p>
+            <p>2. Click "Show / Hide Edit & Delete" button</p>
+            <p>3. Edit or Delete links will appear under each MOA logo</p>
+        </div>
+
+        <div class="help-section">
+            <h4>📊 Understanding Document Status</h4>
+            <p><strong>Pending:</strong> Awaiting review</p>
+            <p><strong>Recommended:</strong> Approved by coordinator, awaiting staff review</p>
+            <p><strong>Approved:</strong> Fully approved, ready for implementation</p>
+            <p><strong>Ongoing:</strong> Currently in progress</p>
+            <p><strong>Completed:</strong> Finished and archived</p>
+        </div>
+
+        <div class="help-section">
+            <h4>🔄 Revision Tracking</h4>
+            <p>Click on any department box in the "Department Revisions" section to see which files need revision.</p>
+            <p>Click the document name to view details and re-upload corrected files.</p>
+        </div>
+
+        <div class="help-section">
+            <h4>💡 Pro Tips</h4>
+            <p>• Check the "All Document Updates" section daily for recent changes</p>
+            <p>• Use color-coded status boxes to quickly identify document states</p>
+            <p>• Hover over any ℹ️ icon for context-specific help</p>
+        </div>
+    </div>
+</div>
+
 <!-- JS Toggle -->
 <script>
+// Check if first time visit
+window.onload = function() {
+    if (!localStorage.getItem('dashboardVisited')) {
+        document.getElementById('welcomeBanner').style.display = 'block';
+    }
+};
+
+function dismissWelcome() {
+    document.getElementById('welcomeBanner').style.display = 'none';
+    localStorage.setItem('dashboardVisited', 'true');
+}
+
+function showHelpModal() {
+    document.getElementById('helpModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeHelpModal(event) {
+    if (!event || event.target.id === 'helpModal') {
+        document.getElementById('helpModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
 function toggleRevisionCard(deptId) {
     const card = document.getElementById("revision-card-" + deptId);
     card.style.display = (card.style.display === "block") ? "none" : "block";
 }
+
 function toggleMainButtons() {
     const uploadBtn = document.querySelector('.upload-toggle-btn');
     const editBtn = document.querySelector('.toggle-edit-btn');
@@ -457,6 +662,7 @@ function toggleMainButtons() {
         }
     });
 }
+
 function toggleMOAUpload() {
     const box = document.getElementById("moa-upload-box");
     box.style.display = box.style.display === "none" ? "block" : "none";
@@ -468,5 +674,15 @@ function toggleMOAControls() {
         c.style.display = (c.style.display === "none" || c.style.display === "") ? "block" : "none";
     });
 }
+
+// Keyboard shortcut: Press '?' to open help
+document.addEventListener('keydown', function(e) {
+    if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        showHelpModal();
+    }
+    if (e.key === 'Escape') {
+        closeHelpModal();
+    }
+});
 </script>
 {% endblock %}

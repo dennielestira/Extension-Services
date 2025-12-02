@@ -1,12 +1,93 @@
-{% extends 'accounts/home.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Permission Denied</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-{% block content %}
-<link rel="stylesheet" href="{% static 'css/permission_denied.css' %}">
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a8e6a1 0%, #6fdc6f 100%); /* Light green gradient */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .permission-denied-container {
+            background: white;
+            padding: 60px 80px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .permission-denied-icon {
+            font-size: 80px;
+            color: #27ae60; /* green tone */
+            margin-bottom: 20px;
+        }
+
+        .permission-denied-title {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .permission-denied-message {
+            font-size: 18px;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .permission-denied-login {
+            display: inline-block;
+            background: linear-gradient(135deg, #8ce68d 0%, #59d36d 100%); /* Light green button */
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(89, 211, 109, 0.4);
+        }
+
+        .permission-denied-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(89, 211, 109, 0.6);
+        }
+    </style>
+</head>
+<body>
     <div class="permission-denied-container">
+        <div class="permission-denied-icon">🚫</div>
         <h1 class="permission-denied-title">Permission Denied</h1>
-        <p class="permission-denied-message">You do not have permission to access this page.</p>
-        <a class="permission-denied-login" href="{% url 'login' %}">Login</a>
+        <p class="permission-denied-message">
+            You do not have permission to access this page. You have been logged out for security reasons.
+        </p>
+        <a class="permission-denied-login" href="/accounts/login/">Return to Login</a>
     </div>
-{% endblock %}
-
+</body>
+</html>
