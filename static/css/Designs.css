@@ -50,16 +50,23 @@ section {
     color: #155724;
     font-size: 5rem;
     border-left: 6px solid #ffc107;
-    
+
     display: inline-block;
 }
 
 @media (max-width: 1400px) {
-    
-    .gallery-header h2 { font-size: 4rem; }
+    .gallery-header {
+        padding-left: 300px;
+    }
+    .gallery-header h2 {
+        font-size: 4rem;
+    }
 }
-@media (max-width: 1200px) {
 
+@media (max-width: 1200px) {
+    .gallery-header {
+        padding-left: 200px;
+    }
     .gallery-header h2 { font-size: 3.5rem; }
 }
 @media (max-width: 900px) {
