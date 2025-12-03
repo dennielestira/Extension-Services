@@ -37,7 +37,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
-EMAIL_HOST_PASSWORD = 'gosu czfs cnzq uwao'
+EMAIL_HOST_PASSWORD = 'ivzzujktyyiisnof'
 DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
 EMAIL_TIMEOUT = 10 
 # Application definition
