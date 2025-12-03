@@ -12,40 +12,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ===== BODY ===== */
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
-            color: #333;
-            padding-top: 70px;
-        }
+/* ===== BODY ===== */
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    color: #333;
+    padding-top: 70px; /* space for topbar */
+}
 
-        /* ===== LEFT SIDEBAR (NEW) ===== */
-/* Sidebar */
+/* ===== SIDEBAR ===== */
 .left-sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 25vw;         /* responsive width */
-    max-width: 400px;
-    min-width: 100px;
+    width: 400px;        /* fixed width for desktop */
     height: 100vh;
-    z-index: 1;
+    z-index: 0;          /* below topbar */
     overflow: hidden;
-    background-color: rgba(0,0,0,0); /* fully transparent */
+    background-color: transparent;
 }
 
 .sidebar-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* image fills sidebar without distortion */
+    object-fit: cover;
     display: block;
+    opacity: 0.85;
 }
 
-/* Main Content */
+/* ===== MAIN CONTENT ===== */
 .main-content {
-    margin-left: 25vw;  /* same as sidebar width */
+    margin-left: 400px;             /* default sidebar width */
+    width: calc(100% - 400px);      /* fill remaining width */
     min-height: 100vh;
     background-image: url("{% static 'image/whole.png' %}");
     background-repeat: no-repeat;
@@ -53,223 +52,202 @@
     background-size: cover;
     background-attachment: fixed;
     position: relative;
-    z-index: 0;
-    transition: margin-left 0.3s ease;
+    z-index: 1;                     /* above sidebar */
+    transition: width 0.3s ease, margin-left 0.3s ease;
 }
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
-    .left-sidebar { width: 20vw; }
-    .main-content { margin-left: 20vw; }
+    .left-sidebar { width: 350px; }
+    .main-content {
+        margin-left: 350px;
+        width: calc(100% - 350px);
+    }
 }
 
 @media (max-width: 992px) {
-    .left-sidebar { width: 18vw; }
-    .main-content { margin-left: 18vw; }
+    .left-sidebar { width: 300px; }
+    .main-content {
+        margin-left: 300px;
+        width: calc(100% - 300px);
+    }
 }
 
 @media (max-width: 768px) {
-    .left-sidebar { width: 15vw; }
-    .main-content { margin-left: 15vw; }
+    .left-sidebar { display: none; }  /* sidebar disappears earlier */
+    .main-content {
+        margin-left: 0;
+        width: 100%;                  /* main content takes full width */
+    }
+}
+
+/* Optional: hide sidebar slightly before 768 for smoothness */
+@media (max-width: 992px) and (min-width: 769px) {
+    .left-sidebar { width: 250px; }
+    .main-content {
+        margin-left: 250px;
+        width: calc(100% - 250px);
+    }
+}
+
+/* ===== TOPBAR ===== */
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #28a745;
+    padding: 6px 16px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex-wrap: wrap;
+}
+
+.topbar .logo {
+    color: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.nav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-right: 10px;
+    align-items: center;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.nav-links a:hover {
+    background-color: rgba(255,255,255,0.2);
+}
+
+/* ===== CONTENT WRAPPER ===== */
+.content-wrapper {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: transparent;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+/* ===== RESPONSIVE TOPBAR ===== */
+@media (max-width: 992px) {
+    .topbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px;
+    }
+    .topbar .logo {
+        font-size: 1rem;
+        text-align: center;
+        margin-bottom: 8px;
+    }
+    .nav-links {
+        justify-content: center;
+        margin: 0;
+    }
 }
 
 @media (max-width: 600px) {
-    .left-sidebar { display: none; }
-    .main-content { margin-left: 0; }
+    .topbar .logo {
+        font-size: 0.9rem;
+        white-space: normal;
+        text-align: center;
+    }
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        display: none; /* hidden by default */
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        gap: 8px;
+        background-color: #28a745;
+        padding: 12px 0;
+        box-sizing: border-box;
+        transform-origin: top;
+        transition: transform 220ms ease, opacity 220ms ease;
+        transform: translateY(-6px);
+        opacity: 0;
+        z-index: 999;
+    }
+    .nav-links.show {
+        display: flex;
+        transform: translateY(0);
+        opacity: 1;
+    }
+    .nav-links a {
+        width: 100%;
+        text-align: center;
+        font-size: 0.95rem;
+        padding: 10px 16px;
+    }
+    .main-content {
+        padding: 15px;
+        background-attachment: scroll;
+    }
 }
 
+@media (max-width: 400px) {
+    .nav-links a {
+        padding: 5px 8px;
+        font-size: 0.8rem;
+    }
+    .login-icon {
+        font-size: 22px;
+    }
+}
 
+/* ===== HAMBURGER ===== */
+.burger {
+    display: none;
+    font-size: 22px;
+    color: white;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001; /* above nav-links */
+}
 
-        /* Hide sidebar on mobile */
-        @media (max-width: 800px) {
-            .left-sidebar {
-                display: none;
-            }
-        }
+.burger:focus {
+    outline: 2px solid rgba(255,255,255,0.25);
+    border-radius: 6px;
+}
 
-        /* ===== TOPBAR ===== */
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #28a745;
-            padding: 6px 16px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            flex-wrap: wrap;
-        }
+@media (max-width: 600px) {
+    .burger { display: flex; }
+    .nav-links { display: none; }
+}
 
-        .topbar .logo {
-            color: white;
-            font-weight: 600;
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
+/* Fallback hamburger */
+.burger.fallback::before {
+    content: "\2630"; /* ☰ */
+    font-size: 22px;
+    color: white;
+}
 
-        .nav-links {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-right: 10px;
-            align-items: center;
-        }
-
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            padding: 4px 10px;
-            font-size: 0.85rem;
-            border-radius: 5px;
-            font-weight: 500;
-            transition: background-color 0.3s ease;
-        }
-
-        .nav-links a:hover {
-            background-color: rgba(255,255,255,0.2);
-        }
-
-        /* ===== MAIN CONTENT SHIFTED RIGHT BECAUSE OF SIDEBAR ===== */
-
-        /* Remove shift on mobile */
-        @media (max-width: 800px) {
-            .main-content {
-                margin-left: 0;
-            }
-        }
-
-        .content-wrapper {
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: transparent;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        /* ===== Responsiveness ===== */
-        @media (max-width: 992px) {
-            .topbar {
-                flex-direction: column;
-                align-items: center;
-                padding: 15px;
-            }
-
-            .topbar .logo {
-                font-size: 1rem;
-                text-align: center;
-                margin-bottom: 8px;
-            }
-
-            .nav-links {
-                justify-content: center;
-                margin: 0;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .topbar .logo {
-                font-size: 0.9rem;
-                white-space: normal;
-                text-align: center;
-            }
-
-            /* collapsed mobile menu */
-            .nav-links {
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                display: none;               /* hidden by default */
-                flex-direction: column;
-                align-items: center;
-                width: 100%;
-                gap: 8px;
-                background-color: #28a745;
-                padding: 12px 0;
-                box-sizing: border-box;
-                transform-origin: top;
-                /* small slide animation */
-                transition: transform 220ms ease, opacity 220ms ease;
-                transform: translateY(-6px);
-                opacity: 0;
-                z-index: 999;
-            }
-
-            .nav-links.show {
-                display: flex;
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            .nav-links a {
-                width: 100%;
-                text-align: center;
-                font-size: 0.95rem;
-                padding: 10px 16px;
-            }
-
-            .main-content {
-                padding: 15px;
-                background-attachment: scroll;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .nav-links a {
-                padding: 5px 8px;
-                font-size: 0.8rem;
-            }
-
-            .login-icon {
-                font-size: 22px;
-            }
-        }
-
-        /* Hamburger icon */
-        .burger {
-            display: none;
-            font-size: 22px;
-            color: white;
-            cursor: pointer;
-            background: transparent;
-            border: none;
-            padding: 6px;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001; /* above nav-links */
-        }
-
-        .burger:focus {
-            outline: 2px solid rgba(255,255,255,0.25);
-            border-radius: 6px;
-        }
-
-        /* Responsive for burger */
-        @media (max-width: 600px) {
-            .burger {
-                display: flex;
-            }
-            /* hide default inline nav on mobile; handled above */
-            .nav-links {
-                display: none;
-            }
-        }
-
-        /* In case FontAwesome doesn't load, show a simple hamburger with CSS */
-        .burger .fa-bars::before {
-            /* nothing - using fa normally */
-        }
-        .burger.fallback::before {
-            content: "\2630"; /* ☰ */
-            font-size: 22px;
-            color: white;
-        }
     </style>
 </head>
 <body>
