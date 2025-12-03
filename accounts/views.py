@@ -876,9 +876,15 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-# Permission Denied View
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.shortcuts import redirect
+
 def permission_denied(request):
-    return render(request, 'accounts/permission_denied.html')
+    logout(request)
+    messages.error(request, "Access denied. You have been logged out for security reasons.")
+    return redirect('login')
+
 
 @login_required
 def upload_document(request):
