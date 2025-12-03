@@ -30,14 +30,20 @@
     width: 400px; /* default width */
     height: 100vh;
     background-image: url("{% static 'image/sidebar.png' %}");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-size: contain;          /* <-- change from cover to contain */
+    background-position: center center; /* center the image */
+    background-repeat: no-repeat;      /* don't tile the image */
     z-index: 1;
-    background-color: rgba(0,0,0,0.4);
+    background-color: transparent;
+
     backdrop-filter: blur(4px);
-    transition: width 0.3s ease; /* smooth resizing */
+    transition: width 0.3s ease;
 }
+@media (max-width: 1200px) { .left-sidebar { width: 300px; } }
+@media (max-width: 992px) { .left-sidebar { width: 220px; } }
+@media (max-width: 768px) { .left-sidebar { width: 150px; } }
+@media (max-width: 600px) { .left-sidebar { display: none; } }
+
 
 /* Adjust main content margin to match sidebar */
 .main-content {
@@ -58,22 +64,22 @@
 
 /* ===== Responsive Sidebar Widths ===== */
 @media (max-width: 1200px) {
-    .left-sidebar { width: 300px; }
+
     .main-content { margin-left: 300px; }
 }
 
 @media (max-width: 992px) {
-    .left-sidebar { width: 220px; }
+
     .main-content { margin-left: 220px; }
 }
 
 @media (max-width: 768px) {
-    .left-sidebar { width: 150px; }
+
     .main-content { margin-left: 150px; }
 }
 
 @media (max-width: 600px) {
-    .left-sidebar { display: none; }
+
     .main-content { margin-left: 0; }
 }
 
