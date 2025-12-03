@@ -43,19 +43,19 @@ section {
     width: 100%;
     display: flex;
     justify-content: center;
-
+    padding-left: 400px;
 }
 
 .gallery-header h2 {
     color: #155724;
     font-size: 5rem;
     border-left: 6px solid #ffc107;
-
+    
     display: inline-block;
 }
 
 @media (max-width: 1400px) {
-
+    
     .gallery-header h2 { font-size: 4rem; }
 }
 @media (max-width: 1200px) {
