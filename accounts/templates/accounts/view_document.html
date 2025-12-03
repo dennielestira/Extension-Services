@@ -19,8 +19,8 @@
 
 <div class="row" >
     <!-- Document Info Card -->
-    <div class="col-md-4 d-flex">
-        <div class="card card-small mb-4 h-100 w-100">
+    <div class="col-md-6 d-flex">
+        <div class="card card-small mb-4 h-100 w-100 shadow">
             <div class="card-body d-flex flex-column">
                 <div class="d-flex justify-content-between mb-3">
                     <a href="{% url 'document_list' %}" class="btn btn-secondary">← Back</a>
@@ -81,7 +81,7 @@
     </div>
     <!-- Comments Card -->
 <div class="col-md-6 d-flex">
-    <div class="card card-small mb-4 w-100 h-100">
+    <div class="card card-small mb-4 w-100 h-100 shadow">
         <div class="card-body d-flex flex-column">
             <h5 class="card-title">Comments</h5>
 
@@ -113,7 +113,7 @@
 </div>
 
 <!-- Initial Uploaded Files -->
-<div class="card card-large mt-4">
+<div class="card card-large mt-4 shadow">
   <div class="card-body">
     <h5 class="card-title">Initial Uploaded Files:</h5>
 
@@ -248,7 +248,7 @@
 {% if document.status == 'pending' or document.status == 'ongoing' %}
 
     <!-- Start Card for Editing Initial Uploads -->
-    <div class="card card-large mt-4">
+    <div class="card card-large mt-4 shadow">
         <div class="card-body">
             <h5 class="card-title">Edit Initial Uploaded Files</h5>
 
@@ -296,8 +296,8 @@
     <!-- End Card for Editing Initial Uploads -->
 {% endif %}
 {% endif %}
-{% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' and document.status == 'ongoing' %}
-<div class="card shadow-sm mt-3 border-0">
+{% if document.status == 'ongoing' %}
+<div class="card shadow mt-3 border-0">
   <div class="card-body">
 
     <h5 class="card-title mb-3 fw-bold">🗓 Days</h5>
@@ -840,7 +840,7 @@
 
 
 <!-- Completion Uploaded Files -->
-<div class="card card-large mt-4">
+<div class="card card-large mt-4 shadow">
   {% if existing_completion %}
     <div class="card-body">
       <h5 class="card-title">Uploaded Completion Documents:</h5>
@@ -973,7 +973,7 @@
 </div>
 
 {% if document.status == 'ongoing' and can_upload_completion %}
-<div class="card card-small mt-3 shadow-sm">
+<div class="card card-small mt-3 shadow ">
     <div class="card-body p-3">
         <h5 class="card-title mb-3">📂 Upload or Edit Completion Document</h5>
 

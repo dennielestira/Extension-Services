@@ -4,33 +4,94 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <!-- REQUIRED FIX for mobile responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Extension Services</title>
 
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ===== Body ===== */
+        /* ===== BODY ===== */
         body {
             margin: 0;
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
             color: #333;
-            padding-top: 70px; /* prevent content hiding under fixed navbar */
+            padding-top: 70px;
         }
 
-        /* ===== Topbar ===== */
+        /* ===== LEFT SIDEBAR (NEW) ===== */
+/* ===== LEFT SIDEBAR (RESPONSIVE) ===== */
+.left-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 400px; /* default width */
+    height: 100vh;
+    background-image: url("{% static 'image/sidebar.png' %}");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 1;
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(4px);
+    transition: width 0.3s ease; /* smooth resizing */
+}
+
+/* Adjust main content margin to match sidebar */
+.main-content {
+    margin-left: 400px; /* same as sidebar width */
+    margin-top: 10px;
+    padding: 30px;
+    min-height: 100vh;
+    background-image: url("{% static 'image/whole.png' %}");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    background-attachment: fixed;
+    position: relative;
+    z-index: 2;
+    box-sizing: border-box;
+    transition: margin-left 0.3s ease; /* smooth resizing */
+}
+
+/* ===== Responsive Sidebar Widths ===== */
+@media (max-width: 1200px) {
+    .left-sidebar { width: 300px; }
+    .main-content { margin-left: 300px; }
+}
+
+@media (max-width: 992px) {
+    .left-sidebar { width: 220px; }
+    .main-content { margin-left: 220px; }
+}
+
+@media (max-width: 768px) {
+    .left-sidebar { width: 150px; }
+    .main-content { margin-left: 150px; }
+}
+
+@media (max-width: 600px) {
+    .left-sidebar { display: none; }
+    .main-content { margin-left: 0; }
+}
+
+
+        /* Hide sidebar on mobile */
+        @media (max-width: 800px) {
+            .left-sidebar {
+                display: none;
+            }
+        }
+
+        /* ===== TOPBAR ===== */
         .topbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background-color: #28a745;
-            padding: 6px 16px; /* smaller height */
+            padding: 6px 16px;
             position: fixed;
             top: 0;
             left: 0;
@@ -71,32 +132,13 @@
             background-color: rgba(255,255,255,0.2);
         }
 
-        .login-icon {
-            color: white;
-            font-size: 22px;
-            padding: 4px;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
+        /* ===== MAIN CONTENT SHIFTED RIGHT BECAUSE OF SIDEBAR ===== */
 
-        .login-icon:hover {
-            color: #d4edda;
-            transform: scale(1.1);
-        }
-
-        /* ===== Main Content ===== */
-        .main-content {
-            margin-top: 10px;
-            padding: 30px;
-            min-height: 100vh;
-            width: 100%;
-            background-image: url("{% static 'image/bgg.jpg' %}");
-            background-repeat: no-repeat;
-            background-position: center center;
-            background-size: cover;
-            background-attachment: fixed;
-            position: relative;
-            z-index: 1;
-            box-sizing: border-box;
+        /* Remove shift on mobile */
+        @media (max-width: 800px) {
+            .main-content {
+                margin-left: 0;
+            }
         }
 
         .content-wrapper {
@@ -230,44 +272,46 @@
 </head>
 <body>
 
+<!-- Sidebar (NEW) -->
+<div class="left-sidebar"></div>
+
 <!-- Topbar -->
-<div class="topbar" role="navigation" aria-label="Main navigation">
+<div class="topbar">
     <div class="logo">Cavite State University Extension Services - Bacoor Campus</div>
 
-    <!-- Hamburger Icon -->
-    <button class="burger" id="burger" aria-controls="nav-links" aria-expanded="false" aria-label="Toggle navigation">
-        <i class="fas fa-bars" aria-hidden="true"></i>
+    <button class="burger" id="burger">
+        <i class="fas fa-bars"></i>
     </button>
 
     <div class="nav-links" id="nav-links">
         <a href="#media-gallery">Home</a>
         <a href="#albums">Photos</a>
         <a href="#videos">Video</a>
-        <a href="#image">About BACOOREx</a>
+        <a href="#image-showcase">About BACOOREx</a>
 
         {% if user.is_authenticated %}
             {% if request.user.account_type == 'Super Admin' %}
-                <a href="{% url 'super_admin_dashboard' %}" class="dashboard-link">Back to Main Page</a>
+                <a href="{% url 'super_admin_dashboard' %}">Back to Main Page</a>
             {% elif request.user.account_type == 'Campus Admin' %}
-                <a href="{% url 'campus_admin_dashboard' %}" class="dashboard-link">Back to Main Page</a>
+                <a href="{% url 'campus_admin_dashboard' %}">Back to Main Page</a>
             {% elif request.user.account_type == 'Staff Extensionist' %}
-                <a href="{% url 'staff_extensionist_dashboard' %}" class="dashboard-link">Back to Main Page</a>
+                <a href="{% url 'staff_extensionist_dashboard' %}">Back to Main Page</a>
             {% elif request.user.account_type == 'Department Coordinator' %}
-                <a href="{% url 'department_coordinator_dashboard' %}" class="dashboard-link">Back to Main Page</a>
+                <a href="{% url 'department_coordinator_dashboard' %}">Back to Main Page</a>
             {% elif request.user.account_type == 'Extensionist' %}
-                <a href="{% url 'extensionist_dashboard' %}" class="dashboard-link">Back to Main Page</a>
+                <a href="{% url 'extensionist_dashboard' %}">Back to Main Page</a>
             {% else %}
-                <a href="{% url 'permission_denied' %}" class="dashboard-link">Back to Main Page</a>
+                <a href="{% url 'permission_denied' %}">Back to Main Page</a>
             {% endif %}
         {% else %}
-            <a href="{% url 'login' %}" class="login-icon" aria-label="Login">
-                <i class="fas fa-user-circle" aria-hidden="true"></i>
+            <a href="{% url 'login' %}" class="login-icon">
+                <i class="fas fa-user-circle"></i>
             </a>
         {% endif %}
     </div>
 </div>
 
-<!-- Content -->
+<!-- Main Content -->
 <div class="main-content">
     <div class="content-wrapper">
         {% block content %}
@@ -275,55 +319,13 @@
     </div>
 </div>
 
-<!-- SCRIPT: placed before closing body and wrapped so it runs after DOM ready -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const burger = document.getElementById('burger');
-    const navLinks = document.getElementById('nav-links');
+document.addEventListener("DOMContentLoaded", function () {
+    const burger = document.getElementById("burger");
+    const nav = document.getElementById("nav-links");
 
-    if (!burger) return; // defensive
-
-    // Fallback if Font Awesome didn't load (so burger shows)
-    const faIcon = burger.querySelector('i.fas');
-    if (!faIcon) {
-        burger.classList.add('fallback');
-    }
-
-    // Toggle function
-    function toggleMenu() {
-        const isShown = navLinks.classList.toggle('show');
-        burger.setAttribute('aria-expanded', isShown ? 'true' : 'false');
-    }
-
-    burger.addEventListener('click', function (e) {
-        e.stopPropagation();
-        toggleMenu();
-    });
-
-    // Close when clicking outside the menu on small screens
-    document.addEventListener('click', function (e) {
-        // Only close if menu is open
-        if (navLinks.classList.contains('show')) {
-            // if click is outside the topbar area (navLinks or burger), close
-            if (!navLinks.contains(e.target) && !burger.contains(e.target)) {
-                navLinks.classList.remove('show');
-                burger.setAttribute('aria-expanded', 'false');
-            }
-        }
-    });
-
-    // Close on ESC
-    document.addEventListener('keydown', function(e){
-        if (e.key === 'Escape' && navLinks.classList.contains('show')) {
-            navLinks.classList.remove('show');
-            burger.setAttribute('aria-expanded', 'false');
-        }
-    });
-
-    // Optional: ensure layout recalculates on orientation change
-    window.addEventListener('orientationchange', function () {
-        navLinks.classList.remove('show');
-        burger.setAttribute('aria-expanded', 'false');
+    burger.addEventListener("click", () => {
+        nav.classList.toggle("show");
     });
 });
 </script>

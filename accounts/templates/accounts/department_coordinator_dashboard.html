@@ -347,6 +347,54 @@
     </div>
 </div>
 
+<!--<div class="mt-5">
+    <h4>📊 Department Document Completion</h4>
+
+    {% if dept_completion_separated %}
+        {% for dept_name, docs in dept_completion_separated.items %}
+            <div class="mt-3 p-3 border rounded bg-white shadow-sm">
+                <h5>{{ dept_name }}</h5>
+
+                {% if docs %}
+                    {% for doc in docs %}
+                        <div class="p-2 mb-2 border rounded bg-light">
+                            <strong>
+                                <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                            </strong>
+                            <div class="progress" style="height:15px; margin:5px 0;">
+                                <div class="progress-bar 
+                                    {% if doc.percentage == 100 %}bg-success
+                                    {% elif doc.percentage >= 50 %}bg-warning
+                                    {% else %}bg-danger{% endif %}"
+                                    style="width: {{ doc.percentage }}%">
+                                    {{ doc.percentage }}%
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ doc.filled }} / {{ doc.total }} files uploaded</small>
+
+                            {% if doc.missing_files %}
+                                <details class="mt-2">
+                                    <summary class="text-danger fw-bold">Missing Files</summary>
+                                    <ul>
+                                        {% for missing in doc.missing_files %}
+                                            <li>{{ missing }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No documents found for this department.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="text-muted">No completion data available.</p>
+    {% endif %}
+</div>-->
+
+
 <!-- Department Revision Section -->
 <div class="mt-5">
     <h4>📂 Department Revisions</h4>

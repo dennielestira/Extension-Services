@@ -99,18 +99,16 @@
         justify-items: center;
     }
 
-.pdf-logos img {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    border-radius: 10px;
-    padding: 8px;
-    /* change background to match dashboard card */
-    background: linear-gradient(135deg, #22b14c, #0d8331);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    transition: 0.2s;
-}
-
+    .pdf-logos img {
+        width: 90px;
+        height: 90px;
+        object-fit: contain;
+        border-radius: 10px;
+        padding: 8px;
+        background: linear-gradient(135deg, #22b14c, #0d8331);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }
 
     .pdf-logos img:hover {
         transform: scale(1.08);
@@ -156,7 +154,7 @@
         border-radius: 12px;
         padding: 15px;
         box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        min-height: 60vh;  /* ✅ flexible instead of fixed */
+        min-height: 60vh;
         display: flex;
         flex-direction: column;
     }
@@ -165,14 +163,14 @@
     .main-card .row {
         flex: 1;
         display: flex;
-        flex-wrap: wrap; /* ✅ allow stacking */
+        flex-wrap: wrap;
         gap: 15px;
     }
     .main-card .col-lg-5,
     .main-card .col-lg-7 {
         display: flex;
         flex-direction: column;
-        flex: 1 1 100%; /* ✅ take full width by default on small */
+        flex: 1 1 100%;
         min-height: 0;
     }
 
@@ -185,13 +183,13 @@
         line-height: 1.3;
         border-radius: 6px;
         background: #fff;
-        max-height: 300px; /* ✅ prevent oversized boxes on mobile */
+        max-height: 300px;
     }
 
     /* Status grid */
     .status-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* ✅ responsive */
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 10px;
     }
 
@@ -254,56 +252,250 @@
     @media (max-width: 576px) {
         .dashboard-title { font-size: 1.2rem; }
         .dashboard-description { font-size: 0.95rem; }
-        .status-grid { grid-template-columns: 1fr; } /* ✅ single column on phones */
+        .status-grid { grid-template-columns: 1fr; }
         .updates-box { max-height: 200px; }
     }
+
+    /* Department Grid */
     .department-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 15px;
-}
-.department-box {
-    background: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    padding: 12px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.department-box:hover {
-    background: #f1f1f1;
-}
-.revision-card {
-    display: none;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 8px;
-    background: #fff8e1;
-    border: 1px solid #ffcc80;
-}
-.revision-warning {
-    color: #d32f2f;
-    font-weight: bold;
-    margin-left: 5px;
-}
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        transition: all 0.3s ease;
+    }
+    .department-box {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .department-box:hover {
+        background: #f1f1f1;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .department-box.expanded {
+        grid-column: 1 / -1;
+        background: #ffffff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .department-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .toggle-icon {
+        font-size: 0.8rem;
+        transition: transform 0.3s ease;
+        display: inline-block;
+    }
+    .department-box.expanded .toggle-icon {
+        transform: rotate(180deg);
+    }
+    .revision-card {
+        display: none;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        background: #fff8e1;
+        border: 1px solid #ffcc80;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+    .revision-warning {
+        color: #d32f2f;
+        font-weight: bold;
+        margin-left: 5px;
+    }
+
+    /* Completion Detail Card */
+    .completion-detail-card {
+        display: none;
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        background: #e3f2fd;
+        border: 1px solid #90caf9;
+        max-height: 500px;
+        overflow-y: auto;
+        animation: slideDown 0.3s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            max-height: 500px;
+        }
+    }
+    
+    .completion-detail-card::-webkit-scrollbar {
+        width: 6px;
+    }
+    .completion-detail-card::-webkit-scrollbar-thumb {
+        background: #90caf9;
+        border-radius: 3px;
+    }
+    .completion-percentage {
+        margin-top: 8px;
+    }
+    .document-item {
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+    }
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    .doc-percentage {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    .missing-files {
+        background: #ffebee;
+        padding: 8px;
+        border-radius: 4px;
+        border-left: 3px solid #d32f2f;
+    }
+    .missing-files ul {
+        padding-left: 20px;
+        margin-top: 5px;
+    }
+
+    /* Mobile Responsive Adjustments */
+    @media (max-width: 768px) {
+        .department-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .department-box {
+            padding: 15px;
+        }
+        
+        .department-box.expanded {
+            grid-column: 1;
+        }
+        
+        .completion-detail-card {
+            max-height: 350px;
+            padding: 12px;
+        }
+        
+        .revision-card {
+            max-height: 300px;
+        }
+        
+        .doc-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .doc-percentage {
+            font-size: 1rem;
+            align-self: flex-end;
+        }
+        
+        .document-item {
+            padding: 12px;
+        }
+        
+        .progress {
+            margin: 8px 0 !important;
+        }
+        
+        .missing-files ul {
+            padding-left: 18px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .department-title {
+            font-size: 0.95rem;
+        }
+        
+        .toggle-icon {
+            font-size: 0.7rem;
+        }
+        
+        .completion-detail-card h6,
+        .revision-card h6 {
+            font-size: 0.9rem;
+        }
+        
+        .completion-percentage small {
+            font-size: 0.8rem;
+        }
+        
+        .doc-header strong {
+            font-size: 0.9rem;
+        }
+        
+        .document-item {
+            padding: 10px;
+        }
+        
+        .completion-detail-card {
+            max-height: 300px;
+            padding: 10px;
+        }
+        
+        .revision-card {
+            max-height: 250px;
+            padding: 8px;
+        }
+    }
+
+    /* Ensure container responsiveness */
+    @media (max-width: 992px) {
+        .container-fluid {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        .main-card {
+            padding: 10px;
+        }
+    }
 </style>
 
 <div class="container-fluid py-3">
 
     <div class="dashboard-card p-4 shadow-lg mb-5">
-<h1 class="dashboard-title mb-3">
-    Welcome, <span class="role">{{ user.full_name }}</span> 
-    <span style="cursor:pointer;" onclick="toggleMainButtons()">👋</span>
-</h1>
+        <h1 class="dashboard-title mb-3">
+            Welcome, <span class="role">{{ user.full_name }}</span> 
+            <span style="cursor:pointer;" onclick="toggleMainButtons()">👋</span>
+        </h1>
 
         <p class="dashboard-description">
             This is your dashboard where you can manage campus activities and view reports.
         </p>
 
         <!-- Upload toggle button -->
-<button class="upload-toggle-btn mt-3" onclick="toggleMOAUpload()" style="display:none;">
-    📤 Upload New MOA File
-</button>
+        <button class="upload-toggle-btn mt-3" onclick="toggleMOAUpload()" style="display:none;">
+            📤 Upload New MOA File
+        </button>
 
         <!-- Upload Box -->
         <div id="moa-upload-box" class="moa-upload-box" style="display:none;">
@@ -326,9 +518,10 @@
         </div>
 
         <!-- Hide/Show Edit Delete -->
-<button class="toggle-edit-btn" onclick="toggleMOAControls()" style="display:none;">
-    🛠 Show / Hide Edit & Delete
-</button>
+        <button class="toggle-edit-btn" onclick="toggleMOAControls()" style="display:none;">
+            🛠 Show / Hide Edit & Delete
+        </button>
+
         <!-- MOA Logos -->
         <div class="pdf-logos">
             {% if moa_list %}
@@ -351,10 +544,7 @@
                 <p class="text-light mt-3">No MOA files uploaded yet.</p>
             {% endif %}
         </div>
-
-
     </div>
-
 
     <!-- Main Card -->
     <div class="main-card">
@@ -404,40 +594,114 @@
         </div>
     </div>
 </div>
- <!-- Department Revision Section -->
-<div class="mt-5">
-    <h4>📂 Department Revisions</h4>
-    <div class="department-grid">
-        {% for dept in departments %}
-            <div class="department-box" onclick="toggleRevisionCard('{{ dept.id }}')">
-                <div class="department-title">{{ dept.name }}</div>
-                <small>{{ dept.documents_with_revisions|length }} document(s) need revision</small>
 
-                <!-- Hidden Revision Card -->
-                <div id="revision-card-{{ dept.id }}" class="revision-card">
-                    <h6>⚠ Revision Needed Files</h6>
-                    <div class="revision-list">
-                        {% if dept.documents_with_revisions %}
-                            {% for doc in dept.documents_with_revisions %}
-                                <div class="revision-doc mb-2">
-                                    <strong>
-                                        <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
-                                    </strong>
-                                    <ul class="mb-1">
-                                        {% for file in doc.revision_files %}
-                                            <li>{{ file }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endfor %}
+<!-- Department Completion Percentage Section -->
+<div class="container-fluid py-3">
+    <div class="mt-5">
+        <h4>📊 Department Document Completion</h4>
+        <div class="department-grid" id="completion-dept-grid">
+            {% for dept in dept_completion %}
+                <div class="department-box completion-dept-card" onclick="toggleCompletionCardAccordion('{{ dept.id }}')" data-dept-id="{{ dept.id }}">
+                    <div class="department-title">
+                        {{ dept.name }}
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="completion-percentage">
+                        <div class="progress" style="height: 20px; margin: 10px 0;">
+                            <div class="progress-bar" 
+                                 style="width: {{ dept.percentage }}%; 
+                                        background: linear-gradient(135deg, #22b14c, #0d8331);"
+                                 role="progressbar">
+                                <strong>{{ dept.percentage }}%</strong>
+                            </div>
+                        </div>
+                        <small>{{ dept.filled }} / {{ dept.total }} files uploaded</small>
+                    </div>
 
-                        {% else %}
-                            <p class="text-muted">No documents need revision</p>
-                        {% endif %}
+                    <!-- Hidden Completion Detail Card -->
+                    <div id="completion-card-{{ dept.id }}" class="completion-detail-card">
+                        <h6>📄 Document Breakdown</h6>
+                        <div class="document-list">
+                            {% if dept.documents %}
+                                {% for doc in dept.documents %}
+                                    <div class="document-item mb-3">
+                                        <div class="doc-header">
+                                            <strong>
+                                                <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                                            </strong>
+                                            <span class="doc-percentage 
+                                                {% if doc.percentage == 100 %}text-success
+                                                {% elif doc.percentage >= 50 %}text-warning
+                                                {% else %}text-danger{% endif %}">
+                                                {{ doc.percentage }}%
+                                            </span>
+                                        </div>
+                                        <div class="progress" style="height: 15px; margin: 5px 0;">
+                                            <div class="progress-bar 
+                                                {% if doc.percentage == 100 %}bg-success
+                                                {% elif doc.percentage >= 50 %}bg-warning
+                                                {% else %}bg-danger{% endif %}"
+                                                 style="width: {{ doc.percentage }}%">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ doc.filled }} / {{ doc.total }} files</small>
+                                        
+                                        {% if doc.missing_files %}
+                                            <div class="missing-files mt-2">
+                                                <small class="text-danger"><strong>Missing:</strong></small>
+                                                <ul class="small mb-0">
+                                                    {% for file in doc.missing_files %}
+                                                        <li>{{ file }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No documents in this department</p>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Department Revision Section -->
+    <div class="mt-5">
+        <h4>📂 Department Revisions</h4>
+        <div class="department-grid">
+            {% for dept in departments %}
+                <div class="department-box" onclick="toggleRevisionCard('{{ dept.id }}')">
+                    <div class="department-title">{{ dept.name }}</div>
+                    <small>{{ dept.documents_with_revisions|length }} document(s) need revision</small>
+
+                    <!-- Hidden Revision Card -->
+                    <div id="revision-card-{{ dept.id }}" class="revision-card">
+                        <h6>⚠ Revision Needed Files</h6>
+                        <div class="revision-list">
+                            {% if dept.documents_with_revisions %}
+                                {% for doc in dept.documents_with_revisions %}
+                                    <div class="revision-doc mb-2">
+                                        <strong>
+                                            <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                                        </strong>
+                                        <ul class="mb-1">
+                                            {% for file in doc.revision_files %}
+                                                <li>{{ file }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No documents need revision</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 
@@ -446,6 +710,36 @@
 function toggleRevisionCard(deptId) {
     const card = document.getElementById("revision-card-" + deptId);
     card.style.display = (card.style.display === "block") ? "none" : "block";
+}
+
+function toggleCompletionCard(deptId) {
+    const card = document.getElementById("completion-card-" + deptId);
+    card.style.display = (card.style.display === "block") ? "none" : "block";
+}
+
+// New accordion function for completion cards
+function toggleCompletionCardAccordion(deptId) {
+    const clickedCard = document.getElementById("completion-card-" + deptId);
+    const clickedBox = document.querySelector(`.completion-dept-card[data-dept-id="${deptId}"]`);
+    const allCards = document.querySelectorAll('.completion-detail-card');
+    const allBoxes = document.querySelectorAll('.completion-dept-card');
+    
+    // Check if clicked card is currently open
+    const isOpen = clickedCard.style.display === "block";
+    
+    // Close all cards and remove expanded class
+    allCards.forEach(card => {
+        card.style.display = "none";
+    });
+    allBoxes.forEach(box => {
+        box.classList.remove('expanded');
+    });
+    
+    // If the clicked card was closed, open it
+    if (!isOpen) {
+        clickedCard.style.display = "block";
+        clickedBox.classList.add('expanded');
+    }
 }
 
 function toggleMainButtons() {
@@ -459,6 +753,7 @@ function toggleMainButtons() {
         }
     });
 }
+
 function toggleMOAUpload() {
     const box = document.getElementById("moa-upload-box");
     box.style.display = box.style.display === "none" ? "block" : "none";
@@ -470,6 +765,6 @@ function toggleMOAControls() {
         c.style.display = (c.style.display === "none" || c.style.display === "") ? "block" : "none";
     });
 }
-
 </script>
+
 {% endblock %}

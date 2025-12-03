@@ -526,6 +526,79 @@
         </div>
     </div>
 </div>
+<!-- Department Completion Percentage Section -->
+<div class="container-fluid py-3">
+    <div class="mt-5">
+        <h4>📊 Department Document Completion</h4>
+        <div class="department-grid" id="completion-dept-grid">
+            {% for dept in dept_completion %}
+                <div class="department-box completion-dept-card" onclick="toggleCompletionCardAccordion('{{ dept.id }}')" data-dept-id="{{ dept.id }}">
+                    <div class="department-title">
+                        {{ dept.name }}
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="completion-percentage">
+                        <div class="progress" style="height: 20px; margin: 10px 0;">
+                            <div class="progress-bar" 
+                                 style="width: {{ dept.percentage }}%; 
+                                        background: linear-gradient(135deg, #22b14c, #0d8331);"
+                                 role="progressbar">
+                                <strong>{{ dept.percentage }}%</strong>
+                            </div>
+                        </div>
+                        <small>{{ dept.filled }} / {{ dept.total }} files uploaded</small>
+                    </div>
+
+                    <!-- Hidden Completion Detail Card -->
+                    <div id="completion-card-{{ dept.id }}" class="completion-detail-card">
+                        <h6>📄 Document Breakdown</h6>
+                        <div class="document-list">
+                            {% if dept.documents %}
+                                {% for doc in dept.documents %}
+                                    <div class="document-item mb-3">
+                                        <div class="doc-header">
+                                            <strong>
+                                                <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                                            </strong>
+                                            <span class="doc-percentage 
+                                                {% if doc.percentage == 100 %}text-success
+                                                {% elif doc.percentage >= 50 %}text-warning
+                                                {% else %}text-danger{% endif %}">
+                                                {{ doc.percentage }}%
+                                            </span>
+                                        </div>
+                                        <div class="progress" style="height: 15px; margin: 5px 0;">
+                                            <div class="progress-bar 
+                                                {% if doc.percentage == 100 %}bg-success
+                                                {% elif doc.percentage >= 50 %}bg-warning
+                                                {% else %}bg-danger{% endif %}"
+                                                 style="width: {{ doc.percentage }}%">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ doc.filled }} / {{ doc.total }} files</small>
+
+                                        {% if doc.missing_files %}
+                                            <div class="missing-files mt-2">
+                                                <small class="text-danger"><strong>Missing:</strong></small>
+                                                <ul class="small mb-0">
+                                                    {% for file in doc.missing_files %}
+                                                        <li>{{ file }}</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No documents in this department</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 
 <!-- Department Revision Section -->
 <div class="mt-5">
@@ -622,6 +695,23 @@
 
 <!-- JS Toggle -->
 <script>
+function toggleCompletionCardAccordion(deptId) {
+    const clickedCard = document.getElementById("completion-card-" + deptId);
+    const clickedBox = document.querySelector(`.completion-dept-card[data-dept-id="${deptId}"]`);
+    const allCards = document.querySelectorAll('.completion-detail-card');
+    const allBoxes = document.querySelectorAll('.completion-dept-card');
+    
+    const isOpen = clickedCard.style.display === "block";
+    
+    allCards.forEach(card => card.style.display = "none");
+    allBoxes.forEach(box => box.classList.remove('expanded'));
+    
+    if (!isOpen) {
+        clickedCard.style.display = "block";
+        clickedBox.classList.add('expanded');
+    }
+}
+
 // Check if first time visit
 window.onload = function() {
     if (!localStorage.getItem('dashboardVisited')) {

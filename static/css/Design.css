@@ -22,29 +22,44 @@ section {
 /* --------------------------- */
 /* MEDIA GALLERY HEADER - MOVED MORE RIGHT */
 /* --------------------------- */
+/* In objectives.css - Add background to #media-gallery section */
+
+
+#media-gallery .gallery-header {
+    position: relative;
+    z-index: 1;
+}
+
+/* Responsive adjustment for mobile */
+@media (max-width: 600px) {
+    #media-gallery {
+        background-attachment: scroll;
+        padding: 20px 10px;
+    }
+}
 .gallery-header {
     text-align: center;
     margin-bottom: 30px;
     width: 100%;
     display: flex;
     justify-content: center;
-    padding-left: 550px;
+
 }
 
 .gallery-header h2 {
     color: #155724;
     font-size: 5rem;
     border-left: 6px solid #ffc107;
-    padding-left: 12px;
+
     display: inline-block;
 }
 
 @media (max-width: 1400px) {
-    .gallery-header { padding-left: 350px; }
+
     .gallery-header h2 { font-size: 4rem; }
 }
 @media (max-width: 1200px) {
-    .gallery-header { padding-left: 150px; }
+
     .gallery-header h2 { font-size: 3.5rem; }
 }
 @media (max-width: 900px) {
@@ -59,7 +74,7 @@ section {
     .gallery-header h2 { font-size: 1.8rem; }
 }
 @media (max-width: 480px) {
-    .gallery-header h2 { font-size: 1.5rem; padding-left: 8px; }
+    .gallery-header h2 { font-size: 1.5rem;}
 }
 
 /* --------------------------- */
@@ -609,6 +624,12 @@ section {
 .showcase-item:hover { transform:scale(1.02); }
 .showcase-item img { width:100%; height:auto; object-fit:contain; display:block; }
 
+.showcase-item.clicked {
+    transform: scale(1.3); /* slightly bigger */
+    z-index: 10; /* appear above others */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    position: relative;
+}
 @media(max-width:1400px){
     .image-showcase { 
         padding-left:30px!important; 

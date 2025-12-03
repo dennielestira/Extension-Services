@@ -379,7 +379,6 @@ def campus_admin_view(request):
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-
         ('ongoing', 'Ongoing'),
         ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
@@ -407,7 +406,7 @@ def campus_admin_view(request):
     }
 
     DAYFILE_NICKNAMES = {
-        "doc1": "Attendance Sheet ",
+        "doc1": "Attendance Sheet",
         "doc2": "Photo Documentation",
         "doc3": "Program",
         "doc4": "Supporting Document 1",
@@ -476,12 +475,102 @@ def campus_admin_view(request):
             "name": dept.name,
             "documents_with_revisions": revision_docs,
         })
+
+    # ✅ NEW: Department Completion Percentage Section
+    dept_completion_data = []
+    
+    # Define only the fields we want to track for percentage
+    TRACKED_INITIAL_FIELDS = {
+        "Activity_Proposal": "Activity Proposal",
+        "Work_and_Financial_Plan": "Work & Financial Plan",
+        "Plan_of_Activities": "Plan of Activities",
+    }
+    
+    TRACKED_DAYFILE_FIELDS = {
+        "doc1": "Attendance Sheet",
+        "doc2": "Photo Documentation",
+        "doc3": "Program",
+    }
+    
+    TRACKED_COMPLETION_FIELDS = {
+        "completion_doc1": "Approved Letter Request",
+        "completion_doc2": "Accomplished / Evaluation Form",
+    }
+    
+    for dept in departments:
+        total_slots = 0
+        filled_slots = 0
+        doc_details = []
+
+        for doc in dept.document_set.all():
+            doc_total = 0
+            doc_filled = 0
+            missing_files = []
+
+            # Count only tracked initial document fields
+            for field, nickname in TRACKED_INITIAL_FIELDS.items():
+                doc_total += 1
+                if getattr(doc, field, None):
+                    doc_filled += 1
+                else:
+                    missing_files.append(nickname)
+
+            # Count only tracked day file fields
+            for day in doc.days.all():
+                for dayfile in day.day_files.all():
+                    for field, nickname in TRACKED_DAYFILE_FIELDS.items():
+                        doc_total += 1
+                        if getattr(dayfile, field, None):
+                            doc_filled += 1
+                        else:
+                            day_identifier = day.date.strftime("%Y-%m-%d")
+                            missing_files.append(f"{nickname} for (Day {day_identifier})")
+
+
+            # Count only tracked completion fields
+            for completion in doc.files.all():
+                for field, nickname in TRACKED_COMPLETION_FIELDS.items():
+                    doc_total += 1
+                    if getattr(completion, field, None):
+                        doc_filled += 1
+                    else:
+                        missing_files.append(f"{nickname} (Completion)")
+
+            # Calculate document percentage
+            doc_percentage = (doc_filled / doc_total * 100) if doc_total > 0 else 0
+
+            doc_details.append({
+                "id": doc.id,
+                "name": doc.name,
+                "percentage": round(doc_percentage, 1),
+                "filled": doc_filled,
+                "total": doc_total,
+                "missing_files": missing_files
+            })
+
+            total_slots += doc_total
+            filled_slots += doc_filled
+
+        # Calculate department overall percentage
+        dept_percentage = (filled_slots / total_slots * 100) if total_slots > 0 else 0
+
+        dept_completion_data.append({
+            "id": dept.id,
+            "name": dept.name,
+            "percentage": round(dept_percentage, 1),
+            "filled": filled_slots,
+            "total": total_slots,
+            "documents": doc_details
+        })
+
     moa_list = MOAResource.objects.all().order_by('-uploaded_at')
+    
     # ✅ Render the template
     return render(request, 'accounts/campus_admin_dashboard.html', {
         'recent_updates': recent_updates,
         'status_data': status_data,
         'departments': dept_data,
+        'dept_completion': dept_completion_data,
         'moa_list': moa_list,
         'moa_form': MOAResourceForm(),
     })
@@ -624,19 +713,105 @@ def staff_extensionist_view(request):
             "name": dept.name,
             "documents_with_revisions": revision_docs,
         })
-        moa_list = MOAResource.objects.all().order_by('-uploaded_at')
+    # ✅ NEW: Department Completion Percentage Section
+    dept_completion_data = []
+    
+    # Define only the fields we want to track for percentage
+    TRACKED_INITIAL_FIELDS = {
+        "Activity_Proposal": "Activity Proposal",
+        "Work_and_Financial_Plan": "Work & Financial Plan",
+        "Plan_of_Activities": "Plan of Activities",
+    }
+    
+    TRACKED_DAYFILE_FIELDS = {
+        "doc1": "Attendance Sheet",
+        "doc2": "Photo Documentation",
+        "doc3": "Program",
+    }
+    
+    TRACKED_COMPLETION_FIELDS = {
+        "completion_doc1": "Approved Letter Request",
+        "completion_doc2": "Accomplished / Evaluation Form",
+    }
+    
+    for dept in departments:
+        total_slots = 0
+        filled_slots = 0
+        doc_details = []
 
-    return render(request, 'accounts/staff_extensionist_dashboard.html', {
+        for doc in dept.document_set.all():
+            doc_total = 0
+            doc_filled = 0
+            missing_files = []
+
+            # Count only tracked initial document fields
+            for field, nickname in TRACKED_INITIAL_FIELDS.items():
+                doc_total += 1
+                if getattr(doc, field, None):
+                    doc_filled += 1
+                else:
+                    missing_files.append(nickname)
+
+            # Count only tracked day file fields
+            for day in doc.days.all():
+                for dayfile in day.day_files.all():
+                    for field, nickname in TRACKED_DAYFILE_FIELDS.items():
+                        doc_total += 1
+                        if getattr(dayfile, field, None):
+                            doc_filled += 1
+                        else:
+                            day_identifier = day.date.strftime("%Y-%m-%d")
+                            missing_files.append(f"{nickname} for (Day {day_identifier})")
+
+
+            # Count only tracked completion fields
+            for completion in doc.files.all():
+                for field, nickname in TRACKED_COMPLETION_FIELDS.items():
+                    doc_total += 1
+                    if getattr(completion, field, None):
+                        doc_filled += 1
+                    else:
+                        missing_files.append(f"{nickname} (Completion)")
+
+            # Calculate document percentage
+            doc_percentage = (doc_filled / doc_total * 100) if doc_total > 0 else 0
+
+            doc_details.append({
+                "id": doc.id,
+                "name": doc.name,
+                "percentage": round(doc_percentage, 1),
+                "filled": doc_filled,
+                "total": doc_total,
+                "missing_files": missing_files
+            })
+
+            total_slots += doc_total
+            filled_slots += doc_filled
+
+        # Calculate department overall percentage
+        dept_percentage = (filled_slots / total_slots * 100) if total_slots > 0 else 0
+
+        dept_completion_data.append({
+            "id": dept.id,
+            "name": dept.name,
+            "percentage": round(dept_percentage, 1),
+            "filled": filled_slots,
+            "total": total_slots,
+            "documents": doc_details
+        })
+
+    moa_list = MOAResource.objects.all().order_by('-uploaded_at')
+    
+    # ✅ Render the template
+    return render(request, 'accounts/campus_admin_dashboard.html', {
         'recent_updates': recent_updates,
         'status_data': status_data,
         'departments': dept_data,
+        'dept_completion': dept_completion_data,
         'moa_list': moa_list,
+        'moa_form': MOAResourceForm(),
     })
 
-
-# -------------------------
-# Department Coordinator View
-# -------------------------
 @login_required
 def department_coordinator_view(request):
     if request.user.account_type != AccountType.DEPARTMENT_COORDINATOR:
@@ -647,18 +822,21 @@ def department_coordinator_view(request):
     department = request.user.department
     cutoff_date = now() - timedelta(days=30)
 
+    # -------------------------
     # Recent updates
+    # -------------------------
     recent_updates = Document.objects.filter(
         department=department,
         status_updated_at__gte=cutoff_date
     ).order_by('-status_updated_at')[:20]
 
+    # -------------------------
     # Status sections
+    # -------------------------
     statuses = [
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-
         ('ongoing', 'Ongoing'),
         ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
@@ -674,7 +852,9 @@ def department_coordinator_view(request):
         ).order_by('-status_updated_at')[:10]
         status_data.append({'label': label, 'code': code, 'documents': docs})
 
-    # ✅ Nicknames for document file labels
+    # -------------------------
+    # Nicknames
+    # -------------------------
     INITIAL_NICKNAMES = {
         "Activity_Proposal": "Activity Proposal",
         "Work_and_Financial_Plan": "Work & Financial Plan",
@@ -687,7 +867,7 @@ def department_coordinator_view(request):
     }
 
     DAYFILE_NICKNAMES = {
-        "doc1": "Attendance Sheet ",
+        "doc1": "Attendance Sheet",
         "doc2": "Photo Documentation",
         "doc3": "Program",
         "doc4": "Supporting Document 1",
@@ -705,8 +885,16 @@ def department_coordinator_view(request):
         "completion_doc8": "Supporting Document 6",
     }
 
+    # -------------------------
+    # Department documents
+    # -------------------------
+    dept_documents = Document.objects.filter(
+        department=department
+    ).prefetch_related("files", "days__day_files")
+
+    # -------------------------
     # Documents with revisions
-    dept_documents = Document.objects.filter(department=department).prefetch_related("files", "days__day_files")
+    # -------------------------
     documents_with_revisions = []
 
     for doc in dept_documents:
@@ -719,7 +907,7 @@ def department_coordinator_view(request):
             if hasattr(doc, status_field) and getattr(doc, status_field) == "revision":
                 revision_files.append(INITIAL_NICKNAMES.get(field, field.replace("_", " ").title()))
 
-        # Supporting files
+        # Day files
         for day in doc.days.all():
             for dayfile in day.day_files.all():
                 for field, nickname in DAYFILE_NICKNAMES.items():
@@ -740,18 +928,104 @@ def department_coordinator_view(request):
                 "name": doc.name,
                 "revision_files": revision_files
             })
-        moa_list = MOAResource.objects.all().order_by('-uploaded_at')
+
+    # -------------------------
+    # Department Completion Percentage
+    # -------------------------
+    TRACKED_INITIAL_FIELDS = {
+        "Activity_Proposal": "Activity Proposal",
+        "Work_and_Financial_Plan": "Work & Financial Plan",
+        "Plan_of_Activities": "Plan of Activities",
+    }
+
+    TRACKED_DAYFILE_FIELDS = {
+        "doc1": "Attendance Sheet",
+        "doc2": "Photo Documentation",
+        "doc3": "Program",
+    }
+
+    TRACKED_COMPLETION_FIELDS = {
+        "completion_doc1": "Approved Letter Request",
+        "completion_doc2": "Accomplished/Evaluation Form",
+    }
+
+    dept_completion_documents = []
+    total_slots = 0
+    filled_slots = 0
+
+    for doc in dept_documents:
+        doc_total = 0
+        doc_filled = 0
+        missing_files = []
+
+        # Initial fields
+        for field, nickname in TRACKED_INITIAL_FIELDS.items():
+            doc_total += 1
+            if getattr(doc, field, None):
+                doc_filled += 1
+            else:
+                missing_files.append(nickname)
+
+        # Day files
+        for day in doc.days.all():
+            for dayfile in day.day_files.all():
+                for field, nickname in TRACKED_DAYFILE_FIELDS.items():
+                    doc_total += 1
+                    if getattr(dayfile, field, None):
+                        doc_filled += 1
+                    else:
+                        missing_files.append(f"{nickname} ({day.date})")
+
+        # Completion files
+        for completion in doc.files.all():
+            for field, nickname in TRACKED_COMPLETION_FIELDS.items():
+                doc_total += 1
+                if getattr(completion, field, None):
+                    doc_filled += 1
+                else:
+                    missing_files.append(f"{nickname} (Completion)")
+
+        doc_percent = (doc_filled / doc_total * 100) if doc_total > 0 else 0
+
+        dept_completion_documents.append({
+            "id": doc.id,
+            "name": doc.name,
+            "filled": doc_filled,
+            "total": doc_total,
+            "percentage": round(doc_percent, 1),
+            "missing_files": missing_files
+        })
+
+        total_slots += doc_total
+        filled_slots += doc_filled
+
+    dept_total_percentage = (filled_slots / total_slots * 100) if total_slots > 0 else 0
+
+    # -------------------------
+    # MOA Resources
+    # -------------------------
+    moa_list = MOAResource.objects.all().order_by('-uploaded_at')
+
+    # For template
+    dept_completion_separated = {
+        department.name: dept_completion_documents
+    }
 
     return render(request, 'accounts/department_coordinator_dashboard.html', {
         'recent_updates': recent_updates,
         'status_data': status_data,
         'departments': [{
             "id": department.id,
-            "name": department.get_name_display(),
-            "documents_with_revisions": documents_with_revisions
+            "name": department.name,
+            "documents_with_revisions": documents_with_revisions,
+            "documents_completion": dept_completion_documents,
+            "department_completion_percentage": round(dept_total_percentage, 1),
         }],
+        'dept_completion_separated': dept_completion_separated,
         'moa_list': moa_list,
     })
+
+
 
 
 # -------------------------
@@ -778,7 +1052,6 @@ def extensionist_view(request):
         ('pending', 'Pending'),
         ('recommended', 'Recommended'),
         ('approved', 'Approved'),
-
         ('ongoing', 'Ongoing'),
         ('completion_processing', 'Completion Reviewing'),
         ('completion_recommended', 'Completion Recommended'),
@@ -861,6 +1134,53 @@ def extensionist_view(request):
                 "revision_files": revision_files
             })
 
+    # -------------------------
+    # Department Completion Percentages
+    # -------------------------
+    dept_completion = []
+    for doc in dept_documents:
+        total_files = 0
+        filled_files = 0
+        missing_files = []
+
+        # Initial fields
+        initial_fields = ["Activity_Proposal", "Work_and_Financial_Plan", "Plan_of_Activities"] + [f"doc{i}" for i in range(4, 9)]
+        for field in initial_fields:
+            total_files += 1
+            if getattr(doc, field, None):
+                filled_files += 1
+            else:
+                missing_files.append(INITIAL_NICKNAMES.get(field, field.replace("_", " ").title()))
+
+        # Day files
+        for day in doc.days.all():
+            for dayfile in day.day_files.all():
+                for field, nickname in DAYFILE_NICKNAMES.items():
+                    total_files += 1
+                    if getattr(dayfile, field, None):
+                        filled_files += 1
+                    else:
+                        missing_files.append(nickname)
+
+        # Completion files
+        for completion in doc.files.all():
+            for field, nickname in COMPLETION_NICKNAMES.items():
+                total_files += 1
+                if getattr(completion, field, None):
+                    filled_files += 1
+                else:
+                    missing_files.append(nickname)
+
+        percentage = round(filled_files / total_files * 100, 1) if total_files else 0
+        dept_completion.append({
+            "id": doc.id,
+            "name": doc.name,
+            "filled": filled_files,
+            "total": total_files,
+            "percentage": percentage,
+            "missing_files": missing_files
+        })
+
     return render(request, 'accounts/extensionist_dashboard.html', {
         'recent_updates': recent_updates,
         'status_data': status_data,
@@ -868,8 +1188,10 @@ def extensionist_view(request):
             "id": department.id,
             "name": department.get_name_display(),
             "documents_with_revisions": documents_with_revisions
-        }]
+        }],
+        'dept_completion': dept_completion,  # ✅ added for completion percentage
     })
+
 
 
 from django.contrib.auth.decorators import login_required
