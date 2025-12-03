@@ -22,34 +22,30 @@
         }
 
         /* ===== LEFT SIDEBAR (NEW) ===== */
-/* ===== LEFT SIDEBAR (RESPONSIVE) ===== */
+/* Sidebar */
 .left-sidebar {
     position: fixed;
     top: 0;
     left: 0;
-    width: 400px; /* default width */
+    width: 25vw;         /* responsive width */
+    max-width: 400px;
+    min-width: 100px;
     height: 100vh;
-    background-image: url("{% static 'image/sidebar.png' %}");
-    background-size: contain;          /* <-- change from cover to contain */
-    background-position: center center; /* center the image */
-    background-repeat: no-repeat;      /* don't tile the image */
     z-index: 1;
-    background-color: transparent;
-
-    backdrop-filter: blur(4px);
-    transition: width 0.3s ease;
+    overflow: hidden;
+    background-color: rgba(0,0,0,0); /* fully transparent */
 }
-@media (max-width: 1200px) { .left-sidebar { width: 300px; } }
-@media (max-width: 992px) { .left-sidebar { width: 220px; } }
-@media (max-width: 768px) { .left-sidebar { width: 150px; } }
-@media (max-width: 600px) { .left-sidebar { display: none; } }
 
+.sidebar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* image fills sidebar without distortion */
+    display: block;
+}
 
-/* Adjust main content margin to match sidebar */
+/* Main Content */
 .main-content {
-    margin-left: 400px; /* same as sidebar width */
-    margin-top: 10px;
-    padding: 30px;
+    margin-left: 25vw;  /* same as sidebar width */
     min-height: 100vh;
     background-image: url("{% static 'image/whole.png' %}");
     background-repeat: no-repeat;
@@ -57,31 +53,31 @@
     background-size: cover;
     background-attachment: fixed;
     position: relative;
-    z-index: 2;
-    box-sizing: border-box;
-    transition: margin-left 0.3s ease; /* smooth resizing */
+    z-index: 0;
+    transition: margin-left 0.3s ease;
 }
 
-/* ===== Responsive Sidebar Widths ===== */
+/* Responsive adjustments */
 @media (max-width: 1200px) {
-
-    .main-content { margin-left: 300px; }
+    .left-sidebar { width: 20vw; }
+    .main-content { margin-left: 20vw; }
 }
 
 @media (max-width: 992px) {
-
-    .main-content { margin-left: 220px; }
+    .left-sidebar { width: 18vw; }
+    .main-content { margin-left: 18vw; }
 }
 
 @media (max-width: 768px) {
-
-    .main-content { margin-left: 150px; }
+    .left-sidebar { width: 15vw; }
+    .main-content { margin-left: 15vw; }
 }
 
 @media (max-width: 600px) {
-
+    .left-sidebar { display: none; }
     .main-content { margin-left: 0; }
 }
+
 
 
         /* Hide sidebar on mobile */
@@ -279,7 +275,10 @@
 <body>
 
 <!-- Sidebar (NEW) -->
-<div class="left-sidebar"></div>
+<div class="left-sidebar">
+    <img src="{% static 'image/sidebar.png' %}" alt="Sidebar Image" class="sidebar-img">
+</div>
+
 
 <!-- Topbar -->
 <div class="topbar">
