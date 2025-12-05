@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["extension-ah4y.onrender.com", "localhost", "127.0.0.1", "*"]
 
+CSRF_TRUSTED_ORIGINS = ['https://extension-services-production.up.railway.app']
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
@@ -100,23 +101,25 @@ WSGI_APPLICATION = 'school_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
 #DATABASES = {
 #    'default': {
-#        #'ENGINE': 'django.db.backends.sqlite3',
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'railway',
-#        'USER': 'postgres',
-#        'PASSWORD': 'XHaeSMXXLOMEqjbpqVOGRREcXaIlBJrw',
-#        'HOST': 'postgres.railway.internal',
-#        'PORT': '5432',
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
 #    }
 #}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'railway',
+        'USER': 'postgres',
+        'PASSWORD': 'XHaeSMXXLOMEqjbpqVOGRREcXaIlBJrw',
+        'HOST': 'trolley.proxy.rlwy.net',  # just the host, no "postgresql://..."
+        'PORT': '50660',                   # port from your Railway URL
+    }
+}
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
