@@ -2750,6 +2750,7 @@ from .models import Media, PhotoAlbum, ShowcaseImage
 def home2(request):
     # ----------------- Photos (gallery) -----------------
     photos = Media.objects.filter(media_type='photo').order_by('-id')
+    total_photos = photos.count()  # Add this
     photos_per_page = 9
     paginator = Paginator(photos, photos_per_page)
     page_number = request.GET.get('page')
@@ -2757,7 +2758,7 @@ def home2(request):
 
     # ----------------- Videos (gallery) -----------------
     videos = Media.objects.filter(media_type='video').order_by('-id')
-    total_videos = videos.count()  # <-- IMPORTANT LINE
+    total_videos = videos.count()
 
     videos_per_page = 4
     video_paginator = Paginator(videos, videos_per_page)
@@ -2766,6 +2767,7 @@ def home2(request):
 
     # ----------------- Photo Albums -----------------
     albums_list = PhotoAlbum.objects.prefetch_related('photos').all().order_by('-created_at')
+    total_albums = albums_list.count()  # Add this
     albums_per_page = 9
     album_paginator = Paginator(albums_list, albums_per_page)
     album_page_number = request.GET.get('album_page')
@@ -2773,15 +2775,18 @@ def home2(request):
 
     # ----------------- Showcase Images -----------------
     showcase_images = ShowcaseImage.objects.all().order_by('position')
+    moa_list = MOAResource.objects.all().order_by('-uploaded_at')
 
     return render(request, 'accounts/home2.html', {
         'page_obj': page_obj,
+        'total_photos': total_photos,  # Add this
         'video_page_obj': video_page_obj,
+        'total_videos': total_videos,
         'albums': albums_page,
+        'total_albums': total_albums,  # Add this
+        'moa_list': moa_list,
         'showcase_images': showcase_images,
-        'total_videos': total_videos,  # <-- FIXED
     })
-
 
 
 from django.shortcuts import render, redirect, get_object_or_404

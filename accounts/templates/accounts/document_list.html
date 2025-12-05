@@ -4,21 +4,26 @@
 
 {% block content %}
 <link rel="stylesheet" type="text/css" href="{% static 'css/documents_list.css' %}">
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+
 <div class="documents-wrapper container mt-5">
     <div class="documents-card p-4 shadow-sm">
         <h2 class="document-title mb-4">📚 Document List</h2>
 
         <!-- Status Filter Form -->
-        <form method="get" class="mb-3">
+        <form method="get" class="mb-3" id="statusFilterForm">
             <div class="row g-2 align-items-center">
                 <div class="col-auto">
                     <label for="status" class="form-label fw-bold">Filter by Status:</label>
                 </div>
                 <div class="col-md-4 col-sm-6">
-                    <select name="status" id="status" class="form-select" onchange="this.form.submit()">
+                    <select name="status" id="status" class="form-select">
                         <option value="">All</option>
                         {% for value, label in all_statuses %}
-                            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+                            <option value="{{ label }}" {% if selected_status == value %}selected{% endif %}>
                                 {{ label }}
                             </option>
                         {% endfor %}
@@ -27,10 +32,10 @@
             </div>
         </form>
 
-        <!-- Scrollable Table -->
-        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-            <table class="table table-bordered table-hover align-middle mb-0">
-                <thead class="table-light sticky-top bg-white" style="top: 0;">
+        <!-- DataTable -->
+        <div class="table-responsive">
+            <table id="documentsTable" class="table table-bordered table-hover align-middle mb-0" style="width:100%">
+                <thead class="table-light">
                     <tr>
                         <th scope="col">Name</th>
                         <th scope="col">Status</th>
@@ -40,31 +45,178 @@
                     </tr>
                 </thead>
                 <tbody>
-{% for doc in documents %}
-    <tr>
-        <td class="fw-semibold">{{ doc.name }}</td>
-        <td>{{ doc.get_status_display }}</td>
-        <td>
-            {% if doc.uploaded_by %}
-                {{ doc.uploaded_by.get_full_name }}
-            {% else %}
-                {{ doc.uploaded_by_name }}
-            {% endif %}
-        </td>
-        <td>{{ doc.department.name }}</td>
-        <td>
-            <a href="{% url 'view_document' doc.id %}" class="btn btn-sm btn-outline-primary">View</a>
-        </td>
-    </tr>
-{% empty %}
-    <tr>
-        <td colspan="5" class="text-center">No documents found.</td>
-    </tr>
-{% endfor %}
-
+                    {% for doc in documents %}
+                    <tr>
+                        <td class="fw-semibold">{{ doc.name }}</td>
+                        <td>{{ doc.get_status_display }}</td>
+                        <td>
+                            {% if doc.uploaded_by %}
+                                {{ doc.uploaded_by.get_full_name }}
+                            {% else %}
+                                {{ doc.uploaded_by_name }}
+                            {% endif %}
+                        </td>
+                        <td>{{ doc.department.name }}</td>
+                        <td>
+                            <a href="{% url 'view_document' doc.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">No documents found.</td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Initialize DataTable
+    var table = $('#documentsTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        language: {
+            search: "Search documents:",
+            lengthMenu: "Show _MENU_ documents per page",
+            info: "Showing _START_ to _END_ of _TOTAL_ documents",
+            infoEmpty: "No documents available",
+            infoFiltered: "(filtered from _MAX_ total documents)",
+            zeroRecords: "No matching documents found",
+            emptyTable: "No documents found.",
+            paginate: {
+                first: "First",
+                last: "Last",
+                next: "Next",
+                previous: "Previous"
+            }
+        },
+        order: [[0, 'asc']], // Sort by Name column by default
+        columnDefs: [
+            {
+                targets: 4, // Actions column
+                orderable: false,
+                searchable: false
+            }
+        ],
+        // Styling
+        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
+             '<"row"<"col-sm-12"tr>>' +
+             '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+    });
+
+    // Status filter functionality
+    $('#status').on('change', function() {
+        var selectedStatus = $(this).val();
+        
+        if (selectedStatus === '') {
+            // Show all rows
+            table.column(1).search('').draw();
+        } else {
+            // Filter by selected status
+            table.column(1).search('^' + selectedStatus + '$', true, false).draw();
+        }
+    });
+
+    // Apply initial filter if status is pre-selected
+    {% if selected_status %}
+        var initialStatus = $('#status option:selected').text();
+        if (initialStatus) {
+            table.column(1).search('^' + initialStatus + '$', true, false).draw();
+        }
+    {% endif %}
+
+    // Enhance button styles
+    $('.btn-outline-primary').hover(
+        function() {
+            $(this).removeClass('btn-outline-primary').addClass('btn-primary');
+        },
+        function() {
+            $(this).removeClass('btn-primary').addClass('btn-outline-primary');
+        }
+    );
+});
+</script>
+
+<style>
+/* DataTables Custom Styling */
+#documentsTable_wrapper .dataTables_length,
+#documentsTable_wrapper .dataTables_filter {
+    margin-bottom: 15px;
+}
+
+#documentsTable_wrapper .dataTables_length select {
+    width: auto;
+    display: inline-block;
+    margin: 0 5px;
+}
+
+#documentsTable_wrapper .dataTables_filter input {
+    margin-left: 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+}
+
+#documentsTable_wrapper .dataTables_info {
+    padding-top: 10px;
+    font-size: 0.9rem;
+}
+
+#documentsTable_wrapper .dataTables_paginate {
+    padding-top: 10px;
+}
+
+#documentsTable_wrapper .dataTables_paginate .pagination {
+    margin: 0;
+}
+
+/* Make table headers sticky */
+#documentsTable thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #documentsTable_wrapper .dataTables_length,
+    #documentsTable_wrapper .dataTables_filter {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    #documentsTable_wrapper .dataTables_info,
+    #documentsTable_wrapper .dataTables_paginate {
+        text-align: center;
+    }
+}
+
+/* Loading state */
+#documentsTable_processing {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+}
+</style>
+
 {% endblock %}
