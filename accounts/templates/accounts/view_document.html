@@ -296,7 +296,7 @@
     <!-- End Card for Editing Initial Uploads -->
 {% endif %}
 {% endif %}
-{% if document.status == 'ongoing' %}
+{% if document.status != 'pending' %}
 <div class="card shadow mt-3 border-0">
   <div class="card-body">
 
@@ -317,14 +317,14 @@
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body bg-light rounded">
 
-            <!-- ➕ Add Day -->
+            <!-- ➕ Add Day -->{% if user.account_type == 'Department Coordinator' or user.account_type == 'Staff Extensionist'%} 
             <h6 class="fw-bold text-primary">➕ Add Day</h6>
             <form method="post" class="mb-3">
               {% csrf_token %}
               {{ day_form.as_p }}
               <button type="submit" name="add_day" class="btn btn-success btn-sm">Save Day</button>
             </form>
-
+            {% endif %}
             <hr>
 
             <!-- ⬆ Upload Training Report -->
