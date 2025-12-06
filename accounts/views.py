@@ -155,41 +155,29 @@ from .forms import ExtensionistRegistrationForm
 
 @login_required
 def register_extensionist(request):
+
     if request.method == 'POST':
-        form = ExtensionistRegistrationForm(request.POST)
+        form = ExtensionistRegistrationForm(request.POST, user=request.user)   # <-- FIXED
         if form.is_valid():
             user = form.save(commit=False)
             user.account_type = 'Extensionist'
-            
-            # ✅ Automatically set department from coordinator's department
-            if hasattr(request.user, 'department') and request.user.department:
-                user.department = request.user.department
-            
+            user.department = request.user.department   # <-- Automatic
+
             user.save()
-            # ✅ Success message for this specific form
+
             messages.success(request, 'Extensionist account has been successfully created.')
             return redirect('register_extensionist')
+
         else:
-            # ✅ Error message for failed registration
             messages.error(request, 'There was an error creating the account. Please check the form and try again.')
+
     else:
-        form = ExtensionistRegistrationForm()
-        
-        # ✅ Pre-fill department field with coordinator's department and make it read-only
-        if hasattr(request.user, 'department') and request.user.department:
-            form.fields['department'].initial = request.user.department
-            form.fields['department'].widget.attrs['readonly'] = True
-            form.fields['department'].disabled = True
+        form = ExtensionistRegistrationForm(user=request.user)   # <-- FIXED (pass user)
 
-    # ✅ Only keep error-type messages for rendering (hide unrelated ones)
-    storage = messages.get_messages(request)
-    filtered_messages = [m for m in storage if 'error' in m.tags or 'danger' in m.tags]
-
-    context = {
+    return render(request, 'accounts/register_extensionist.html', {
         'form': form,
-        'messages': filtered_messages,  # Pass only error messages to the template
-    }
-    return render(request, 'accounts/register_extensionist.html', context)
+    })
+
 
 
 User = get_user_model()
@@ -574,18 +562,27 @@ def campus_admin_view(request):
         'moa_list': moa_list,
         'moa_form': MOAResourceForm(),
     })
+def get_redirect_path(user):
+    if user.account_type == AccountType.CAMPUS_ADMIN:
+        return 'campus_admin_dashboard'
+    if user.account_type == AccountType.STAFF_EXTENSIONIST:
+        return 'staff_extensionist_view'
+    return 'home'  # fallback
+
 @login_required
 def upload_moa(request):
     if request.method == 'POST':
         form = MOAResourceForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-    return redirect('campus_admin_dashboard')
+    return redirect(get_redirect_path(request.user))
+
 @login_required
 def delete_moa(request, moa_id):
     moa = MOAResource.objects.get(id=moa_id)
     moa.delete()
-    return redirect('campus_admin_dashboard')
+    return redirect(get_redirect_path(request.user))
+
 @login_required
 def edit_moa(request, moa_id):
     moa = MOAResource.objects.get(id=moa_id)

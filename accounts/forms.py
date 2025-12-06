@@ -85,16 +85,32 @@ class DepartmentCoordinatorRegistrationForm(UserCreationForm):
 
 
 class ExtensionistRegistrationForm(UserCreationForm):
-    department = forms.ModelChoiceField(queryset=Department.objects.none(), required=True, label='Department')
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.none(),
+        required=False,                # <-- Make NOT required (important)
+        label='Department'
+    )
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password1', 'password2', 'full_name', 'contact_number', 'gender', 'department')
-
+        fields = (
+            'username', 'email', 'password1', 'password2',
+            'full_name', 'contact_number', 'gender', 'department'
+        )
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)   # <-- receive current user
         super().__init__(*args, **kwargs)
+
         self.fields['department'].queryset = Department.objects.all()
+
+        # If a coordinator is creating an extensionist
+        if user and hasattr(user, 'department') and user.department:
+            self.fields['department'].initial = user.department
+            self.fields['department'].widget.attrs['readonly'] = True
+            self.fields['department'].widget.attrs['style'] = (
+                'pointer-events:none; background:#eee;'
+            )
 
 
 class DocumentCommentForm(forms.ModelForm):
