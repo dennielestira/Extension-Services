@@ -310,19 +310,35 @@ def list_department_coordinators(request):
     return render(request, 'accounts/department_coordinators_list.html', {
         'grouped_coordinators': dict(grouped)
     })
+from collections import defaultdict
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from accounts.models import User  # make sure this is your User model
 
 @login_required
 def list_extensionists(request):
+    user = request.user
+
+    # Base queryset
     extensionists = User.objects.filter(account_type='Extensionist')
 
+    # Restrict by department if the user is a Department Coordinator or Extensionist
+    if user.account_type in ['Department Coordinator', 'Extensionist']:
+        if user.department:
+            extensionists = extensionists.filter(department=user.department)
+        else:
+            extensionists = User.objects.none()  # no department, show nothing
+
+    # Group by department
     grouped = defaultdict(list)
-    for user in extensionists:
-        department = user.department if user.department else 'No Department'
-        grouped[department].append(user)
+    for ext in extensionists:
+        dept_name = ext.department if ext.department else 'No Department'
+        grouped[dept_name].append(ext)
 
     return render(request, 'accounts/extensionists_list.html', {
         'grouped_extensionists': dict(grouped)
     })
+
 
 @login_required
 def super_admin_view(request):

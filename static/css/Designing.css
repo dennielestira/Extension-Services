@@ -998,3 +998,22 @@ section {
     .fb-info a { font-size: 0.8rem; }
     .project { padding: 0 10px; font-size: 0.85rem; }
 }
+
+.image-showcase {
+    margin-left: 320px !important;
+    width: calc(100% - 340px);
+}
+
+@media (max-width: 1200px) {
+    .image-showcase {
+        margin-left: 270px !important;
+        width: calc(100% - 290px);
+    }
+}
+
+@media (max-width: 992px) {
+    .image-showcase {
+        margin-left: 0 !important;
+        width: 100%;
+    }
+}
