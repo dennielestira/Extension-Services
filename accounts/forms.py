@@ -23,6 +23,7 @@ class CustomUserCreationForm(UserCreationForm):
         super().__init__(*args, **kwargs)
 
         excluded = [
+            AccountType.SUPER_ADMIN,
             AccountType.DEPARTMENT_COORDINATOR,
             AccountType.EXTENSIONIST,
         ]
