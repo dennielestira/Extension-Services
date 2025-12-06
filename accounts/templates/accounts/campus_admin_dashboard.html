@@ -504,13 +504,13 @@
             <form action="{% url 'upload_moa' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <label class="mt-2">MOA Title:</label>
+                <label class="mt-2" style="color:#1b5e20;">MOA Title:</label>
                 <input type="text" name="title" class="form-control mb-3" required>
 
-                <label>Logo Image:</label>
+                <label style="color:#1b5e20;">Logo Image:</label>
                 <input type="file" name="logo" accept="image/*" class="form-control mb-3" required>
 
-                <label>PDF File:</label>
+                <label style="color:#1b5e20;">PDF File:</label>
                 <input type="file" name="pdf_file" accept="application/pdf" class="form-control mb-4" required>
 
                 <button class="upload-btn">Upload</button>
@@ -519,7 +519,7 @@
 
         <!-- Hide/Show Edit Delete -->
         <button class="toggle-edit-btn" onclick="toggleMOAControls()" style="display:none;">
-            🛠 Show / Hide Edit & Delete
+            🛠 Show / Hide  Delete
         </button>
 
         <!-- MOA Logos -->
@@ -534,7 +534,6 @@
                         <div class="moa-title">{{ moa.title }}</div>
 
                         <div class="moa-controls">
-                            <a href="{% url 'edit_moa' moa.id %}" class="text-primary">Edit</a> |
                             <a href="{% url 'delete_moa' moa.id %}" class="text-danger"
                                onclick="return confirm('Delete this MOA?')">Delete</a>
                         </div>

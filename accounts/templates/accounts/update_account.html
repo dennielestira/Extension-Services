@@ -38,10 +38,7 @@
                         {% endif %}
                     </div>
                 {% endfor %}
-                    {% if request.user.profile_image %}
-    <div style="margin-bottom: 10px;">
-        <img src="{{ request.user.profile_image.url }}" alt="Current Profile Image" style="width: 100px; height: auto;">
-    </div>
+
 {% endif %}
                 <div class="submit">
                     <button type="submit">Update Info</button>

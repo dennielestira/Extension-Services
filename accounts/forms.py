@@ -17,7 +17,7 @@ from django.contrib.auth import get_user_model
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
         model = CustomUser
-        fields = ['username', 'full_name', 'email', 'contact_number', 'gender', 'password1', 'password2', 'account_type', 'profile_image']
+        fields = ['username', 'full_name', 'email', 'contact_number', 'gender', 'password1', 'password2', 'account_type']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -45,7 +45,7 @@ class UserEditForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'full_name', 'contact_number', 'gender', 'profile_image', 'department']
+        fields = ['username', 'email', 'full_name', 'contact_number', 'gender']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,7 +78,7 @@ class DepartmentCoordinatorRegistrationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('username', 'email', 'password1', 'password2', 'full_name', 'contact_number', 'gender', 'department', 'profile_image')
+        fields = ('username', 'email', 'password1', 'password2', 'full_name', 'contact_number', 'gender', 'department')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
