@@ -47,7 +47,7 @@
 
                 <p><strong>Department:</strong> {{ document.department }}</p>
                 <p><strong>Status:</strong> {{ document.get_status_display }}</p>
-{% if user.account_type == 'Campus Admin' and document.status != 'ongoing' and document.status != 'completed' and document.status != 'completion_processing' and document.status != 'completion_recommended' %}
+{% if user.account_type == 'Campus Admin' and document.status != 'ongoing' and document.status != 'completed' and document.status != 'completion_processing' and document.status != 'completion_recommended' and document.status != 'recommended'%}
     <a href="{% url 'approve_document' document.id %}" 
        class="btn btn-sm btn-success me-2 mb-2"
        onclick="return confirm('Are you sure you want to approve this without recommendation?');">
@@ -118,11 +118,12 @@
     <h5 class="card-title">Initial Uploaded Files:</h5>
 
     {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+    {%  if document.status != 'Completed' %}
       <button class="btn btn-sm btn-secondary mb-3" id="toggle-initial-revision-btn">
         Show All Revision Buttons
       </button>
     {% endif %}
-
+{% endif %}
     <div class="file-container">
       {% for name, title, file, status, uploaded_by, uploaded_at in file_list %}
         {% if file %}
@@ -800,7 +801,7 @@
 
       <!-- Revision Controls -->
       {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-
+      {%  if document.status != 'Completed' %}
         <div class="mt-3">
           <button class="btn btn-sm btn-secondary mb-2 toggle-day-revision-btn">Show Revision Controls</button>
           <div class="day-revision-controls" style="display:none;">
@@ -820,7 +821,7 @@
           </div>
         </div>
       {% endif %}
-
+        {% endif %}
     {% endwith %}
   {% else %}
     <p class="text-muted">No supporting documents uploaded yet.</p>
@@ -846,9 +847,11 @@
       <h5 class="card-title">Uploaded Completion Documents:</h5>
 
       {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+      {%  if document.status != 'Completed' %}
         <button class="btn btn-sm btn-secondary mb-3" id="toggle-completion-revision-btn">
           Show All Revision Buttons
         </button>
+        {% endif %}
       {% endif %}
 
       <div class="file-container">
