@@ -478,7 +478,6 @@ class DocumentDay(models.Model):
 
 class DayTrainingReport(models.Model):
     day = models.ForeignKey("DocumentDay", on_delete=models.CASCADE, related_name="training_reports")
-    title = models.CharField(max_length=255)
     file = models.FileField(upload_to="day_training_reports/")
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
