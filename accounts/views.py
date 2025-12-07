@@ -1611,6 +1611,10 @@ def handle_file_upload(instance, slot_choice, uploaded_file, user=None):
                 setattr(instance, status_field, "uploaded")   # or pending, draft, etc.
 
         instance.save()
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 # -------------------------------
 # VIEW
@@ -1650,6 +1654,31 @@ def view_document(request, document_id):
     revision_feedbacks = DocumentRevisionFeedback.objects.filter(document=document).order_by("-created_at")
     day_revision_feedbacks = DayRevisionFeedback.objects.filter(document=document)
     completion_feedbacks = CompletionRevisionFeedback.objects.filter(document=document)
+
+    # Document nickname mapping for emails
+    doc_nickname_map = {
+        'Activity_Proposal': 'Activity Proposal',
+        'Work_and_Financial_Plan': 'Work and Financial Plan',
+        'Plan_of_Activities': 'Plan of Activities',
+        'doc4': 'Supporting Document 1',
+        'doc5': 'Supporting Document 2',
+        'doc6': 'Supporting Document 3',
+        'doc7': 'Supporting Document 4',
+        'doc8': 'Supporting Document 5',
+        'completion_doc1': 'Approve Letter Request',
+        'completion_doc2': 'Accomplished/Evaluation Form',
+        'completion_doc3': 'Autority To Go',
+        'completion_doc4': 'Supporting Document 1',
+        'completion_doc5': 'Supporting Document 2',
+        'completion_doc6': 'Supporting Document 3',
+        'completion_doc7': 'Supporting Document 4',
+        'completion_doc8': 'Supporting Document 5',
+        'day_doc1': 'Attendance Sheet',
+        'day_doc2': 'Photo Documentation',
+        'day_doc3': 'Program',
+        'day_doc4': 'Day Supporting Document 1',
+        'day_doc5': 'Day Supporting Document 2',
+    }
 
     if request.method == "POST":
 
@@ -1696,7 +1725,7 @@ def view_document(request, document_id):
             if slot_choice in valid_slots and uploaded_file:
                 if not existing_completion:
                     existing_completion = DocumentFile(document=document)
-                handle_file_upload(existing_completion, slot_choice, uploaded_file, user)  # ← Added user
+                handle_file_upload(existing_completion, slot_choice, uploaded_file, user)
                 clear_feedback(document)
                 messages.success(request, f"{slot_choice.replace('_', ' ').title()} updated successfully.")
             else:
@@ -1706,13 +1735,36 @@ def view_document(request, document_id):
         elif "mark_revision_completion" in request.POST and can_comment:
             slot_choice = request.POST.get("revision_doc")
             valid_slots = [f"completion_doc{i}" for i in range(1, 9)]
+
             if slot_choice in valid_slots and existing_completion and hasattr(existing_completion, slot_choice):
                 setattr(existing_completion, f"{slot_choice}_status", "revision")
                 existing_completion.save()
                 messages.warning(request, f"{slot_choice.replace('_', ' ').title()} marked for revision.")
+
+                # ---- Email Notification ----
+                recipients = User.objects.filter(
+                    account_type__in=["Department Coordinator", "Extensionist"],
+                    department=document.department
+                ).values_list("email", flat=True)
+
+                if recipients:
+                    # Get the nickname from mapping
+                    doc_name = doc_nickname_map.get(slot_choice, slot_choice.replace('_', ' ').title())
+                    
+                    subject = f"Revision Needed: {document.name} - {doc_name} (Completion)"
+                    message = f"""Dear Team,
+
+The completion document '{doc_name}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+
+Please review and update it as soon as possible.
+
+Thank you."""
+                    send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
             else:
                 messages.error(request, "Invalid slot or completion document not found.")
+
             return redirect("view_document", document_id=document.id)
+
 
         elif "submit_completion_revision_comment" in request.POST and can_comment:
             slot_name = request.POST.get("completion_slot")
@@ -1740,7 +1792,7 @@ def view_document(request, document_id):
             uploaded_file = request.FILES.get("initial_selected_file")
             valid_slots = ["Activity_Proposal", "Work_and_Financial_Plan", "Plan_of_Activities"] + [f"doc{i}" for i in range(4, 9)]
             if slot_choice in valid_slots and uploaded_file:
-                handle_file_upload(document, slot_choice, uploaded_file, user)  # ← Added user
+                handle_file_upload(document, slot_choice, uploaded_file, user)
                 clear_feedback(document)
                 messages.success(request, f"{slot_choice.replace('_', ' ').title()} uploaded successfully.")
             else:
@@ -1750,31 +1802,51 @@ def view_document(request, document_id):
         elif "mark_initial_revision" in request.POST and can_comment:
             slot_choice = request.POST.get("revision_doc")
             comment_text = request.POST.get("revision_comment")
-            image = request.FILES.get("revision_image")
-
             valid_slots = ["Activity_Proposal", "Work_and_Financial_Plan", "Plan_of_Activities"] + [f"doc{i}" for i in range(4, 9)]
+
             if slot_choice not in valid_slots:
                 messages.error(request, "Invalid slot selected.")
                 return redirect("view_document", document_id=document.id)
 
-            # Mark the document slot for revision
+            # Mark the slot for revision
             setattr(document, f"{slot_choice}_status", "revision")
             document.save()
 
-            # Add comment if provided
+            # Add feedback if provided
             if comment_text:
                 DocumentRevisionFeedback.objects.create(
                     document=document,
                     slot_name=slot_choice,
                     user=user,
                     comment=comment_text,
-                    image=image
+                    image=request.FILES.get("revision_image")
                 )
                 messages.warning(request, f"{slot_choice.replace('_', ' ').title()} marked for revision with feedback.")
             else:
                 messages.warning(request, f"{slot_choice.replace('_', ' ').title()} marked for revision (no comment added).")
 
+            # ---- Send email to Department Coordinator & Extensionist of the same department ----
+            recipients = User.objects.filter(
+                account_type__in=["Department Coordinator", "Extensionist"],
+                department=document.department
+            ).values_list("email", flat=True)
+
+            if recipients:
+                # Get the nickname from mapping
+                doc_name = doc_nickname_map.get(slot_choice, slot_choice.replace('_', ' ').title())
+                
+                subject = f"Revision Needed: {document.name} - {doc_name}"
+                message = f"""Dear Team,
+
+The document '{doc_name}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+
+Please review and update it as soon as possible.
+
+Thank you."""
+                send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
+
             return redirect("view_document", document_id=document.id)
+
 
 
         elif "submit_revision_comment" in request.POST:
@@ -1894,7 +1966,6 @@ def view_document(request, document_id):
             day = get_object_or_404(DocumentDay, id=day_id, document=document)
             day_files, _ = DocumentDayFile.objects.get_or_create(day=day)
 
-            # ← Pass user here
             handle_file_upload(day_files, slot, uploaded_file, user)
 
             clear_feedback(document)
@@ -1927,8 +1998,30 @@ def view_document(request, document_id):
                 setattr(day_files, f"{slot_choice.replace('day_', '')}_status", "revision")
                 day_files.save()
                 messages.warning(request, f"{slot_choice.replace('day_', '').title()} marked for revision.")
+
+                # ---- SEND EMAIL NOTIFICATION ----
+                recipients = User.objects.filter(
+                    account_type__in=["Department Coordinator", "Extensionist"],
+                    department=document.department
+                ).values_list("email", flat=True)
+
+                if recipients:
+                    # Get nickname from mapping (day_doc1 -> "Day Supporting Document 1")
+                    doc_name = doc_nickname_map.get(slot_choice, f"Doc{slot_choice.replace('day_doc', '')}")
+                    
+                    subject = f"Day File Revision Needed: {document.name} - {day.title} - {doc_name}"
+                    message = f"""Dear Team,
+
+The day file '{doc_name}' for '{day.title}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+
+Please review and update it accordingly.
+
+Thank you."""
+                    send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
+
             else:
                 messages.error(request, "Invalid file slot.")
+
             return redirect("view_document", document_id=document.id)
 
         elif "submit_day_revision_comment" in request.POST:
@@ -1964,15 +2057,15 @@ def view_document(request, document_id):
         document.Work_and_Financial_Plan_uploaded_by, document.Work_and_Financial_Plan_uploaded_at),
         ('Plan_of_Activities', 'Plan of Activities', document.Plan_of_Activities, document.Plan_of_Activities_status,
         document.Plan_of_Activities_uploaded_by, document.Plan_of_Activities_uploaded_at),
-        ('doc4', 'Extra Document 1', document.doc4, document.doc4_status,
+        ('doc4', 'Supporting Document 1', document.doc4, document.doc4_status,
         document.doc4_uploaded_by, document.doc4_uploaded_at),
-        ('doc5', 'Extra Document 2', document.doc5, document.doc5_status,
+        ('doc5', 'Supporting Document 2', document.doc5, document.doc5_status,
         document.doc5_uploaded_by, document.doc5_uploaded_at),
-        ('doc6', 'Extra Document 3', document.doc6, document.doc6_status,
+        ('doc6', 'Supporting Document 3', document.doc6, document.doc6_status,
         document.doc6_uploaded_by, document.doc6_uploaded_at),
-        ('doc7', 'Extra Document 4', document.doc7, document.doc7_status,
+        ('doc7', 'Supporting Document 4', document.doc7, document.doc7_status,
         document.doc7_uploaded_by, document.doc7_uploaded_at),
-        ('doc8', 'Extra Document 5', document.doc8, document.doc8_status,
+        ('doc8', 'Supporting Document 5', document.doc8, document.doc8_status,
         document.doc8_uploaded_by, document.doc8_uploaded_at),
     ]
 
@@ -1982,29 +2075,29 @@ def view_document(request, document_id):
             existing_completion.completion_doc1_uploaded_by, existing_completion.completion_doc1_uploaded_at),
             ('completion_doc2', 'Accomplished/Evaluation Form', existing_completion.completion_doc2, existing_completion.completion_doc2_status,
             existing_completion.completion_doc2_uploaded_by, existing_completion.completion_doc2_uploaded_at),
-            ('completion_doc3', 'Extra Document 1', existing_completion.completion_doc3, existing_completion.completion_doc3_status,
+            ('completion_doc3', 'Supporting Document 1', existing_completion.completion_doc3, existing_completion.completion_doc3_status,
             existing_completion.completion_doc3_uploaded_by, existing_completion.completion_doc3_uploaded_at),
-            ('completion_doc4', 'Extra Document 2', existing_completion.completion_doc4, existing_completion.completion_doc4_status,
+            ('completion_doc4', 'Supporting Document 2', existing_completion.completion_doc4, existing_completion.completion_doc4_status,
             existing_completion.completion_doc4_uploaded_by, existing_completion.completion_doc4_uploaded_at),
-            ('completion_doc5', 'Extra Document 3', existing_completion.completion_doc5, existing_completion.completion_doc5_status,
+            ('completion_doc5', 'Supporting Document 3', existing_completion.completion_doc5, existing_completion.completion_doc5_status,
             existing_completion.completion_doc5_uploaded_by, existing_completion.completion_doc5_uploaded_at),
-            ('completion_doc6', 'Extra Document 4', existing_completion.completion_doc6, existing_completion.completion_doc6_status,
+            ('completion_doc6', 'Supporting Document 4', existing_completion.completion_doc6, existing_completion.completion_doc6_status,
             existing_completion.completion_doc6_uploaded_by, existing_completion.completion_doc6_uploaded_at),
-            ('completion_doc7', 'Extra Document 5', existing_completion.completion_doc7, existing_completion.completion_doc7_status,
+            ('completion_doc7', 'Supporting Document 5', existing_completion.completion_doc7, existing_completion.completion_doc7_status,
             existing_completion.completion_doc7_uploaded_by, existing_completion.completion_doc7_uploaded_at),
-            ('completion_doc8', 'Extra Document 6', existing_completion.completion_doc8, existing_completion.completion_doc8_status,
+            ('completion_doc8', 'Supporting Document 6', existing_completion.completion_doc8, existing_completion.completion_doc8_status,
             existing_completion.completion_doc8_uploaded_by, existing_completion.completion_doc8_uploaded_at),
         ]
     else:
         completion_file_list = [
             ('completion_doc1', 'Approve Letter Request', None, None, None, None),
             ('completion_doc2', 'Accomplished/Evaluation Form', None, None, None, None),
-            ('completion_doc3', 'Extra Document 1', None, None, None, None),
-            ('completion_doc4', 'Extra Document 2', None, None, None, None),
-            ('completion_doc5', 'Extra Document 3', None, None, None, None),
-            ('completion_doc6', 'Extra Document 4', None, None, None, None),
-            ('completion_doc7', 'Extra Document 5', None, None, None, None),
-            ('completion_doc8', 'Extra Document 6', None, None, None, None),
+            ('completion_doc3', 'Supporting Document 1', None, None, None, None),
+            ('completion_doc4', 'Supporting Document 2', None, None, None, None),
+            ('completion_doc5', 'Supporting Document 3', None, None, None, None),
+            ('completion_doc6', 'Supporting Document 4', None, None, None, None),
+            ('completion_doc7', 'Supporting Document 5', None, None, None, None),
+            ('completion_doc8', 'Supporting Document 6', None, None, None, None),
         ]
 
 
