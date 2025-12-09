@@ -83,11 +83,19 @@
 
 <script>
 $(document).ready(function() {
-    // Initialize DataTable
+    // Initialize DataTable with responsive priorities
     var table = $('#documentsTable').DataTable({
         responsive: true,
         pageLength: 10,
         lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        columnDefs: [
+            { targets: 0, responsivePriority: 1 }, // Name
+            { targets: 1, responsivePriority: 2 }, // Status
+            { targets: 2, responsivePriority: 3 }, // Uploaded By
+            { targets: 3, responsivePriority: 4 }, // Department
+            { targets: 4, orderable: false, searchable: false, responsivePriority: 5 } // Actions
+        ],
+        order: [[0, 'asc']],
         language: {
             search: "Search documents:",
             lengthMenu: "Show _MENU_ documents per page",
@@ -103,31 +111,15 @@ $(document).ready(function() {
                 previous: "Previous"
             }
         },
-        order: [[0, 'asc']], // Sort by Name column by default
-        columnDefs: [
-            {
-                targets: 4, // Actions column
-                orderable: false,
-                searchable: false
-            }
-        ],
-        // Styling
-        dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>' +
-             '<"row"<"col-sm-12"tr>>' +
-             '<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+        dom: '<"row mb-3"<"col-12 col-md-6"l><"col-12 col-md-6"f>>' +
+             '<"row"<"col-12"tr>>' +
+             '<"row mt-3"<"col-12 col-md-5"i><"col-12 col-md-7"p>>',
     });
 
     // Status filter functionality
     $('#status').on('change', function() {
         var selectedStatus = $(this).val();
-        
-        if (selectedStatus === '') {
-            // Show all rows
-            table.column(1).search('').draw();
-        } else {
-            // Filter by selected status
-            table.column(1).search('^' + selectedStatus + '$', true, false).draw();
-        }
+        table.column(1).search(selectedStatus ? '^' + selectedStatus + '$' : '', true, false).draw();
     });
 
     // Apply initial filter if status is pre-selected
@@ -138,14 +130,10 @@ $(document).ready(function() {
         }
     {% endif %}
 
-    // Enhance button styles
+    // Button hover styles
     $('.btn-outline-primary').hover(
-        function() {
-            $(this).removeClass('btn-outline-primary').addClass('btn-primary');
-        },
-        function() {
-            $(this).removeClass('btn-primary').addClass('btn-outline-primary');
-        }
+        function() { $(this).removeClass('btn-outline-primary').addClass('btn-primary'); },
+        function() { $(this).removeClass('btn-primary').addClass('btn-outline-primary'); }
     );
 });
 </script>
@@ -155,6 +143,12 @@ $(document).ready(function() {
 #documentsTable_wrapper .dataTables_length,
 #documentsTable_wrapper .dataTables_filter {
     margin-bottom: 15px;
+}
+
+/* Wrap text inside table cells */
+#documentsTable td, #documentsTable th {
+    white-space: normal !important;
+    word-wrap: break-word;
 }
 
 #documentsTable_wrapper .dataTables_length select {
@@ -183,7 +177,7 @@ $(document).ready(function() {
     margin: 0;
 }
 
-/* Make table headers sticky */
+/* Sticky table headers */
 #documentsTable thead th {
     position: sticky;
     top: 0;
@@ -193,15 +187,38 @@ $(document).ready(function() {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    /* Stack length and search vertically */
     #documentsTable_wrapper .dataTables_length,
     #documentsTable_wrapper .dataTables_filter {
         text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         margin-bottom: 10px;
     }
-    
+
+    #documentsTable_wrapper .dataTables_length label,
+    #documentsTable_wrapper .dataTables_filter label {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+
+    #documentsTable_wrapper .dataTables_length select,
+    #documentsTable_wrapper .dataTables_filter input {
+        width: 100%;
+        max-width: 300px;
+        margin: 0 auto;
+    }
+
     #documentsTable_wrapper .dataTables_info,
     #documentsTable_wrapper .dataTables_paginate {
         text-align: center;
+    }
+
+    /* Keep table inside card width without horizontal scroll */
+    .table-responsive {
+        overflow-x: auto;
     }
 }
 
