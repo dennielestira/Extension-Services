@@ -1850,8 +1850,8 @@ def need_revision_document(request, document_id):
         document.status = "pending"
         document.save()
         
-        # Send email notification
-        send_status_change_email(document, 'pending', request.user)
+        # Send email notification - use 'processing' not 'pending'
+        send_status_change_email(document, 'processing', request.user)
         
         messages.warning(request, "Document returned for revision. Team has been notified via email.")
         return redirect("view_document", document_id=document.id)
@@ -1925,8 +1925,8 @@ def reject_completion(request, document_id):
         document.status = "ongoing"
         document.save()
         
-        # Send email notification
-        send_status_change_email(document, 'ongoing', request.user)
+        # Send email notification - use 'completion_rejected' not 'ongoing'
+        send_status_change_email(document, 'completion_rejected', request.user)
         
         messages.warning(request, "Completion documents returned for revision. Team has been notified via email.")
         return redirect("view_document", document_id=document.id)
