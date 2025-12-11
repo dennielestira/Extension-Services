@@ -118,7 +118,12 @@ urlpatterns = [
     path('reorder/', views.reorder_images, name="reorder_images"),
     path('showcase/move/<int:image_id>/<str:direction>/', views.move_showcase_image, name='move_showcase_image'),
     path('showcase/edit/<int:image_id>/', views.edit_showcase_image, name='edit_showcase_image'),
-
+    path('document/<int:document_id>/recommend/', views.recommend_document, name='recommend_document'),
+    path('document/<int:document_id>/approve/', views.approve_document, name='approve_document'),
+    path('document/<int:document_id>/need-revision/', views.need_revision_document, name='need_revision_document'),
+    path('document/<int:document_id>/recommend-completion/', views.recommend_completion, name='recommend_completion'),
+    path('document/<int:document_id>/approve-completion/', views.approve_completion, name='approve_completion'),
+    path('document/<int:document_id>/reject-completion/', views.reject_completion, name='reject_completion'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,37 @@
+{% extends 'accounts/home.html' %}
+
+{% block title %}{{ action }} Document{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4 class="card-title mb-4">{{ action }} Document</h4>
+                    
+                    <div class="alert alert-info">
+                        <strong>Document:</strong> {{ document.name }}<br>
+                        <strong>Department:</strong> {{ document.department }}<br>
+                        <strong>Current Status:</strong> {{ document.get_status_display }}
+                    </div>
+
+                    <p class="text-muted">{{ message }}</p>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                ✓ Confirm {{ action }}
+                            </button>
+                            <a href="{% url 'view_document' document.id %}" class="btn btn-secondary">
+                                ← Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

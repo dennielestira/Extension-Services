@@ -1611,6 +1611,331 @@ def handle_file_upload(instance, slot_choice, uploaded_file, user=None):
                 setattr(instance, status_field, "uploaded")   # or pending, draft, etc.
 
         instance.save()
+        
+# Add this helper function at the top of your views.py (after imports)
+
+from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+def send_status_change_email(document, new_status, changed_by_user):
+    """
+    Send email notification when document status changes
+    """
+    # Get recipients (Department Coordinator and Extensionist of same department)
+    recipients = User.objects.filter(
+        account_type__in=["Department Coordinator", "Extensionist"],
+        department=document.department
+    ).values_list("email", flat=True)
+    
+    if not recipients:
+        return  # No one to notify
+    
+    # Status-specific messages
+    status_messages = {
+        'recommended': {
+            'subject': f'Document Recommended for Approval: {document.name}',
+            'message': f"""Dear Team,
+
+Good news! Your document '{document.name}' has been recommended for approval by {changed_by_user.get_full_name()} ({changed_by_user.account_type}).
+
+The document is now under review by the Campus Admin for final approval.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Recommended by: {changed_by_user.get_full_name()}
+- Status: Recommended for Approval
+
+Thank you for your hard work!"""
+        },
+        'ongoing': {
+            'subject': f'🎉 Document Approved - Project Now Ongoing: {document.name}',
+            'message': f"""Dear Team,
+
+Congratulations! Your document '{document.name}' has been APPROVED and is now marked as ONGOING.
+
+You can now proceed with the project implementation. Please ensure all activities are documented properly.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Approved by: {changed_by_user.get_full_name()}
+- Status: Ongoing
+
+Good luck with your project implementation!"""
+        },
+        'completion_recommended': {
+            'subject': f'Completion Documents Recommended: {document.name}',
+            'message': f"""Dear Team,
+
+The completion documents for '{document.name}' have been recommended for final approval by {changed_by_user.get_full_name()}.
+
+The completion is now under review by the Campus Admin.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Recommended by: {changed_by_user.get_full_name()}
+- Status: Completion Recommended
+
+You're almost there!"""
+        },
+        'completed': {
+            'subject': f'🎊 PROJECT COMPLETED: {document.name}',
+            'message': f"""Dear Team,
+
+CONGRATULATIONS! Your project '{document.name}' has been marked as COMPLETED! 🎉
+
+All requirements have been fulfilled and approved by {changed_by_user.get_full_name()}.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Approved by: {changed_by_user.get_full_name()}
+- Status: Completed
+
+Excellent work on completing this project! Your dedication and hard work are greatly appreciated.
+
+Thank you!"""
+        },
+        'processing': {
+            'subject': f'Document Returned for Revision: {document.name}',
+            'message': f"""Dear Team,
+
+Your document '{document.name}' has been returned for revision by {changed_by_user.get_full_name()} ({changed_by_user.account_type}).
+
+Please review the feedback comments and make the necessary changes to the document.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Returned by: {changed_by_user.get_full_name()}
+- Status: Needs Revision
+
+Action Required: Please check the document page for detailed revision comments and update the documents accordingly.
+
+Thank you."""
+        },
+        'completion_rejected': {
+            'subject': f'Completion Documents Need Revision: {document.name}',
+            'message': f"""Dear Team,
+
+The completion documents for '{document.name}' need revision as indicated by {changed_by_user.get_full_name()} ({changed_by_user.account_type}).
+
+Please review the feedback and update the completion documents.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Returned by: {changed_by_user.get_full_name()}
+- Status: Completion Needs Revision
+
+Action Required: Please check the document page for detailed feedback and resubmit the corrected completion documents.
+
+Thank you."""
+        },
+    }
+    
+    if new_status in status_messages:
+        email_data = status_messages[new_status]
+        send_mail(
+            email_data['subject'],
+            email_data['message'],
+            'ExtensionServices10@gmail.com',
+            recipients,
+            fail_silently=True
+        )
+def send_completion_submitted_notification(document, submitted_by_user):
+    """
+    Send email to Staff Extensionist and Campus Admin when Department Coordinator 
+    submits completion documents for review
+    """
+    # Get Staff Extensionist and Campus Admin
+    recipients = User.objects.filter(
+        account_type__in=["Staff Extensionist", "Campus Admin"]
+    ).values_list("email", flat=True)
+    
+    if not recipients:
+        return  # No one to notify
+    
+    subject = f'Completion Documents Submitted for Review: {document.name}'
+    message = f"""Dear Reviewer,
+
+The Department Coordinator has submitted completion documents for review.
+
+Project Details:
+- Document: {document.name}
+- Department: {document.department}
+- Submitted by: {submitted_by_user.get_full_name()} ({submitted_by_user.account_type})
+- Status: Completion Processing
+
+Action Required: Please review the completion documents and either recommend for approval or return for revision.
+
+Thank you."""
+    
+    send_mail(
+        subject,
+        message,
+        'ExtensionServices10@gmail.com',
+        recipients,
+        fail_silently=True
+    )
+
+
+# ==================================================================
+# VIEWS FOR STATUS CHANGES - Add these to your views.py
+# ==================================================================
+
+@login_required
+def recommend_document(request, document_id):
+    """Staff Extensionist recommends document to Campus Admin"""
+    if request.user.account_type != "Staff Extensionist":
+        return redirect("permission_denied")
+    
+    document = get_object_or_404(Document, id=document_id)
+    
+    if request.method == "POST":
+        document.status = "recommended"
+        document.save()
+        
+        # Send email notification
+        send_status_change_email(document, 'recommended', request.user)
+        
+        messages.success(request, "Document recommended successfully. Team has been notified via email.")
+        return redirect("view_document", document_id=document.id)
+    
+    return render(request, "accounts/confirm_action.html", {
+        "document": document,
+        "action": "Recommend",
+        "message": "Are you sure you want to recommend this document for approval?"
+    })
+
+
+@login_required
+def approve_document(request, document_id):
+    """Campus Admin approves document to ongoing status"""
+    if request.user.account_type != "Campus Admin":
+        return redirect("permission_denied")
+    
+    document = get_object_or_404(Document, id=document_id)
+    
+    if request.method == "POST":
+        document.status = "ongoing"
+        document.save()
+        
+        # Send email notification
+        send_status_change_email(document, 'ongoing', request.user)
+        
+        messages.success(request, "Document approved to ongoing. Team has been notified via email.")
+        return redirect("view_document", document_id=document.id)
+    
+    return render(request, "accounts/confirm_action.html", {
+        "document": document,
+        "action": "Approve",
+        "message": "Are you sure you want to approve this document and set it to ongoing?"
+    })
+
+
+@login_required
+def need_revision_document(request, document_id):
+    """Campus Admin returns document for revision"""
+    if request.user.account_type != "Campus Admin":
+        return redirect("permission_denied")
+    
+    document = get_object_or_404(Document, id=document_id)
+    
+    if request.method == "POST":
+        document.status = "pending"
+        document.save()
+        
+        # Send email notification
+        send_status_change_email(document, 'pending', request.user)
+        
+        messages.warning(request, "Document returned for revision. Team has been notified via email.")
+        return redirect("view_document", document_id=document.id)
+    
+    return render(request, "accounts/confirm_action.html", {
+        "document": document,
+        "action": "Return for Revision",
+        "message": "Are you sure you want to return this document for revision?"
+    })
+
+
+@login_required
+def recommend_completion(request, document_id):
+    """Staff Extensionist recommends completion to Campus Admin"""
+    if request.user.account_type != "Staff Extensionist":
+        return redirect("permission_denied")
+    
+    document = get_object_or_404(Document, id=document_id)
+    
+    if request.method == "POST":
+        document.status = "completion_recommended"
+        document.save()
+        
+        # Send email notification
+        send_status_change_email(document, 'completion_recommended', request.user)
+        
+        messages.success(request, "Completion recommended successfully. Team has been notified via email.")
+        return redirect("view_document", document_id=document.id)
+    
+    return render(request, "accounts/confirm_action.html", {
+        "document": document,
+        "action": "Recommend Completion",
+        "message": "Are you sure you want to recommend this completion for approval?"
+    })
+
+
+@login_required
+def approve_completion(request, document_id):
+    """Campus Admin or Staff Extensionist approves completion to completed status"""
+    if request.user.account_type not in ["Campus Admin", "Staff Extensionist"]:
+        return redirect("permission_denied")
+    
+    document = get_object_or_404(Document, id=document_id)
+    
+    if request.method == "POST":
+        document.status = "completed"
+        document.save()
+        
+        # Send email notification
+        send_status_change_email(document, 'completed', request.user)
+        
+        messages.success(request, "🎉 Document marked as completed! Team has been notified via email.")
+        return redirect("view_document", document_id=document.id)
+    
+    return render(request, "accounts/confirm_action.html", {
+        "document": document,
+        "action": "Approve Completion",
+        "message": "Are you sure you want to mark this project as completed?"
+    })
+
+
+@login_required
+def reject_completion(request, document_id):
+    """Campus Admin or Staff Extensionist rejects completion"""
+    if request.user.account_type not in ["Campus Admin", "Staff Extensionist"]:
+        return redirect("permission_denied")
+    
+    document = get_object_or_404(Document, id=document_id)
+    
+    if request.method == "POST":
+        document.status = "ongoing"
+        document.save()
+        
+        # Send email notification
+        send_status_change_email(document, 'ongoing', request.user)
+        
+        messages.warning(request, "Completion documents returned for revision. Team has been notified via email.")
+        return redirect("view_document", document_id=document.id)
+    
+    return render(request, "accounts/confirm_action.html", {
+        "document": document,
+        "action": "Return for Revision",
+        "message": "Are you sure you want to return the completion documents for revision?"
+    })
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
@@ -1712,7 +2037,11 @@ def view_document(request, document_id):
             document.save()
 
             clear_feedback(document)
-            messages.success(request, "Completion submitted. Now under processing.")
+            
+            # Send email notification to Staff Extensionist and Campus Admin
+            send_completion_submitted_notification(document, user)
+            
+            messages.success(request, "Completion submitted. Now under processing. Reviewers have been notified via email.")
             return redirect("view_document", document_id=document.id)
 
 
@@ -3544,6 +3873,7 @@ def download_day_training_reports_excel(request, quarter, year):
         day__date__month__lte=end_month,
     )
     entries = DayTrainingEntry.objects.filter(report__in=reports).order_by("department", "-created_at")
+    
     # -------------------------------
     # Auto-fill Related Curricular Offering
     # -------------------------------
@@ -3566,9 +3896,17 @@ def download_day_training_reports_excel(request, quarter, year):
                 "Bachelor of Science in Secondary Education",
         }
         return mapping.get(dept, "")
-    # Attach to entries
+    
+    # Attach to entries AND process number_of_days
     for e in entries:
         e.related_curricular_offering = get_related_offering(e.department)
+        
+        # Convert number_of_days to numeric (same as your multiplier function)
+        try:
+            e.days_numeric = float(e.number_of_days) if e.number_of_days else 0
+        except (ValueError, TypeError, AttributeError):
+            e.days_numeric = 0
+    
     # === Workbook Setup ===
     wb = Workbook()
     ws = wb.active
@@ -3583,6 +3921,13 @@ def download_day_training_reports_excel(request, quarter, year):
                 ref.value = value
         else:
             cell.value = value
+
+    def col_to_num(col_letter):
+        """Convert column letter to number (e.g., 'A' -> 1, 'AA' -> 27)"""
+        num = 0
+        for c in col_letter:
+            num = num * 26 + (ord(c.upper()) - ord('A')) + 1
+        return num
 
     # === Styles ===
     bold = Font(bold=True)
@@ -3602,11 +3947,10 @@ def download_day_training_reports_excel(request, quarter, year):
     ws.row_dimensions[1].height = 30
 
     # === HEADER STRUCTURE ===
-    # Note: inserted new column F -> Related Curricular Offering
     ws.merge_cells("A2:A3"); safe_set(ws["A2"], "Training No.")
     ws.merge_cells("B2:B3"); safe_set(ws["B2"], "Code")
     ws.merge_cells("C2:E2"); safe_set(ws["C2"], "Lead Unit")
-    ws.merge_cells("F2:F2"); safe_set(ws["F2"], "Related Curricular Offering")  # NEW
+    ws.merge_cells("F2:F2"); safe_set(ws["F2"], "Related Curricular Offering")
     ws.merge_cells("G2:G3"); safe_set(ws["G2"], "Collaborating Agency/ies")
     ws.merge_cells("H2:H2"); safe_set(ws["H2"], "Contact Person / Training Coordinator")
     ws.merge_cells("I2:I2"); safe_set(ws["I2"], "Project No.")
@@ -3614,59 +3958,39 @@ def download_day_training_reports_excel(request, quarter, year):
     ws.merge_cells("K2:K3"); safe_set(ws["K2"], "Title of Training")
     ws.merge_cells("L2:L3"); safe_set(ws["L2"], "Inclusive Dates")
     ws.merge_cells("M2:M3"); safe_set(ws["M2"], "Venue")
-    ws.merge_cells("N2:P2"); safe_set(ws["N2"], "No. of Participants by Sex")  # N,O,P
-    ws.merge_cells("Q2:X2"); safe_set(ws["Q2"], "No. of Participants by Category")  # Q..X (8 cols)
-    ws.merge_cells("Y2:AB2"); safe_set(ws["Y2"], "For TVL Trainings Only")  # Y,Z,AA,AB (4 cols)
-    ws.merge_cells("AC2:AC3"); safe_set(ws["AC2"], "Total Persons Trained")  # AC
-    ws.merge_cells("AD2:AH2"); safe_set(ws["AD2"], "Number of Days Trained")  # AD..AH (5 cols)
+    ws.merge_cells("N2:P2"); safe_set(ws["N2"], "No. of Participants by Sex")
+    ws.merge_cells("Q2:X2"); safe_set(ws["Q2"], "No. of Participants by Category")
+    ws.merge_cells("Y2:AB2"); safe_set(ws["Y2"], "For TVL Trainings Only")
+    ws.merge_cells("AC2:AC3"); safe_set(ws["AC2"], "Total Persons Trained")
+    ws.merge_cells("AD2:AH2"); safe_set(ws["AD2"], "Number of Days Trained")
     ws.merge_cells("AI2:AI3"); safe_set(ws["AI2"], "Number of days trained per weight of training")
     ws.merge_cells("AJ2:AJ3"); safe_set(ws["AJ2"], "Total No. of trainees surveyed")
-    ws.merge_cells("AK2:AP2"); safe_set(ws["AK2"], "Client’s Rating (Relevance)")  # AK..AP
-    ws.merge_cells("AQ2:AV2"); safe_set(ws["AQ2"], "Client’s Rating (Quality)")    # AQ..AV
-    ws.merge_cells("AW2:BB2"); safe_set(ws["AW2"], "Client’s Rating (Timeliness)") # AW..BB
+    ws.merge_cells("AK2:AP2"); safe_set(ws["AK2"], "Client's Rating (Relevance)")
+    ws.merge_cells("AQ2:AV2"); safe_set(ws["AQ2"], "Client's Rating (Quality)")
+    ws.merge_cells("AW2:BB2"); safe_set(ws["AW2"], "Client's Rating (Timeliness)")
     ws.merge_cells("BC2:BC3"); safe_set(ws["BC2"], "Overall Avg")
     ws.merge_cells("BD2:BD3"); safe_set(ws["BD2"], "Total number of clients requesting trainings")
     ws.merge_cells("BE2:BE3"); safe_set(ws["BE2"], "Total number of requests for trainings responded in the next 3 days")
-    ws.merge_cells("BF2:BH2"); safe_set(ws["BF2"], "Estimated Expenses and Source of Fund")  # BF..BH
+    ws.merge_cells("BF2:BH2"); safe_set(ws["BF2"], "Estimated Expenses and Source of Fund")
 
-    # === ROW 3 SUBHEADERS (below headers) ===
+    # === ROW 3 SUBHEADERS ===
     subheaders_row3 = {
-        # Lead Unit children
         "C3": "Department / Unit",
         "D3": "Contact Person / Training Coordinator",
         "E3": "Number / Email",
-        # NEW column small subtext for Related Curricular Offering
         "F3": "e.g. BS Agriculture",
-
-        # small helper under Contact Person header (kept, shifted)
         "H3": "Training Coordinator",
         "I3": "Use no. indicated under Internally Funded Extension Projects and Externally Funded Projects; indicate NA if not under a project",
         "J3": "TVL–technical, vocational, livelihood; AE–agricultural and environmental trainings; CE–continuing education for professionals; BE–basic education; GAD–Gender and Development; O–others",
-
-        # Participants by sex (N,O,P)
         "N3": "Male", "O3": "Female", "P3": "Total",
-
-        # Participants by category (Q..X)
         "Q3": "Student", "R3": "Farmer", "S3": "Fisherfolk",
         "T3": "Agric. Tech", "U3": "Govt Emp", "V3": "Priv Emp",
         "W3": "Other", "X3": "Total",
-
-        # TVL (Y..AB)
         "Y3": "Solo Parent", "Z3": "4Ps", "AA3": "PWD", "AB3": "Type of Disability",
-
-        # Number of days checkboxes (AD..AH)
         "AD3": "5", "AE3": "3-4", "AF3": "2", "AG3": "1", "AH3": "<8hrs",
-
-        # Relevance (AK..AP)
         "AK3": "5", "AL3": "4", "AM3": "3", "AN3": "2", "AO3": "1", "AP3": "Avg",
-
-        # Quality (AQ..AV)
         "AQ3": "5", "AR3": "4", "AS3": "3", "AT3": "2", "AU3": "1", "AV3": "Avg",
-
-        # Timeliness (AW..BB)
         "AW3": "5", "AX3": "4", "AY3": "3", "AZ3": "2", "BA3": "1", "BB3": "Avg",
-
-        # Estimated expense subheaders
         "BF3": "Amount Charged to CvSU (campus/college/unit)",
         "BG3": "Amount Charged to Partner Agency (PhP)",
         "BH3": "Total Estimated Expense",
@@ -3674,12 +3998,11 @@ def download_day_training_reports_excel(request, quarter, year):
 
     for cell, text in subheaders_row3.items():
         c = ws[cell]
-        safe_set(c, text)   # FIX: avoid writing on a MergedCell
+        safe_set(c, text)
         c.font = Font(size=8)
         c.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
         c.border = border
         c.fill = header_fill
-
 
     # Style first header row (row 2)
     for row_cells in ws.iter_rows(min_row=2, max_row=2):
@@ -3694,12 +4017,9 @@ def download_day_training_reports_excel(request, quarter, year):
     ws.row_dimensions[3].height = 55
     ws.freeze_panes = "A4"
 
-    # === PRECOMPUTE FORMULA COLUMNS (updated for inserted F) ===
-    # Total participants (duplicate column) moved from AB -> AC
+    # === PRECOMPUTE FORMULA COLUMNS ===
     col_total_participants = col_to_num("AC")
-    # Weight multiplier moved from AH -> AI
     col_multiplier = col_to_num("AI")
-    # Total surveyed moved from AI -> AJ
     col_total_surveyed = col_to_num("AJ")
 
     # === DATA ROWS ===
@@ -3709,7 +4029,9 @@ def download_day_training_reports_excel(request, quarter, year):
     last_department = None
 
     for e in entries:
-        days_text = str(e.number_of_days).strip().replace("–", "-").lower()
+        # Use precomputed numeric value
+        days_numeric = e.days_numeric
+        
         if e.department != last_department:
             color_index = (color_index + 1) % len(color_palette)
             fill = PatternFill(start_color=color_palette[color_index],
@@ -3717,16 +4039,16 @@ def download_day_training_reports_excel(request, quarter, year):
                                fill_type="solid")
             last_department = e.department
 
-        # === Row values aligned with new column order (A..BI) ===
+        # === Row values ===
         values = [
             row - 3,  # A: Training No.
             "",      # B: Code
             e.department,  # C
             e.contact_person,  # D
             e.number_email,  # E
-            e.related_curricular_offering,  # F (NEW)
+            e.related_curricular_offering,  # F
             e.collaborating_agencies,  # G
-            e.contact_person,  # H (Contact Person / Training Coordinator)
+            e.contact_person,  # H
             "Internal Funded Extension Projects",  # I
             e.category,  # J
             e.title,  # K
@@ -3740,26 +4062,26 @@ def download_day_training_reports_excel(request, quarter, year):
 
             # Participants by category Q..X
             e.student, e.farmer, e.fisherfolk, e.agricultural_technician,
-            e.government_employee, e.private_employee, e.other_category, e.total_by_category,  # Q..X
+            e.government_employee, e.private_employee, e.other_category, e.total_by_category,
 
             # TVL Y..AB
-            e.tvl_solo_parent, e.tvl_4ps, e.tvl_pwd, e.tvl_pwd_type,  # Y..AB
+            e.tvl_solo_parent, e.tvl_4ps, e.tvl_pwd, e.tvl_pwd_type,
 
-            # AC: Total Persons Trained (duplicate of total participants)
-            e.total_participants,  # AC
+            # AC: Total Persons Trained
+            e.total_participants,
 
-            # Number of days checkboxes AD..AH
-            "✓" if days_text == "5" else "",
-            "✓" if days_text in ["3", "4"] else "",
-            "✓" if days_text == "2" else "",
-            "✓" if days_text == "1" else "",
-            "✓" if "<8" in days_text else "",  # AD..AH
+            # Number of days checkboxes AD..AH - FIXED
+            "✓" if days_numeric == 5 else "",
+            "✓" if days_numeric in [3, 4] else "",
+            "✓" if days_numeric == 2 else "",
+            "✓" if days_numeric == 1 else "",
+            "✓" if days_numeric not in [5, 4, 3, 2, 1] else "",  # <8hrs
 
-            # AI: Number of days trained per weight (weight_multiplier)
-            e.weight_multiplier,  # AI
+            # AI: weight multiplier
+            e.weight_multiplier,
 
-            # AJ: Total No. of trainees surveyed
-            e.total_trainees_surveyed,  # AJ
+            # AJ: Total surveyed
+            e.total_trainees_surveyed,
 
             # Relevance AK..AO and Avg at AP
             e.relevance_counts.get("5", 0),
@@ -3767,7 +4089,7 @@ def download_day_training_reports_excel(request, quarter, year):
             e.relevance_counts.get("3", 0),
             e.relevance_counts.get("2", 0),
             e.relevance_counts.get("1", 0),
-            "",  # AP: Avg (formula set later)
+            "",  # AP: Avg
 
             # Quality AQ..AU and Avg at AV
             e.quality_counts.get("5", 0),
@@ -3785,7 +4107,7 @@ def download_day_training_reports_excel(request, quarter, year):
             e.timeliness_counts.get("1", 0),
             "",  # BB: Avg
 
-            # BC: Overall Avg (formula later)
+            # BC: Overall Avg
             e.overall_average or "",
 
             # BD..BE
@@ -3796,7 +4118,6 @@ def download_day_training_reports_excel(request, quarter, year):
             getattr(e, "amount_charged_to_cvsu", ""),
             getattr(e, "amount_charged_to_partner_agency", ""),
             getattr(e, "estimated_expense_other", ""),
-
         ]
 
         # Write row values
@@ -3808,18 +4129,13 @@ def download_day_training_reports_excel(request, quarter, year):
             if val == "✓":
                 c.font = Font(bold=True, color="006100")
 
-
-        # === Ratings averages formulas (Relevance, Quality, Timeliness) ===
-        # Relevance Avg at AP (col AP)
+        # === Ratings averages formulas ===
         start_relevance_avg_col = col_to_num("AP")
         start_quality_avg_col = col_to_num("AV")
         start_timeliness_avg_col = col_to_num("BB")
 
-        # For each avg column, build the formula using the five count columns to its left
         for start_col in [start_relevance_avg_col, start_quality_avg_col, start_timeliness_avg_col]:
-            # cols for counts are start_col-5 .. start_col-1
             cols_5to1 = [get_column_letter(start_col - 5 + i) + str(row) for i in range(5)]
-            # denominator is total surveyed (AJ)
             denom = f"{get_column_letter(col_total_surveyed)}{row}"
             ws.cell(row=row, column=start_col).value = (
                 f"=({cols_5to1[0]}*5+{cols_5to1[1]}*4+{cols_5to1[2]}*3+{cols_5to1[3]}*2+{cols_5to1[4]}*1)/{denom}"
@@ -3828,7 +4144,7 @@ def download_day_training_reports_excel(request, quarter, year):
             ws.cell(row=row, column=start_col).alignment = center
             ws.cell(row=row, column=start_col).border = border
 
-        # === Overall Avg (BC) = AVERAGE(AP, AV, BB) ===
+        # === Overall Avg ===
         ws.cell(row=row, column=col_to_num("BC")).value = (
             f"=AVERAGE({get_column_letter(col_to_num('AP'))}{row},{get_column_letter(col_to_num('AV'))}{row},{get_column_letter(col_to_num('BB'))}{row})"
         )
@@ -3839,7 +4155,7 @@ def download_day_training_reports_excel(request, quarter, year):
         ws.row_dimensions[row].height = 70
         row += 1
 
-    # === Column Widths (with new F inserted) ===
+    # === Column Widths ===
     widths = {
         "A":12,"B":20,"C":25,"D":25,"E":20,"F":25,"G":35,"H":20,"I":25,"J":35,"K":20,"L":20,
         "M":10,"N":10,"O":10,"P":10,"Q":10,"R":10,"S":10,"T":10,"U":15,"V":15,"W":15,"X":20,
@@ -3855,7 +4171,6 @@ def download_day_training_reports_excel(request, quarter, year):
     thin_border = Border(left=thin, right=thin, top=thin, bottom=thin)
     for row_cells in ws.iter_rows(min_row=1, max_row=ws.max_row, min_col=1, max_col=ws.max_column):
         for cell in row_cells:
-            # Avoid overwriting merged cell style in some excel versions (safe)
             try:
                 cell.border = thin_border
             except Exception:
@@ -3871,7 +4186,6 @@ def download_day_training_reports_excel(request, quarter, year):
     )
     response["Content-Disposition"] = f'attachment; filename="DayTrainingReports_{quarter}_{year}.xlsx"'
     return response
-
 
 from django.shortcuts import redirect, get_object_or_404
 from django.http import JsonResponse
