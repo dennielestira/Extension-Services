@@ -413,19 +413,19 @@ def campus_admin_view(request):
         "doc1": "Attendance Sheet",
         "doc2": "Photo Documentation",
         "doc3": "Program",
-        "doc4": "Supporting Document 1",
-        "doc5": "Supporting Document 2",
+        "doc4": "Day Accomplished / Evaluation Form",
+        "doc5": "Supporting Document 1",
     }
 
     COMPLETION_NICKNAMES = {
         "completion_doc1": "Approved Letter Request",
-        "completion_doc2": "Accomplished/Evaluation Form",
-        "completion_doc3": "Supporting Document 1",
-        "completion_doc4": "Supporting Document 2",
-        "completion_doc5": "Supporting Document 3",
-        "completion_doc6": "Supporting Document 4",
-        "completion_doc7": "Supporting Document 5",
-        "completion_doc8": "Supporting Document 6",
+        "completion_doc2": "Accomplished / Evaluation Form",
+        "completion_doc3": "Authority to Go",
+        "completion_doc4": "Supporting Document 1",
+        "completion_doc5": "Supporting Document 2",
+        "completion_doc6": "Supporting Document 3",
+        "completion_doc7": "Supporting Document 4",
+        "completion_doc8": "Supporting Document 5",
     }
 
     # ✅ Department revisions section
@@ -494,11 +494,13 @@ def campus_admin_view(request):
         "doc1": "Attendance Sheet",
         "doc2": "Photo Documentation",
         "doc3": "Program",
+        "doc4": "Accomplished / Evaluation Form",
     }
     
     TRACKED_COMPLETION_FIELDS = {
         "completion_doc1": "Approved Letter Request",
         "completion_doc2": "Accomplished / Evaluation Form",
+        "completion_doc3": "Authority To Go"
     }
     
     for dept in departments:
@@ -667,19 +669,19 @@ def staff_extensionist_view(request):
         "doc1": "Attendance Sheet ",
         "doc2": "Photo Documentation",
         "doc3": "Program",
-        "doc4": "Supporting Document 1",
+        "doc4": "Day Accomplished / Evaluation Form",
         "doc5": "Supporting Document 2",
     }
 
     COMPLETION_NICKNAMES = {
         "completion_doc1": "Approved Letter Request",
         "completion_doc2": "Accomplished/Evaluation Form",
-        "completion_doc3": "Supporting Document 1",
-        "completion_doc4": "Supporting Document 2",
-        "completion_doc5": "Supporting Document 3",
-        "completion_doc6": "Supporting Document 4",
-        "completion_doc7": "Supporting Document 5",
-        "completion_doc8": "Supporting Document 6",
+        "completion_doc3": "Authority To Go",
+        "completion_doc4": "Supporting Document 1",
+        "completion_doc5": "Supporting Document 2",
+        "completion_doc6": "Supporting Document 3",
+        "completion_doc7": "Supporting Document 4",
+        "completion_doc8": "Supporting Document 5",
     }
 
     # Department revisions
@@ -740,11 +742,13 @@ def staff_extensionist_view(request):
         "doc1": "Attendance Sheet",
         "doc2": "Photo Documentation",
         "doc3": "Program",
+        "doc4": "Accomplished / Evaluation Form",
     }
     
     TRACKED_COMPLETION_FIELDS = {
         "completion_doc1": "Approved Letter Request",
         "completion_doc2": "Accomplished / Evaluation Form",
+        "completion_doc3": "Authority To Go"
     }
     
     for dept in departments:
@@ -880,22 +884,22 @@ def department_coordinator_view(request):
     }
 
     DAYFILE_NICKNAMES = {
-        "doc1": "Attendance Sheet",
+        "doc1": "Attendance Sheet ",
         "doc2": "Photo Documentation",
         "doc3": "Program",
-        "doc4": "Supporting Document 1",
+        "doc4": "Day Accomplished / Evaluation Form",
         "doc5": "Supporting Document 2",
     }
 
     COMPLETION_NICKNAMES = {
         "completion_doc1": "Approved Letter Request",
         "completion_doc2": "Accomplished/Evaluation Form",
-        "completion_doc3": "Supporting Document 1",
-        "completion_doc4": "Supporting Document 2",
-        "completion_doc5": "Supporting Document 3",
-        "completion_doc6": "Supporting Document 4",
-        "completion_doc7": "Supporting Document 5",
-        "completion_doc8": "Supporting Document 6",
+        "completion_doc3": "Authority To Go",
+        "completion_doc4": "Supporting Document 1",
+        "completion_doc5": "Supporting Document 2",
+        "completion_doc6": "Supporting Document 3",
+        "completion_doc7": "Supporting Document 4",
+        "completion_doc8": "Supporting Document 5",
     }
 
     # -------------------------
@@ -950,16 +954,18 @@ def department_coordinator_view(request):
         "Work_and_Financial_Plan": "Work & Financial Plan",
         "Plan_of_Activities": "Plan of Activities",
     }
-
+    
     TRACKED_DAYFILE_FIELDS = {
         "doc1": "Attendance Sheet",
         "doc2": "Photo Documentation",
         "doc3": "Program",
+        "doc4": "Accomplished / Evaluation Form",
     }
-
+    
     TRACKED_COMPLETION_FIELDS = {
         "completion_doc1": "Approved Letter Request",
-        "completion_doc2": "Accomplished/Evaluation Form",
+        "completion_doc2": "Accomplished / Evaluation Form",
+        "completion_doc3": "Authority To Go"
     }
 
     dept_completion_documents = []
@@ -1085,30 +1091,30 @@ def extensionist_view(request):
         "Activity_Proposal": "Activity Proposal",
         "Work_and_Financial_Plan": "Work & Financial Plan",
         "Plan_of_Activities": "Plan of Activities",
-        "doc4": "Invitation Letter",
-        "doc5": "Pre-test/Post-test",
-        "doc6": "Evaluation Form",
-        "doc7": "Accomplishment Report",
-        "doc8": "Supporting Document",
+        "doc4": "Supporting Document 1",
+        "doc5": "Supporting Document 2",
+        "doc6": "Supporting Document 3",
+        "doc7": "Supporting Document 4",
+        "doc8": "Supporting Document 5",
     }
 
     DAYFILE_NICKNAMES = {
-        "doc1": "Supporting Document 1",
-        "doc2": "Supporting Document 2",
-        "doc3": "Supporting Document 3",
-        "doc4": "Supporting Document 4",
-        "doc5": "Supporting Document 5",
+        "doc1": "Attendance Sheet ",
+        "doc2": "Photo Documentation",
+        "doc3": "Program",
+        "doc4": "Day Accomplished / Evaluation Form",
+        "doc5": "Supporting Document 2",
     }
 
     COMPLETION_NICKNAMES = {
-        "completion_doc1": "Activity Report",
-        "completion_doc2": "Training Summary",
-        "completion_doc3": "Attendance Sheet",
-        "completion_doc4": "Photos",
-        "completion_doc5": "Certificate of Completion",
-        "completion_doc6": "Evaluation Summary",
-        "completion_doc7": "Financial Report",
-        "completion_doc8": "MOA/Partner Document",
+        "completion_doc1": "Approved Letter Request",
+        "completion_doc2": "Accomplished/Evaluation Form",
+        "completion_doc3": "Authority To Go",
+        "completion_doc4": "Supporting Document 1",
+        "completion_doc5": "Supporting Document 2",
+        "completion_doc6": "Supporting Document 3",
+        "completion_doc7": "Supporting Document 4",
+        "completion_doc8": "Supporting Document 5",
     }
 
     # Documents with revisions
@@ -2001,8 +2007,8 @@ def view_document(request, document_id):
         'day_doc1': 'Attendance Sheet',
         'day_doc2': 'Photo Documentation',
         'day_doc3': 'Program',
-        'day_doc4': 'Day Supporting Document 1',
-        'day_doc5': 'Day Supporting Document 2',
+        'day_doc4': 'Accomplished / Evaluation Form',
+        'day_doc5': 'Day Supporting Document 1',
     }
 
     if request.method == "POST":
@@ -2323,10 +2329,29 @@ Thank you."""
 
             day = get_object_or_404(DocumentDay, id=day_id, document=document)
             day_files = day.day_files.first()
-            if day_files and hasattr(day_files, f"{slot_choice.replace('day_', '')}_status"):
-                setattr(day_files, f"{slot_choice.replace('day_', '')}_status", "revision")
+
+            if not day_files:
+                messages.error(request, "No files uploaded for this day.")
+                return redirect("view_document", document_id=document.id)
+
+            # 🔴 CHECK IF FILE EXISTS BEFORE ALLOWING REVISION
+            file_field_name = slot_choice.replace("day_", "")  # doc1, doc2, etc.
+            file_obj = getattr(day_files, file_field_name, None)
+
+            if not file_obj:
+                messages.error(request, "You cannot mark a revision for an empty file slot.")
+                return redirect("view_document", document_id=document.id)
+
+            # ✅ CHECK STATUS FIELD AND MARK REVISION
+            status_field = f"{file_field_name}_status"
+            if hasattr(day_files, status_field):
+                setattr(day_files, status_field, "revision")
                 day_files.save()
-                messages.warning(request, f"{slot_choice.replace('day_', '').title()} marked for revision.")
+
+                messages.warning(
+                    request,
+                    f"{file_field_name.replace('doc', 'Document ').title()} marked for revision."
+                )
 
                 # ---- SEND EMAIL NOTIFICATION ----
                 recipients = User.objects.filter(
@@ -2335,23 +2360,31 @@ Thank you."""
                 ).values_list("email", flat=True)
 
                 if recipients:
-                    # Get nickname from mapping (day_doc1 -> "Day Supporting Document 1")
-                    doc_name = doc_nickname_map.get(slot_choice, f"Doc{slot_choice.replace('day_doc', '')}")
-                    
+                    doc_name = doc_nickname_map.get(
+                        slot_choice,
+                        f"Document {file_field_name.replace('doc', '')}"
+                    )
+
                     subject = f"Day File Revision Needed: {document.name} - {day.title} - {doc_name}"
                     message = f"""Dear Team,
 
-The day file '{doc_name}' for '{day.title}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+        The day file '{doc_name}' for '{day.title}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
 
-Please review and update it accordingly.
+        Please review and update it accordingly.
 
-Thank you."""
-                    send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
-
+        Thank you."""
+                    send_mail(
+                        subject,
+                        message,
+                        'ExtensionServices10@gmail.com',
+                        recipients,
+                        fail_silently=True
+                    )
             else:
                 messages.error(request, "Invalid file slot.")
 
             return redirect("view_document", document_id=document.id)
+
 
         elif "submit_day_revision_comment" in request.POST:
             day_id = get_post_id(request, "day_id")
@@ -2404,29 +2437,29 @@ Thank you."""
             existing_completion.completion_doc1_uploaded_by, existing_completion.completion_doc1_uploaded_at),
             ('completion_doc2', 'Accomplished/Evaluation Form', existing_completion.completion_doc2, existing_completion.completion_doc2_status,
             existing_completion.completion_doc2_uploaded_by, existing_completion.completion_doc2_uploaded_at),
-            ('completion_doc3', 'Supporting Document 1', existing_completion.completion_doc3, existing_completion.completion_doc3_status,
+            ('completion_doc3', 'Authority To Go', existing_completion.completion_doc3, existing_completion.completion_doc3_status,
             existing_completion.completion_doc3_uploaded_by, existing_completion.completion_doc3_uploaded_at),
-            ('completion_doc4', 'Supporting Document 2', existing_completion.completion_doc4, existing_completion.completion_doc4_status,
+            ('completion_doc4', 'Supporting Document 1', existing_completion.completion_doc4, existing_completion.completion_doc4_status,
             existing_completion.completion_doc4_uploaded_by, existing_completion.completion_doc4_uploaded_at),
-            ('completion_doc5', 'Supporting Document 3', existing_completion.completion_doc5, existing_completion.completion_doc5_status,
+            ('completion_doc5', 'Supporting Document 2', existing_completion.completion_doc5, existing_completion.completion_doc5_status,
             existing_completion.completion_doc5_uploaded_by, existing_completion.completion_doc5_uploaded_at),
-            ('completion_doc6', 'Supporting Document 4', existing_completion.completion_doc6, existing_completion.completion_doc6_status,
+            ('completion_doc6', 'Supporting Document 3', existing_completion.completion_doc6, existing_completion.completion_doc6_status,
             existing_completion.completion_doc6_uploaded_by, existing_completion.completion_doc6_uploaded_at),
-            ('completion_doc7', 'Supporting Document 5', existing_completion.completion_doc7, existing_completion.completion_doc7_status,
+            ('completion_doc7', 'Supporting Document 4', existing_completion.completion_doc7, existing_completion.completion_doc7_status,
             existing_completion.completion_doc7_uploaded_by, existing_completion.completion_doc7_uploaded_at),
-            ('completion_doc8', 'Supporting Document 6', existing_completion.completion_doc8, existing_completion.completion_doc8_status,
+            ('completion_doc8', 'Supporting Document 5', existing_completion.completion_doc8, existing_completion.completion_doc8_status,
             existing_completion.completion_doc8_uploaded_by, existing_completion.completion_doc8_uploaded_at),
         ]
     else:
         completion_file_list = [
             ('completion_doc1', 'Approve Letter Request', None, None, None, None),
             ('completion_doc2', 'Accomplished/Evaluation Form', None, None, None, None),
-            ('completion_doc3', 'Supporting Document 1', None, None, None, None),
-            ('completion_doc4', 'Supporting Document 2', None, None, None, None),
-            ('completion_doc5', 'Supporting Document 3', None, None, None, None),
-            ('completion_doc6', 'Supporting Document 4', None, None, None, None),
-            ('completion_doc7', 'Supporting Document 5', None, None, None, None),
-            ('completion_doc8', 'Supporting Document 6', None, None, None, None),
+            ('completion_doc3', 'Authority To Go', None, None, None, None),
+            ('completion_doc4', 'Supporting Document 1', None, None, None, None),
+            ('completion_doc5', 'Supporting Document 2', None, None, None, None),
+            ('completion_doc6', 'Supporting Document 3', None, None, None, None),
+            ('completion_doc7', 'Supporting Document 4', None, None, None, None),
+            ('completion_doc8', 'Supporting Document 5', None, None, None, None),
         ]
 
 

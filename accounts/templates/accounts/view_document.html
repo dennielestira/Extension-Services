@@ -675,7 +675,7 @@
         {% if files.doc4 %}
           <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
             <div class="mb-1 mb-md-0">
-              📎 Supporting Document 1:
+              📎 Accomplished / Evaluation Form:
               <a href="{{ files.doc4.url }}" target="_blank" class="file-link">{{ files.doc4.name|cut:"day_files/" }}</a>
                     {% if files.doc4_uploaded_by or files.doc4_uploaded_at %}
                       <small class="text-muted d-block">
@@ -736,7 +736,7 @@
         {% if files.doc5 %}
           <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
             <div class="mb-1 mb-md-0">
-              📎 Supporting Document 2:
+              📎 Supporting Document 1:
               <a href="{{ files.doc5.url }}" target="_blank" class="file-link">{{ files.doc5.name|cut:"day_files/" }}</a>
                     {% if files.doc5_uploaded_by or files.doc5_uploaded_at %}
                       <small class="text-muted d-block">
@@ -809,8 +809,8 @@
                 <option value="day_doc1">Attendance sheet</option>
                 <option value="day_doc2">Photo Documentation</option>
                 <option value="day_doc3">Program</option>
-                <option value="day_doc4">Supporting Document 1</option>
-                <option value="day_doc5">Supporting Document 2</option>
+                <option value="day_doc4">Accomplished / Evaluation Form</option>
+                <option value="day_doc5">Supporting Document 1</option>
               </select>
               <button type="submit" name="make_day_revision" class="btn btn-sm btn-warning">🚩 Mark for Revision</button>
             </form>
