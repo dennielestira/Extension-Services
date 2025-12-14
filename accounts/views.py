@@ -2276,6 +2276,11 @@ Thank you."""
             if form.is_valid():
                 form.save()
                 messages.success(request, "Report updated successfully.")
+            else:
+                # Display form errors as messages
+                for field, errors in form.errors.items():
+                    for error in errors:
+                        messages.error(request, f"{field}: {error}")
             return redirect("view_document", document_id=document.id)
 
         elif "delete_report" in request.POST:
