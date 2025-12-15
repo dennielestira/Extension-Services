@@ -160,13 +160,13 @@
             {% elif user.account_type == 'Campus Admin' %}
                 <li><a class="nav-link text-white" href="{% url 'register' %}">Add Staff</a></li>
                 <li><a class="nav-link text-white" href="{% url 'register_department_coordinator' %}">Add Coordinator</a></li>
-                <li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>-->
                 <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
                 <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
                 <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
             {% elif user.account_type == 'Staff Extensionist' %}
                 <li><a class="nav-link text-white" href="{% url 'register_department_coordinator' %}">Add Coordinator</a></li>
-                <li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>
+                <!--<li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>-->
                 <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
                 <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
                 <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
