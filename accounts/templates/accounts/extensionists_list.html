@@ -31,7 +31,7 @@
                             <td>{{ user.contact_number }}</td>
                             <td>{{ user.get_gender_display }}</td>  <!-- ✅ Added -->
                             <td>
-                                {% if request.user.account_type == 'Staff Extensionist' or request.user.account_type == 'Campus Admin' %}
+                                {% if request.user.account_type == 'Staff Extensionist' or request.user.account_type == 'Campus Admin' or  request.user.account_type == 'Department Coordinator' %}
                                     <form method="post" action="{% url 'delete_extensionist' user.id %}" style="display:inline;">
                                         {% csrf_token %}
                                         <button type="submit" class="btn btn-danger btn-sm"

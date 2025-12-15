@@ -142,7 +142,7 @@
               {% if uploaded_by or uploaded_at %}
                 <small class="text-muted">
                   - Updated by 
-                  <strong>{{ uploaded_by.get_full_name|default:uploaded_by.username|default:"Unknown" }}</strong>
+                  <strong>{% if uploaded_by %}{{ uploaded_by.get_full_name|default:uploaded_by.username }}{% else %}Unknown User (Deleted){% endif %}</strong>
                   {% if uploaded_at %}
                     ({{ uploaded_at|date:"M d, Y h:i A" }})
                   {% endif %}
@@ -463,7 +463,9 @@
                 </div>
               </div>
 
-              <small class="text-muted d-block mb-2">Uploaded by {{ report.uploaded_by.full_name|default:"Unknown" }}</small>
+              <small class="text-muted d-block mb-2">
+  Uploaded by {{ report.uploaded_by_name|default:"Unknown User (Deleted)" }}
+</small>
 
       <div class="collapse" id="editReport{{ report.id }}">
         <form method="post" enctype="multipart/form-data" class="border p-2 rounded bg-white mt-2">
@@ -516,7 +518,14 @@
               <a href="{{ files.doc1.url }}" target="_blank" class="file-link">{{ files.doc1.name|cut:"day_files/" }}</a>
                     {% if files.doc1_uploaded_by or files.doc1_uploaded_at %}
                       <small class="text-muted d-block">
-                        Updated by <strong>{{ files.doc1_uploaded_by.get_full_name|default:"Unknown" }}</strong>
+                        Updated by <strong>
+  {% if files.doc1_uploaded_by %}
+    {{ files.doc1_uploaded_by.get_full_name|default:files.doc1_uploaded_by.username }}
+  {% else %}
+    Unknown User (Deleted)
+  {% endif %}
+</strong>
+
                         {% if files.doc1_uploaded_at %}
                           ({{ files.doc1_uploaded_at|date:"M d, Y h:i A" }})
                         {% endif %}
@@ -578,7 +587,14 @@
               <a href="{{ files.doc2.url }}" target="_blank" class="file-link">{{ files.doc2.name|cut:"day_files/" }}</a>
                     {% if files.doc2_uploaded_by or files.doc2_uploaded_at %}
                       <small class="text-muted d-block">
-                        Updated by <strong>{{ files.doc2_uploaded_by.get_full_name|default:"Unknown" }}</strong>
+                        Updated by <strong>
+  {% if files.doc2_uploaded_by %}
+    {{ files.doc2_uploaded_by.get_full_name|default:files.doc2_uploaded_by.username }}
+  {% else %}
+    Unknown User (Deleted)
+  {% endif %}
+</strong>
+
                         {% if files.doc2_uploaded_at %}
                           ({{ files.doc2_uploaded_at|date:"M d, Y h:i A" }})
                         {% endif %}
@@ -639,7 +655,14 @@
               <a href="{{ files.doc3.url }}" target="_blank" class="file-link">{{ files.doc3.name|cut:"day_files/" }}</a>
                     {% if files.doc3_uploaded_by or files.doc3_uploaded_at %}
                       <small class="text-muted d-block">
-                        Updated by <strong>{{ files.doc3_uploaded_by.get_full_name|default:"Unknown" }}</strong>
+                        Updated by <strong>
+  {% if files.doc3_uploaded_by %}
+    {{ files.doc3_uploaded_by.get_full_name|default:files.doc3_uploaded_by.username }}
+  {% else %}
+    Unknown User (Deleted)
+  {% endif %}
+</strong>
+
                         {% if files.doc3_uploaded_at %}
                           ({{ files.doc3_uploaded_at|date:"M d, Y h:i A" }})
                         {% endif %}
@@ -700,7 +723,14 @@
               <a href="{{ files.doc4.url }}" target="_blank" class="file-link">{{ files.doc4.name|cut:"day_files/" }}</a>
                     {% if files.doc4_uploaded_by or files.doc4_uploaded_at %}
                       <small class="text-muted d-block">
-                        Updated by <strong>{{ files.doc4_uploaded_by.get_full_name|default:"Unknown" }}</strong>
+                        Updated by <strong>
+  {% if files.doc4_uploaded_by %}
+    {{ files.doc4_uploaded_by.get_full_name|default:files.doc4_uploaded_by.username }}
+  {% else %}
+    Unknown User (Deleted)
+  {% endif %}
+</strong>
+
                         {% if files.doc4_uploaded_at %}
                           ({{ files.doc4_uploaded_at|date:"M d, Y h:i A" }})
                         {% endif %}
@@ -761,7 +791,14 @@
               <a href="{{ files.doc5.url }}" target="_blank" class="file-link">{{ files.doc5.name|cut:"day_files/" }}</a>
                     {% if files.doc5_uploaded_by or files.doc5_uploaded_at %}
                       <small class="text-muted d-block">
-                        Updated by <strong>{{ files.doc5_uploaded_by.get_full_name|default:"Unknown" }}</strong>
+                        Updated by <strong>
+  {% if files.doc5_uploaded_by %}
+    {{ files.doc5_uploaded_by.get_full_name|default:files.doc5_uploaded_by.username }}
+  {% else %}
+    Unknown User (Deleted)
+  {% endif %}
+</strong>
+
                         {% if files.doc5_uploaded_at %}
                           ({{ files.doc5_uploaded_at|date:"M d, Y h:i A" }})
                         {% endif %}
@@ -891,7 +928,7 @@
                 {% if uploaded_by or uploaded_at %}
                   <small class="text-muted">
                     - Updated by 
-                    <strong>{{ uploaded_by.get_full_name|default:uploaded_by.username|default:"Unknown" }}</strong>
+                    <strong>{% if uploaded_by %}{{ uploaded_by.get_full_name|default:uploaded_by.username }}{% else %}Unknown User (Deleted){% endif %}</strong>
                     {% if uploaded_at %}
                       ({{ uploaded_at|date:"M d, Y h:i A" }})
                     {% endif %}
