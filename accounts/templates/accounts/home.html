@@ -172,6 +172,7 @@
                 <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
             {% elif user.account_type == 'Department Coordinator' %}
                 <li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>
+                <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
                 <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
                 <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
             {% else %}

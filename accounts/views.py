@@ -299,14 +299,17 @@ def delete_user(request, user_id):
     return redirect('user_hierarchy')
 @login_required
 def list_department_coordinators(request):
-    coordinators = User.objects.filter(account_type='Department Coordinator')
+    # Filter both Department Coordinators and Staff Extensionists
+    coordinators = User.objects.filter(
+        account_type__in=['Department Coordinator', 'Staff Extensionist']
+    )
     
     # Group by department
     grouped = defaultdict(list)
     for user in coordinators:
         department = user.department if user.department else 'No Department'
         grouped[department].append(user)
-
+ 
     return render(request, 'accounts/department_coordinators_list.html', {
         'grouped_coordinators': dict(grouped)
     })
