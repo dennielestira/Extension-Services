@@ -37,29 +37,10 @@ class CustomUserCreationForm(UserCreationForm):
 User = get_user_model()
 # Form for updating existing users (for admins or self-admin)
 class UserEditForm(forms.ModelForm):
-    department = forms.ModelChoiceField(
-        queryset=Department.objects.all(),
-        required=False,
-        label='Department'
-    )
 
     class Meta:
         model = User
         fields = ['username', 'email', 'full_name', 'contact_number', 'gender']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # Only show department field if user is Coordinator or Extensionist
-        if self.instance and self.instance.account_type not in [
-            AccountType.DEPARTMENT_COORDINATOR,
-            AccountType.EXTENSIONIST
-        ]:
-            self.fields.pop('department')
-        else:
-            # Pre-select the current department if exists
-            if self.instance and self.instance.department:
-                self.fields['department'].initial = self.instance.department
 
     def clean_username(self):
         username = self.cleaned_data['username']

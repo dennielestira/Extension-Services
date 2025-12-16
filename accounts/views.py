@@ -1964,13 +1964,24 @@ def view_document(request, document_id):
     super_roles = ["Campus Admin", "Staff Extensionist"]
     dept_roles = ["Department Coordinator", "Extensionist"]
 
+    # Super roles can always view
     if user.account_type in super_roles:
         pass
+
+    # Document uploaded by Staff Extensionist (no department)
+    elif document.department is None:
+        # ✅ Allow ALL authenticated users
+        pass
+
+    # Department-based access
     elif user.account_type in dept_roles:
-        if document.department != getattr(user, "department", None):
+        if document.department != user.department:
             return redirect("permission_denied")
+
+    # Everything else
     else:
         return redirect("permission_denied")
+
 
 
     # Permissions
@@ -2252,7 +2263,6 @@ Thank you."""
             day_id = get_post_id(request, "day_id")
             day = get_object_or_404(DocumentDay, id=day_id, document=document)
             uploaded_file = request.FILES.get("report_file")
-            title = request.POST.get("title") or f"Report for {day.name}"
 
             if day.training_reports.exists():
                 messages.error(request, "This day already has a training report.")
@@ -2264,12 +2274,13 @@ Thank you."""
 
             DayTrainingReport.objects.create(
                 day=day,
-                title=title,
                 file=uploaded_file,
                 uploaded_by=user
             )
+
             messages.success(request, "Training report uploaded successfully.")
             return redirect("view_document", document_id=document.id)
+
 
 
         elif "edit_report" in request.POST:

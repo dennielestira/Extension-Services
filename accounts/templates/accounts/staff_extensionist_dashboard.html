@@ -426,7 +426,7 @@
         
         <!-- Upload toggle button -->
         <button class="upload-toggle-btn mt-3" onclick="toggleMOAUpload()" style="display:none;">
-            📤 Upload New MOA File
+            📤 Upload New Partner
             <span class="info-icon" data-tooltip="Upload Memorandum of Agreement documents">ℹ️</span>
         </button>
 
@@ -435,13 +435,13 @@
             <h4 style="color:#1b5e20;">Upload MOA Logo & PDF</h4>
             <form action="{% url 'upload_moa' %}" method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
-                <label class="mt-2" style="color:#1b5e20;">MOA Title:</label>
+                <label class="mt-2" style="color:#1b5e20;">Logo Title:</label>
                 <input type="text" name="title" class="form-control mb-3" required>
 
                 <label style="color:#1b5e20;">Logo Image:</label>
                 <input type="file" name="logo" accept="image/*" class="form-control mb-3" required>
 
-                <label style="color:#1b5e20;">PDF File:</label>
+                <label style="color:#1b5e20;">MOA File:</label>
                 <input type="file" name="pdf_file" accept="application/pdf" class="form-control mb-4" required>
             </form>
         </div>
