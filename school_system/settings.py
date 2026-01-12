@@ -63,7 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     # Your custom middleware (LogoutDetection should come BEFORE RedirectAnd404)
     'accounts.middleware.LogoutDetectionMiddleware',  # For debugging
     'accounts.middleware.RedirectAnd404Middleware',   # Your 404 handler
