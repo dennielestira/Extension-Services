@@ -8,7 +8,7 @@ from networkx import center
 from accounts.utils import QUARTER_CHOICES, get_month_range
 from .forms import  CustomUserCreationForm, DayRevisionFeedbackForm, DayTrainingReportForm, DepartmentCoordinatorRegistrationForm,  DocumentCommentForm, DocumentDayFileForm, DocumentDayForm, ExtensionistRegistrationForm, LinkageForm, MOAResourceForm, RevisionFeedbackForm
 from django.http import Http404, HttpResponse, HttpResponseForbidden
-from .models import  AccountType, CompletionRevisionFeedback, DayRevisionFeedback, Department,  DocumentComment, DocumentDay, DocumentDayFile, DocumentFile, Document, DocumentRevisionFeedback, Linkage, MOAResource
+from .models import  AccountType, CompletionRevisionFeedback, DayRevisionFeedback, Department,  DocumentComment, DocumentDay, DocumentDayFile, DocumentFile, Document, DocumentFileHistory, DocumentRevisionFeedback, Linkage, MOAResource
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import DocumentUploadForm, CompletionUploadForm
@@ -48,6 +48,51 @@ from reportlab.lib.units import inch
 import json
 from django.contrib.auth import logout
 from accounts.models import AccountType
+from django.utils import timezone
+
+def save_file_with_history(instance, slot_name, uploaded_file, user, document):
+    """
+    Save file with history tracking.
+    Works for both Document files and DocumentDayFile files.
+    """
+    old_file = getattr(instance, slot_name, None)
+
+    # Determine the prefix for history slot_name
+    # If this is a DocumentDayFile, prefix with "day_"
+    from .models import DocumentDayFile  # Import at top of file if not already there
+    
+    if isinstance(instance, DocumentDayFile):
+        history_slot_name = f"day_{slot_name}"
+    else:
+        history_slot_name = slot_name
+
+    # Save old file to history
+    if old_file:
+        print(f"🔵 Saving history for {history_slot_name}: {old_file.name}")
+        DocumentFileHistory.objects.create(
+            document=document,
+            slot_name=history_slot_name,
+            file=old_file,
+            uploaded_by=user
+        )
+        print(f"✅ History saved successfully for {history_slot_name}")
+    else:
+        print(f"⚠️ No old file found for {slot_name}")
+
+    # Replace file
+    setattr(instance, slot_name, uploaded_file)
+
+    if hasattr(instance, f"{slot_name}_uploaded_by"):
+        setattr(instance, f"{slot_name}_uploaded_by", user)
+
+    if hasattr(instance, f"{slot_name}_uploaded_at"):
+        setattr(instance, f"{slot_name}_uploaded_at", timezone.now())
+
+    if hasattr(instance, f"{slot_name}_status"):
+        setattr(instance, f"{slot_name}_status", "submitted")
+
+    instance.save()
+    print(f"💾 New file saved for {slot_name}")
 
 
 def base(request):
@@ -1225,9 +1270,10 @@ from django.contrib.auth import logout
 from django.shortcuts import redirect
 
 def permission_denied(request):
-    logout(request)
-    messages.error(request, "Access denied. You have been logged out for security reasons.")
-    return redirect('login')
+    # DON'T logout the user - just show them an error page
+    return render(request, 'accounts/permission_denied.html', {
+        'message': "You don't have permission to access this page."
+    })
 
 
 @login_required
@@ -1949,7 +1995,36 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+def send_revision_updated_notification(document, user, slot_choice, doc_nickname_map):
+    """
+    Send email notification to Campus Admin and Staff Extensionist 
+    when a document marked for revision has been updated.
+    """
+    # Get recipients: Campus Admin and Staff Extensionist
+    recipients = User.objects.filter(
+        account_type__in=["Campus Admin", "Staff Extensionist"]
+    ).values_list("email", flat=True)
+    
+    if recipients:
+        # Get the document nickname
+        doc_name = doc_nickname_map.get(slot_choice, slot_choice.replace('_', ' ').title())
+        
+        subject = f"Revision Updated: {document.name} - {doc_name}"
+        message = f"""Dear Reviewers,
 
+The document '{doc_name}' in project '{document.name}' that was previously marked for revision has been updated by {user.get_full_name()} ({user.account_type}).
+
+Please review the updated document at your earliest convenience.
+
+Thank you."""
+        
+        send_mail(
+            subject, 
+            message, 
+            'ExtensionServices10@gmail.com', 
+            recipients, 
+            fail_silently=True
+        )
 # -------------------------------
 # VIEW
 # -------------------------------
@@ -2050,7 +2125,14 @@ def view_document(request, document_id):
                 if not existing_completion:
                     existing_completion = DocumentFile(document=document)
 
-                handle_file_upload(existing_completion, slot_choice, uploaded_file)
+                save_file_with_history(
+                    instance=existing_completion,
+                    slot_name=slot_choice,
+                    uploaded_file=uploaded_file,
+                    user=user,
+                    document=document
+                )
+
 
             # Status will still update even with no slot / no file
             document.status = "completion_processing"
@@ -2066,6 +2148,9 @@ def view_document(request, document_id):
 
 
 
+        # -----------------------
+        # COMPLETION CHANGES
+        # -----------------------
         elif "save_completion_changes" in request.POST and can_upload_completion:
             slot_choice = request.POST.get("completion_slot_choice")
             uploaded_file = request.FILES.get("selected_file")
@@ -2074,63 +2159,103 @@ def view_document(request, document_id):
             if slot_choice in valid_slots and uploaded_file:
                 if not existing_completion:
                     existing_completion = DocumentFile(document=document)
-                handle_file_upload(existing_completion, slot_choice, uploaded_file, user)
+                
+                # Check if this slot was marked for revision
+                status_field = f"{slot_choice}_status"
+                was_revision = getattr(existing_completion, status_field, None) == "revision" if existing_completion else False
+                
+                save_file_with_history(
+                    instance=existing_completion,
+                    slot_name=slot_choice,
+                    uploaded_file=uploaded_file,
+                    user=user,
+                    document=document
+                )
+
                 clear_feedback(document)
                 messages.success(request, f"{slot_choice.replace('_', ' ').title()} updated successfully.")
+                
+                # Send notification if it was marked for revision
+                if was_revision:
+                    send_revision_updated_notification(document, user, slot_choice, doc_nickname_map)
+                    messages.info(request, "Reviewers have been notified of the update.")
             else:
                 messages.error(request, "Invalid slot or file.")
             return redirect("view_document", document_id=document.id)
         
         elif "mark_revision_completion" in request.POST and can_comment:
             slot_choice = request.POST.get("revision_doc")
+            comment_text = request.POST.get("revision_comment")
             valid_slots = [f"completion_doc{i}" for i in range(1, 9)]
 
-            if slot_choice in valid_slots and existing_completion and hasattr(existing_completion, slot_choice):
+            if slot_choice not in valid_slots:
+                messages.error(request, "Invalid slot selected.")
+                return redirect("view_document", document_id=document.id)
+
+            if existing_completion and hasattr(existing_completion, slot_choice):
+                # Mark the slot for revision
                 setattr(existing_completion, f"{slot_choice}_status", "revision")
                 existing_completion.save()
-                messages.warning(request, f"{slot_choice.replace('_', ' ').title()} marked for revision.")
 
-                # ---- Email Notification ----
+                # Add feedback if provided
+                if comment_text:
+                    CompletionRevisionFeedback.objects.create(
+                        document=document,
+                        completion_file=existing_completion,  # ✅ Changed from 'completion' to 'completion_file'
+                        slot_name=slot_choice,
+                        user=user,
+                        comment=comment_text,
+                        image=request.FILES.get("revision_image")
+                    )
+                    messages.success(request, f"{slot_choice.replace('_', ' ').title()} marked for revision with feedback.")
+                else:
+                    messages.warning(request, f"{slot_choice.replace('_', ' ').title()} marked for revision (no comment added).")
+
+                # ---- Send email ----
                 recipients = User.objects.filter(
                     account_type__in=["Department Coordinator", "Extensionist"],
                     department=document.department
                 ).values_list("email", flat=True)
 
                 if recipients:
-                    # Get the nickname from mapping
                     doc_name = doc_nickname_map.get(slot_choice, slot_choice.replace('_', ' ').title())
-                    
                     subject = f"Revision Needed: {document.name} - {doc_name} (Completion)"
+                    
+                    comment_section = f"\n\nRevision Comment:\n{comment_text}" if comment_text else ""
+                    
                     message = f"""Dear Team,
 
-The completion document '{doc_name}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+        The completion document '{doc_name}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+        {comment_section}
 
-Please review and update it as soon as possible.
+        Please review and update it as soon as possible.
 
-Thank you."""
+        Thank you."""
                     send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
             else:
-                messages.error(request, "Invalid slot or completion document not found.")
+                messages.error(request, "Completion document not found.")
 
             return redirect("view_document", document_id=document.id)
 
 
-        elif "submit_completion_revision_comment" in request.POST and can_comment:
-            slot_name = request.POST.get("completion_slot")
+        elif "submit_completion_revision_comment" in request.POST:
+            slot_choice = request.POST.get("completion_document")  # ✅ Changed from 'completion_slot'
             comment_text = request.POST.get("revision_comment")
             image = request.FILES.get("revision_image")
-            if slot_name and comment_text and existing_completion:
+            
+            if slot_choice and comment_text and existing_completion:
                 CompletionRevisionFeedback.objects.create(
                     document=document,
-                    completion_file=existing_completion,
-                    slot_name=slot_name,
+                    completion_file=existing_completion,  # ✅ Changed from 'completion' to 'completion_file'
+                    slot_name=slot_choice,
                     user=user,
                     comment=comment_text,
                     image=image
                 )
-                messages.success(request, "Completion document revision comment added successfully.")
+                messages.success(request, "Revision comment added successfully.")
             else:
                 messages.error(request, "Missing comment text or invalid slot.")
+            
             return redirect("view_document", document_id=document.id)
 
         # -----------------------
@@ -2140,10 +2265,27 @@ Thank you."""
             slot_choice = request.POST.get("initial_slot_choice")
             uploaded_file = request.FILES.get("initial_selected_file")
             valid_slots = ["Activity_Proposal", "Work_and_Financial_Plan", "Plan_of_Activities"] + [f"doc{i}" for i in range(4, 9)]
+            
             if slot_choice in valid_slots and uploaded_file:
-                handle_file_upload(document, slot_choice, uploaded_file, user)
+                # Check if this slot was marked for revision
+                status_field = f"{slot_choice}_status"
+                was_revision = getattr(document, status_field, None) == "revision"
+                
+                save_file_with_history(
+                    instance=document,
+                    slot_name=slot_choice,
+                    uploaded_file=uploaded_file,
+                    user=user,
+                    document=document
+                )
+
                 clear_feedback(document)
                 messages.success(request, f"{slot_choice.replace('_', ' ').title()} uploaded successfully.")
+                
+                # Send notification if it was marked for revision
+                if was_revision:
+                    send_revision_updated_notification(document, user, slot_choice, doc_nickname_map)
+                    messages.info(request, "Reviewers have been notified of the update.")
             else:
                 messages.error(request, "Invalid slot or file.")
             return redirect("view_document", document_id=document.id)
@@ -2264,21 +2406,30 @@ Thank you."""
             day = get_object_or_404(DocumentDay, id=day_id, document=document)
             uploaded_file = request.FILES.get("report_file")
 
-            if day.training_reports.exists():
-                messages.error(request, "This day already has a training report.")
-                return redirect("view_document", document_id=document.id)
-
             if uploaded_file and os.path.splitext(uploaded_file.name)[1].lower() not in [".doc", ".docx"]:
                 messages.error(request, "Only .doc or .docx files allowed.")
                 return redirect("view_document", document_id=document.id)
 
-            DayTrainingReport.objects.create(
-                day=day,
-                file=uploaded_file,
-                uploaded_by=user
-            )
+            # Check if replacing existing report
+            if day.training_reports.exists():
+                # Delete the old report
+                old_report = day.training_reports.first()
+                old_report.delete()
+                
+                DayTrainingReport.objects.create(
+                    day=day,
+                    file=uploaded_file,
+                    uploaded_by=user
+                )
+                messages.warning(request, "Training report has been replaced with the new one.")
+            else:
+                DayTrainingReport.objects.create(
+                    day=day,
+                    file=uploaded_file,
+                    uploaded_by=user
+                )
+                messages.success(request, "Training report uploaded successfully.")
 
-            messages.success(request, "Training report uploaded successfully.")
             return redirect("view_document", document_id=document.id)
 
 
@@ -2320,12 +2471,54 @@ Thank you."""
             day = get_object_or_404(DocumentDay, id=day_id, document=document)
             day_files, _ = DocumentDayFile.objects.get_or_create(day=day)
 
-            handle_file_upload(day_files, slot, uploaded_file, user)
+            # Check if this slot was marked for revision
+            status_field = f"{slot}_status"
+            was_revision = getattr(day_files, status_field, None) == "revision"
+            
+            # ✅ USE save_file_with_history instead of handle_file_upload
+            save_file_with_history(
+                instance=day_files,
+                slot_name=slot,
+                uploaded_file=uploaded_file,
+                user=user,
+                document=document
+            )
 
             clear_feedback(document)
             messages.success(request, f"{slot.capitalize()} uploaded successfully for {day.title}.")
-            return redirect("view_document", document_id=document.id)
+            
+            # Send notification if it was marked for revision
+            if was_revision:
+                # Map day slot to proper naming
+                day_slot_map = {
+                    "doc1": "day_doc1",
+                    "doc2": "day_doc2",
+                    "doc3": "day_doc3",
+                    "doc4": "day_doc4",
+                    "doc5": "day_doc5"
+                }
+                slot_name = day_slot_map.get(slot, slot)
+                
+                # Get recipients
+                recipients = User.objects.filter(
+                    account_type__in=["Campus Admin", "Staff Extensionist"]
+                ).values_list("email", flat=True)
+                
+                if recipients:
+                    doc_name = doc_nickname_map.get(slot_name, f"Document {slot}")
+                    subject = f"Day Revision Updated: {document.name} - {day.title} - {doc_name}"
+                    message = f"""Dear Reviewers,
 
+        The day file '{doc_name}' for '{day.title}' in project '{document.name}' that was previously marked for revision has been updated by {user.get_full_name()} ({user.account_type}).
+
+        Please review the updated document at your earliest convenience.
+
+        Thank you."""
+                    
+                    send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
+                    messages.info(request, "Reviewers have been notified of the update.")
+            
+            return redirect("view_document", document_id=document.id)
 
         elif "delete_day_files" in request.POST:
             day_id = get_post_id(request, "day_id")
@@ -2340,6 +2533,7 @@ Thank you."""
         elif "make_day_revision" in request.POST and can_comment:
             day_id = get_post_id(request, "day_id")
             slot_choice = request.POST.get("revision_doc")
+            comment_text = request.POST.get("revision_comment")
             valid_slots = [f"day_doc{i}" for i in range(1, 6)]
 
             if slot_choice not in valid_slots or not day_id:
@@ -2353,7 +2547,7 @@ Thank you."""
                 messages.error(request, "No files uploaded for this day.")
                 return redirect("view_document", document_id=document.id)
 
-            # 🔴 CHECK IF FILE EXISTS BEFORE ALLOWING REVISION
+            # Check if file exists
             file_field_name = slot_choice.replace("day_", "")  # doc1, doc2, etc.
             file_obj = getattr(day_files, file_field_name, None)
 
@@ -2361,44 +2555,55 @@ Thank you."""
                 messages.error(request, "You cannot mark a revision for an empty file slot.")
                 return redirect("view_document", document_id=document.id)
 
-            # ✅ CHECK STATUS FIELD AND MARK REVISION
+            # Mark for revision
             status_field = f"{file_field_name}_status"
             if hasattr(day_files, status_field):
                 setattr(day_files, status_field, "revision")
                 day_files.save()
 
-                messages.warning(
-                    request,
-                    f"{file_field_name.replace('doc', 'Document ').title()} marked for revision."
-                )
+                # Add feedback if provided
+                if comment_text:
+                    DayRevisionFeedback.objects.create(
+                        document=document,
+                        day=day,
+                        slot_name=slot_choice,
+                        user=user,
+                        comment=comment_text,
+                        image=request.FILES.get("revision_image")
+                    )
+                    messages.success(request, f"{file_field_name.replace('doc', 'Document ').title()} marked for revision with feedback.")
+                else:
+                    messages.warning(request, f"{file_field_name.replace('doc', 'Document ').title()} marked for revision (no comment added).")
 
-                # ---- SEND EMAIL NOTIFICATION ----
+                # Send email notification
                 recipients = User.objects.filter(
                     account_type__in=["Department Coordinator", "Extensionist"],
                     department=document.department
                 ).values_list("email", flat=True)
 
                 if recipients:
-                    doc_name = doc_nickname_map.get(
-                        slot_choice,
-                        f"Document {file_field_name.replace('doc', '')}"
-                    )
-
-                    subject = f"Day File Revision Needed: {document.name} - {day.title} - {doc_name}"
+                    doc_name_map = {
+                        "day_doc1": "Attendance Sheet",
+                        "day_doc2": "Photo Documentation",
+                        "day_doc3": "Program",
+                        "day_doc4": "Accomplished / Evaluation Form",
+                        "day_doc5": "Supporting Document 1"
+                    }
+                    doc_name = doc_name_map.get(slot_choice, f"Document {file_field_name.replace('doc', '')}")
+                    
+                    subject = f"Revision Needed: {document.name} - {day.title} - {doc_name}"
+                    
+                    comment_section = f"\n\nRevision Comment:\n{comment_text}" if comment_text else ""
+                    
                     message = f"""Dear Team,
 
         The day file '{doc_name}' for '{day.title}' in project '{document.name}' has been marked for revision by {user.get_full_name()} ({user.account_type}).
+        {comment_section}
 
         Please review and update it accordingly.
 
         Thank you."""
-                    send_mail(
-                        subject,
-                        message,
-                        'ExtensionServices10@gmail.com',
-                        recipients,
-                        fail_silently=True
-                    )
+                    send_mail(subject, message, 'ExtensionServices10@gmail.com', recipients, fail_silently=True)
             else:
                 messages.error(request, "Invalid file slot.")
 
@@ -2428,8 +2633,8 @@ Thank you."""
                 messages.success(request, "Day revision comment added successfully.")
             else:
                 messages.error(request, "Missing comment text or invalid slot.")
+            
             return redirect("view_document", document_id=document.id)
-
     # --- Context & File Lists ---
     file_list = [
         ('Activity_Proposal', 'Activity Proposal', document.Activity_Proposal, document.Activity_Proposal_status,
@@ -2480,8 +2685,8 @@ Thank you."""
             ('completion_doc7', 'Supporting Document 4', None, None, None, None),
             ('completion_doc8', 'Supporting Document 5', None, None, None, None),
         ]
-
-
+    
+    file_histories = document.file_histories.all()
     days = document.days.prefetch_related("training_reports")
     context = {
         "document": document,
@@ -2502,10 +2707,24 @@ Thank you."""
         "day_revision_feedbacks": day_revision_feedbacks,
         'completion_file_list': completion_file_list,
         'completion_feedbacks': completion_feedbacks,
+        "file_histories": file_histories,
     }
 
     return render(request, "accounts/view_document.html", context)
+@login_required
+def ongoing_document_list(request):
+    user = request.user
 
+    # Show ALL ongoing documents to everyone (no department filtering)
+    documents = Document.objects.filter(status='ongoing').prefetch_related('days')
+
+    documents = documents.order_by('-created_at')
+
+    context = {
+        'documents': documents,
+        'today': timezone.now().date(),
+    }
+    return render(request, 'accounts/ongoing_document_list.html', context)
 
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
@@ -3237,43 +3456,75 @@ from .models import Media, PhotoAlbum, ShowcaseImage
 def home2(request):
     # ----------------- Photos (gallery) -----------------
     photos = Media.objects.filter(media_type='photo').order_by('-id')
-    total_photos = photos.count()  # Add this
-    photos_per_page = 9
-    paginator = Paginator(photos, photos_per_page)
+    total_photos = photos.count()
+    paginator = Paginator(photos, 9)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     # ----------------- Videos (gallery) -----------------
     videos = Media.objects.filter(media_type='video').order_by('-id')
     total_videos = videos.count()
-
-    videos_per_page = 4
-    video_paginator = Paginator(videos, videos_per_page)
+    video_paginator = Paginator(videos, 4)
     video_page_number = request.GET.get('video_page')
     video_page_obj = video_paginator.get_page(video_page_number)
 
-    # ----------------- Photo Albums -----------------
-    albums_list = PhotoAlbum.objects.prefetch_related('photos').all().order_by('-created_at')
-    total_albums = albums_list.count()  # Add this
-    albums_per_page = 9
-    album_paginator = Paginator(albums_list, albums_per_page)
+    # ----------------- Photo Albums (APPROVAL + SHOW/HIDE) -----------------
+    if request.user.is_authenticated:
+        # Logged-in users (admins/staff) see ALL albums
+        albums_list = PhotoAlbum.objects.prefetch_related('photos') \
+            .order_by('-created_at')
+    else:
+        # Public users see ONLY approved + public albums
+        albums_list = PhotoAlbum.objects.prefetch_related('photos').filter(
+            is_approved=True,
+            is_public=True
+        ).order_by('-created_at')
+
+    total_albums = albums_list.count()
+    album_paginator = Paginator(albums_list, 9)
     album_page_number = request.GET.get('album_page')
     albums_page = album_paginator.get_page(album_page_number)
 
     # ----------------- Showcase Images -----------------
     showcase_images = ShowcaseImage.objects.all().order_by('position')
     moa_list = MOAResource.objects.all().order_by('-uploaded_at')
+    selected_album = None
+    album_id = request.GET.get('selected_album_id')
+    if album_id:
+        selected_album = get_object_or_404(PhotoAlbum, id=album_id)
 
     return render(request, 'accounts/home2.html', {
         'page_obj': page_obj,
-        'total_photos': total_photos,  # Add this
+        'total_photos': total_photos,
         'video_page_obj': video_page_obj,
         'total_videos': total_videos,
         'albums': albums_page,
-        'total_albums': total_albums,  # Add this
+        'selected_album': selected_album,
+        'total_albums': total_albums,
         'moa_list': moa_list,
         'showcase_images': showcase_images,
     })
+
+from django.http import HttpResponseForbidden
+
+@login_required
+def approve_album(request, album_id):
+    if request.user.account_type not in ["Campus Admin", "Staff Extensionist"]:
+        return HttpResponseForbidden("You are not allowed to approve albums.")
+
+    album = get_object_or_404(PhotoAlbum, id=album_id)
+    album.is_approved = True
+    album.save()
+    return redirect('home2')
+@login_required
+def toggle_album_visibility(request, album_id):
+    if request.user.account_type not in ["Campus Admin", "Staff Extensionist"]:
+        return HttpResponseForbidden("You are not allowed to change album visibility.")
+
+    album = get_object_or_404(PhotoAlbum, id=album_id)
+    album.is_public = not album.is_public
+    album.save()
+    return redirect('home2')
 
 
 from django.shortcuts import render, redirect, get_object_or_404
@@ -4301,3 +4552,395 @@ def edit_showcase_image(request, image_id):
         img.image = request.FILES["image"]  # replace image
         img.save()  # keep the same position
     return redirect(request.META.get("HTTP_REFERER", "/"))
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import DocumentRequest, Department, CustomUser
+from django.core.mail import send_mail
+from django.conf import settings
+
+@login_required
+def create_document_request(request):
+    # Only Campus Admin and Staff Extensionist can access
+    if request.user.account_type not in ['Campus Admin', 'Staff Extensionist']:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('login')
+    
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        department_id = request.POST.get('department')
+        description = request.POST.get('description')
+        
+        if name and department_id and description:
+            department = get_object_or_404(Department, id=department_id)
+            
+            # Create the document request
+            doc_request = DocumentRequest.objects.create(
+                name=name,
+                department=department,
+                description=description,
+                requested_by=request.user
+            )
+            
+            # Send email notification
+            send_document_request_notification(doc_request, request.user)
+            
+            messages.success(request, 'Document request submitted successfully! Department coordinators have been notified via email.')
+            return redirect('my_document_requests')
+        else:
+            messages.error(request, 'Please fill in all required fields.')
+    
+    departments = Department.objects.all()
+    return render(request, 'accounts/create_document_request.html', {
+        'departments': departments
+    })
+
+
+def send_document_request_notification(doc_request, requester):
+    """Send email notification when a new document is requested"""
+    
+    # Get Department Coordinators and Extensionists for the target department
+    recipients = CustomUser.objects.filter(
+        department=doc_request.department,
+        account_type__in=['Department Coordinator', 'Extensionist']
+    ).exclude(email='').values_list('email', flat=True)
+    
+    if not recipients:
+        return  # No recipients to notify
+    
+    subject = f"New Document Request: {doc_request.name}"
+    
+    message = f"""Dear Team,
+
+A new document has been requested from your department.
+
+Document Name: {doc_request.name}
+Requested By: {requester.get_full_name()} ({requester.account_type})
+Department: {doc_request.department.get_name_display()}
+Date: {localtime(doc_request.requested_at).strftime('%B %d, %Y at %I:%M %p')}
+
+
+Description:
+{doc_request.description}
+
+Please log in to the system to review and fulfill this request.
+
+Thank you."""
+    
+    send_mail(
+        subject, 
+        message, 
+        settings.DEFAULT_FROM_EMAIL, 
+        recipients, 
+        fail_silently=True
+    )
+
+@login_required
+def my_document_requests(request):
+    if request.user.account_type not in ['Campus Admin', 'Staff Extensionist']:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('login')
+
+    search = request.GET.get('search', '')
+    status_filter = request.GET.get('status', 'all')
+
+    requests_list = DocumentRequest.objects.filter(
+        requested_by=request.user
+    )
+
+    if search:
+        requests_list = requests_list.filter(
+            models.Q(name__icontains=search) |
+            models.Q(department__name__icontains=search)
+        )
+
+    if status_filter != 'all':
+        requests_list = requests_list.filter(status=status_filter)
+
+    return render(request, 'accounts/my_document_requests.html', {
+        'requests': requests_list,
+        'search': search,
+        'status_filter': status_filter
+    })
+
+# accounts/views.py - Add these views for Department Coordinators and Extensionists
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import DocumentRequest
+from django.utils import timezone
+
+@login_required
+def cancel_document_request(request, request_id):
+    if request.method != 'POST':
+        return redirect('my_document_requests')
+
+    doc_request = get_object_or_404(
+        DocumentRequest,
+        id=request_id,
+        requested_by=request.user
+    )
+
+    # Prevent cancelling finished requests
+    if doc_request.status in ['completed', 'rejected']:
+        messages.error(request, 'This request can no longer be cancelled.')
+        return redirect('my_document_requests')
+
+    # 📧 SEND EMAIL BEFORE DELETE
+    send_document_request_cancel_email(doc_request, request.user)
+
+    # 🗑️ DELETE REQUEST
+    doc_request.delete()
+
+    # 🔔 UI NOTIFICATION
+    messages.success(
+        request,
+        'Your document request has been cancelled. The department has been notified.'
+    )
+
+    return redirect('my_document_requests')
+
+
+def send_document_request_cancel_email(doc_request, requester):
+    """
+    Send email notification when a document request is cancelled
+    """
+
+    recipients = CustomUser.objects.filter(
+        department=doc_request.department,
+        account_type__in=['Department Coordinator', 'Extensionist']
+    ).exclude(email='').values_list('email', flat=True)
+
+    if not recipients:
+        return
+
+    subject = f"Cancelled Document Request: {doc_request.name}"
+
+    message = f"""Dear Team,
+
+The following document request has been CANCELLED.
+
+Document Name: {doc_request.name}
+Requested By: {requester.get_full_name()} ({requester.account_type})
+Department: {doc_request.department.get_name_display()}
+Cancelled On: {localtime(timezone.now()).strftime('%B %d, %Y at %I:%M %p')}
+
+
+No further action is required.
+
+Thank you.
+"""
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        recipients,
+        fail_silently=True
+    )
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import DocumentRequest, Department
+from django.utils import timezone
+from django.db.models import Q
+
+@login_required
+def manage_document_requests(request):
+    """View for Department Coordinators and Extensionists to see requests for their department"""
+    # Only Department Coordinator and Extensionist can access
+    if request.user.account_type not in ['Department Coordinator', 'Extensionist']:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('login')
+    
+    # Get user's department
+    if not request.user.department:
+        messages.error(request, 'You are not assigned to any department.')
+        return redirect('login')
+    
+    # Get filter parameters
+    search = request.GET.get('search', '')
+    status_filter = request.GET.get('status', 'all')
+    
+    # Base queryset - requests for user's department
+    requests_list = DocumentRequest.objects.filter(department=request.user.department)
+    
+    # Apply filters
+    if search:
+        requests_list = requests_list.filter(
+            Q(name__icontains=search) | 
+            Q(requested_by__full_name__icontains=search)
+        )
+    
+    if status_filter != 'all':
+        requests_list = requests_list.filter(status=status_filter)
+    
+    return render(request, 'accounts/manage_document_requests.html', {
+        'requests': requests_list,
+        'search': search,
+        'status_filter': status_filter
+    })
+
+
+@login_required
+def upload_requested_document(request, request_id):
+    """Upload document to fulfill a request"""
+    
+    if request.user.account_type not in ['Department Coordinator', 'Extensionist']:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('login')
+    
+    doc_request = get_object_or_404(DocumentRequest, id=request_id)
+    
+    # Check if request is for user's department
+    if doc_request.department != request.user.department:
+        messages.error(request, 'You can only upload documents for your own department.')
+        return redirect('manage_document_requests')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # Upload and Complete
+        if action == 'upload':
+            uploaded_file = request.FILES.get('document')
+            if uploaded_file:
+                doc_request.uploaded_document = uploaded_file
+                doc_request.status = 'completed'
+                doc_request.completed_at = timezone.now()
+                doc_request.completed_by = request.user
+                doc_request.save()
+                
+                # Send completion notification
+                send_request_completed_notification(doc_request, request.user)
+                
+                messages.success(request, f'Document uploaded successfully for "{doc_request.name}"! Requester has been notified via email.')
+                return redirect('manage_document_requests')
+            else:
+                messages.error(request, 'Please select a file to upload.')
+        
+        # Mark as In Progress
+        elif action == 'in_progress':
+            doc_request.status = 'in_progress'
+            doc_request.save()
+            
+            # Send in-progress notification
+            send_request_in_progress_notification(doc_request, request.user)
+            
+            messages.success(request, f'Request "{doc_request.name}" marked as in progress. Requester has been notified via email.')
+            return redirect('manage_document_requests')
+        
+        # Reject Request
+        elif action == 'reject':
+            rejection_reason = request.POST.get('rejection_reason', '')
+            if rejection_reason:
+                doc_request.status = 'rejected'
+                doc_request.rejection_reason = rejection_reason
+                doc_request.save()
+                
+                # Send rejection notification
+                send_request_rejected_notification(doc_request, request.user)
+                
+                messages.success(request, f'Request "{doc_request.name}" has been rejected. Requester has been notified via email.')
+                return redirect('manage_document_requests')
+            else:
+                messages.error(request, 'Please provide a reason for rejection.')
+    
+    return render(request, 'accounts/upload_requested_document.html', {
+        'doc_request': doc_request
+    })
+
+
+def send_request_completed_notification(doc_request, uploader):
+    """Notify requester when document is uploaded and completed"""
+    
+    if not doc_request.requested_by.email:
+        return
+    
+    subject = f"Document Request Completed: {doc_request.name}"
+    
+    message = f"""Dear {doc_request.requested_by.get_full_name()},
+
+Your document request has been completed!
+
+Document Name: {doc_request.name}
+Department: {doc_request.department.get_name_display()}
+Completed By: {uploader.get_full_name()} ({uploader.account_type})
+Completed On: {localtime(doc_request.completed_at).strftime('%B %d, %Y at %I:%M %p')}
+
+
+The document is now available for download in the system.
+
+Thank you."""
+    
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [doc_request.requested_by.email],
+        fail_silently=True
+    )
+
+
+def send_request_in_progress_notification(doc_request, handler):
+    """Notify requester when request is marked as in progress"""
+    
+    if not doc_request.requested_by.email:
+        return
+    
+    subject = f"Document Request In Progress: {doc_request.name}"
+    
+    message = f"""Dear {doc_request.requested_by.get_full_name()},
+
+Your document request is now being processed.
+
+Document Name: {doc_request.name}
+Department: {doc_request.department.get_name_display()}
+Handler: {handler.get_full_name()} ({handler.account_type})
+
+We will notify you once the document is ready.
+
+Thank you for your patience."""
+    
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [doc_request.requested_by.email],
+        fail_silently=True
+    )
+
+
+def send_request_rejected_notification(doc_request, rejector):
+    """Notify requester when request is rejected"""
+    
+    if not doc_request.requested_by.email:
+        return
+    
+    subject = f"Document Request Rejected: {doc_request.name}"
+    
+    message = f"""Dear {doc_request.requested_by.get_full_name()},
+
+Unfortunately, your document request has been rejected.
+
+Document Name: {doc_request.name}
+Department: {doc_request.department.get_name_display()}
+Rejected By: {rejector.get_full_name()} ({rejector.account_type})
+
+Reason for Rejection:
+{doc_request.rejection_reason}
+
+If you have any questions, please contact the department directly.
+
+Thank you."""
+    
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [doc_request.requested_by.email],
+        fail_silently=True
+    )

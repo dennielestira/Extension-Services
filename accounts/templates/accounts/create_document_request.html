@@ -1,0 +1,271 @@
+{% extends "accounts/home.html" %}
+
+{% block content %}
+<style>
+    .document-request-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .request-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .request-header h1 {
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 28px;
+    }
+
+    .request-header p {
+        color: #666;
+        margin: 0;
+    }
+
+    .nav-tabs-custom {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+        display: flex;
+    }
+
+    .nav-tabs-custom a {
+        flex: 1;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #666;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+
+    .nav-tabs-custom a.active {
+        color: #667eea;
+        background: #f0f4ff;
+        border-bottom-color: #667eea;
+    }
+
+    .nav-tabs-custom a:hover {
+        background: #f5f5f5;
+    }
+
+    .request-card {
+        background: white;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .request-card h2 {
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 24px;
+    }
+
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .form-group-custom label {
+        display: block;
+        margin-bottom: 8px;
+        color: #333;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .required-star {
+        color: #e74c3c;
+    }
+
+    .form-group-custom input,
+    .form-group-custom select,
+    .form-group-custom textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+    .form-group-custom input:focus,
+    .form-group-custom select:focus,
+    .form-group-custom textarea:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group-custom textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .help-text-custom {
+        margin-top: 8px;
+        font-size: 13px;
+        color: #666;
+    }
+
+    .button-group-custom {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn-custom {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary-custom {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-primary-custom:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+    .btn-secondary-custom {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #d0d0d0;
+        color: #333;
+    }
+
+    .icon-custom {
+        width: 24px;
+        height: 24px;
+    }
+
+    .icon-small {
+        width: 20px;
+        height: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .request-card {
+            padding: 25px 20px;
+        }
+        
+        .nav-tabs-custom a {
+            padding: 15px 10px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+<div class="document-request-container">
+    <!-- Header -->
+    <div class="request-header">
+        <h1>
+            <svg class="icon-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Document Request Page
+        </h1>
+        <p>Request documents from specific departments</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs-custom">
+        <a href="{% url 'create_document_request' %}" class="active">Create Request</a>
+        <a href="{% url 'my_document_requests' %}">My Requests</a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="request-card">
+        <h2>New Document Request</h2>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Document Name -->
+            <div class="form-group-custom">
+                <label for="name">
+                    Document Name <span class="required-star">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    placeholder="e.g., Q4 Activity Report, Training Materials"
+                    required
+                >
+            </div>
+
+            <!-- Department Selection -->
+            <div class="form-group-custom">
+                <label for="department">
+                    Target Department <span class="required-star">*</span>
+                </label>
+                <select id="department" name="department" required>
+                    <option value="">Select a department</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}">{{ dept.get_name_display }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group-custom">
+                <label for="description">
+                    Description <span class="required-star">*</span>
+                </label>
+                <textarea 
+                    id="description" 
+                    name="description" 
+                    placeholder="Provide details about what document you need and any specific requirements..."
+                    required
+                ></textarea>
+                <p class="help-text-custom">
+                    Be specific about the document format, deadline, and any special requirements
+                </p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="button-group-custom">
+<button type="submit" class="btn-custom btn-primary-custom" style="background-color: #27ae60; color: white; border-color: #27ae60;">
+    <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+    </svg>
+    Submit Request
+</button>
+
+
+                <button type="reset" class="btn-custom btn-secondary-custom">
+                    Clear Form
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

@@ -165,7 +165,6 @@
         margin-right: 10px;
     }
 
-    /* Existing styles... */
     .main-card {
         background: white;
         border-radius: 12px;
@@ -315,6 +314,15 @@
         min-height: 160px;
         display: flex;
         flex-direction: column;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .status-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-color: rgba(34, 177, 76, 0.3);
     }
 
     .status-title {
@@ -352,37 +360,268 @@
     .status-completion-recommended { background-color: #e8f5e9; }
     .status-completed { background-color: #f1f8e9; }
 
+    /* Status Modal Styles */
+    .status-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .status-modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 80vh;
+        overflow: hidden;
+        animation: slideDown 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .status-modal-header {
+        padding: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .status-modal-close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #999;
+        transition: 0.3s;
+        line-height: 1;
+    }
+
+    .status-modal-close:hover {
+        color: #333;
+    }
+
+    .status-modal-body {
+        padding: 20px;
+        max-height: calc(80vh - 100px);
+        overflow-y: auto;
+    }
+
+    .modal-document-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background: #f9f9f9;
+        border-left: 4px solid #22b14c;
+        transition: 0.2s;
+    }
+
+    .modal-document-item:hover {
+        background: #f0f0f0;
+        transform: translateX(5px);
+    }
+
+    .modal-document-item strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+
+    .modal-document-item .text-muted {
+        font-size: 0.85rem;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
     .department-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 15px;
+        transition: all 0.3s ease;
     }
 
     .department-box {
         background: #f9f9f9;
         border: 1px solid #ddd;
         border-radius: 10px;
-        padding: 12px;
+        padding: 15px;
         cursor: pointer;
-        transition: 0.2s;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
     }
 
     .department-box:hover {
         background: #f1f1f1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+        border-color: rgba(34, 177, 76, 0.3);
     }
 
-    .revision-card {
+    .department-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    
+    .completion-percentage {
+        margin-top: 8px;
+    }
+
+    /* Department Modal Styles */
+    .dept-modal {
         display: none;
-        margin-top: 10px;
-        padding: 10px;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        animation: fadeIn 0.3s ease;
+    }
+
+    .dept-modal-content {
+        background-color: #fefefe;
+        margin: 3% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow: hidden;
+        animation: slideDown 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    }
+
+    .dept-modal-header {
+        padding: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, #22b14c, #0d8331);
+        color: white;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .dept-modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .dept-modal-close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+        transition: 0.3s;
+        line-height: 1;
+    }
+
+    .dept-modal-close:hover {
+        color: #f0f0f0;
+        transform: scale(1.1);
+    }
+
+    .dept-modal-body {
+        padding: 20px;
+        max-height: calc(85vh - 100px);
+        overflow-y: auto;
+    }
+
+    .dept-modal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    .dept-modal-body::-webkit-scrollbar-thumb {
+        background: #90caf9;
+        border-radius: 4px;
+    }
+
+    .document-item {
+        background: white;
+        padding: 15px;
         border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-bottom: 15px;
+        transition: 0.2s;
+    }
+    
+    .document-item:hover {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transform: translateX(5px);
+    }
+    
+    .doc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    .doc-percentage {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    .missing-files {
+        background: #ffebee;
+        padding: 10px;
+        border-radius: 6px;
+        border-left: 4px solid #d32f2f;
+        margin-top: 10px;
+    }
+    .missing-files ul {
+        padding-left: 20px;
+        margin-top: 5px;
+        margin-bottom: 0;
+    }
+    
+    .revision-item {
         background: #fff8e1;
-        border: 1px solid #ffcc80;
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 4px solid #ff9800;
+        margin-bottom: 12px;
+    }
+    
+    .revision-item:hover {
+        background: #fff3e0;
     }
 
     @media (max-width: 992px) {
         .dashboard-title { font-size: 1.6rem; }
         .dashboard-description { font-size: 1rem; }
+        .status-modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
     }
 
     @media (max-width: 768px) {
@@ -393,6 +632,44 @@
             height: 50px;
             font-size: 20px;
         }
+        .status-modal-content {
+            width: 98%;
+            max-height: 90vh;
+        }
+        .status-modal-header h3 {
+            font-size: 1.2rem;
+        }
+        .department-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .department-box {
+            padding: 15px;
+        }
+        
+        .doc-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .doc-percentage {
+            font-size: 1rem;
+            align-self: flex-end;
+        }
+        
+        .document-item {
+            padding: 12px;
+        }
+        
+        .progress {
+            margin: 8px 0 !important;
+        }
+        
+        .missing-files ul {
+            padding-left: 18px;
+            font-size: 0.85rem;
+        }
     }
 
     @media (max-width: 576px) {
@@ -400,6 +677,39 @@
         .dashboard-description { font-size: 0.95rem; }
         .status-grid { grid-template-columns: 1fr; }
         .updates-box { max-height: 200px; }
+        .department-title {
+            font-size: 0.95rem;
+        }
+        
+        .completion-percentage small {
+            font-size: 0.8rem;
+        }
+        
+        .doc-header strong {
+            font-size: 0.9rem;
+        }
+        
+        .document-item {
+            padding: 10px;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .container-fluid {
+            padding-left: 12px;
+            padding-right: 12px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .container-fluid {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        
+        .main-card {
+            padding: 10px;
+        }
     }
 </style>
 
@@ -443,6 +753,8 @@
 
                 <label style="color:#1b5e20;">MOA File:</label>
                 <input type="file" name="pdf_file" accept="application/pdf" class="form-control mb-4" required>
+
+                <button class="upload-btn">Upload</button>
             </form>
         </div>
 
@@ -495,7 +807,7 @@
                 </div>
             </div>
 
-            <!-- Right -->
+            <!-- Right - Status Boxes Now Clickable -->
             <div class="col-lg-7">
                 <div class="status-grid">
                     {% for status in status_data %}
@@ -503,18 +815,17 @@
                             {% with status.label|lower|slugify as slabel %}
                                 status-{{ slabel }}
                             {% endwith %}
-                        ">
+                        " onclick="openStatusModal('{{ status.label }}', {{ forloop.counter0 }})">
                             <div class="status-title">
                                 {{ status.label }}
                                 <span class="info-icon" data-tooltip="Documents in {{ status.label }} status" style="font-size:10px;">ℹ️</span>
                             </div>
                             <div class="status-content">
                                 {% if status.documents %}
-                                    {% for doc in status.documents %}
-                                        <p><strong>{{ doc.name }}</strong>
-                                            <span class="text-muted">{{ doc.status_updated_at|naturaltime }}</span>
-                                        </p>
-                                    {% endfor %}
+                                    <p class="text-center mt-4">
+                                        <strong style="font-size: 2rem;">{{ status.documents|length }}</strong><br>
+                                        <span class="text-muted">document{{ status.documents|length|pluralize }}</span>
+                                    </p>
                                 {% else %}
                                     <p class="text-muted">No documents</p>
                                 {% endif %}
@@ -526,17 +837,39 @@
         </div>
     </div>
 </div>
+
+<!-- Status Modals -->
+{% for status in status_data %}
+<div id="statusModal{{ forloop.counter0 }}" class="status-modal">
+    <div class="status-modal-content">
+        <div class="status-modal-header">
+            <h3>{{ status.label }}</h3>
+            <span class="status-modal-close" onclick="closeStatusModal({{ forloop.counter0 }})">&times;</span>
+        </div>
+        <div class="status-modal-body">
+            {% if status.documents %}
+                {% for doc in status.documents %}
+                    <div class="modal-document-item">
+                        <strong><a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a></strong>
+                        <span class="text-muted">Updated {{ doc.status_updated_at|naturaltime }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center py-4">No documents in this status</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 <!-- Department Completion Percentage Section -->
 <div class="container-fluid py-3">
     <div class="mt-5">
         <h4>📊 Department Document Completion</h4>
-        <div class="department-grid" id="completion-dept-grid">
+        <div class="department-grid">
             {% for dept in dept_completion %}
-                <div class="department-box completion-dept-card" onclick="toggleCompletionCardAccordion('{{ dept.id }}')" data-dept-id="{{ dept.id }}">
-                    <div class="department-title">
-                        {{ dept.name }}
-                        <span class="toggle-icon">▼</span>
-                    </div>
+                <div class="department-box" onclick="openCompletionModal({{ forloop.counter0 }})">
+                    <div class="department-title">{{ dept.name }}</div>
                     <div class="completion-percentage">
                         <div class="progress" style="height: 20px; margin: 10px 0;">
                             <div class="progress-bar" 
@@ -548,96 +881,126 @@
                         </div>
                         <small>{{ dept.filled }} / {{ dept.total }} files uploaded</small>
                     </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
 
-                    <!-- Hidden Completion Detail Card -->
-                    <div id="completion-card-{{ dept.id }}" class="completion-detail-card">
-                        <h6>📄 Document Breakdown</h6>
-                        <div class="document-list">
-                            {% if dept.documents %}
-                                {% for doc in dept.documents %}
-                                    <div class="document-item mb-3">
-                                        <div class="doc-header">
-                                            <strong>
-                                                <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
-                                            </strong>
-                                            <span class="doc-percentage 
-                                                {% if doc.percentage == 100 %}text-success
-                                                {% elif doc.percentage >= 50 %}text-warning
-                                                {% else %}text-danger{% endif %}">
-                                                {{ doc.percentage }}%
-                                            </span>
-                                        </div>
-                                        <div class="progress" style="height: 15px; margin: 5px 0;">
-                                            <div class="progress-bar 
-                                                {% if doc.percentage == 100 %}bg-success
-                                                {% elif doc.percentage >= 50 %}bg-warning
-                                                {% else %}bg-danger{% endif %}"
-                                                 style="width: {{ doc.percentage }}%">
-                                            </div>
-                                        </div>
-                                        <small class="text-muted">{{ doc.filled }} / {{ doc.total }} files</small>
-
-                                        {% if doc.missing_files %}
-                                            <div class="missing-files mt-2">
-                                                <small class="text-danger"><strong>Missing:</strong></small>
-                                                <ul class="small mb-0">
-                                                    {% for file in doc.missing_files %}
-                                                        <li>{{ file }}</li>
-                                                    {% endfor %}
-                                                </ul>
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-muted">No documents in this department</p>
-                            {% endif %}
-                        </div>
-                    </div>
+    <!-- Department Revision Section -->
+    <div class="mt-5">
+        <h4>
+            📂 Department Revisions
+            <span class="info-icon" data-tooltip="Documents that need revision - click boxes to see details">ℹ️</span>
+        </h4>
+        <div class="department-grid">
+            {% for dept in departments %}
+                <div class="department-box" onclick="openRevisionModal({{ forloop.counter0 }})">
+                    <div class="department-title">{{ dept.name }}</div>
+                    <small><strong>{{ dept.documents_with_revisions|length }}</strong> document(s) need revision</small>
                 </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Department Revision Section -->
-<div class="mt-5">
-    <h4>
-        📂 Department Revisions
-        <span class="info-icon" data-tooltip="Documents that need revision - click boxes to see details">ℹ️</span>
-    </h4>
-    <div class="department-grid">
-        {% for dept in departments %}
-            <div class="department-box" onclick="toggleRevisionCard('{{ dept.id }}')">
-                <div class="department-title">{{ dept.name }}</div>
-                <small>{{ dept.documents_with_revisions|length }} file(s) need revision</small>
-
-                <!-- Hidden Revision Card -->
-                <div id="revision-card-{{ dept.id }}" class="revision-card">
-                    <h6>⚠ Revision Needed Files</h6>
-                    <div class="revision-list">
-                        {% if dept.documents_with_revisions %}
-                            {% for doc in dept.documents_with_revisions %}
-                                <div class="revision-doc mb-2">
-                                    <strong>
-                                        <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
-                                    </strong>
-                                    <ul class="mb-1">
-                                        {% for file in doc.revision_files %}
+<!-- Completion Modals -->
+{% for dept in dept_completion %}
+<div id="completionModal{{ forloop.counter0 }}" class="dept-modal">
+    <div class="dept-modal-content">
+        <div class="dept-modal-header">
+            <h3>📊 {{ dept.name }} - Completion Details</h3>
+            <span class="dept-modal-close" onclick="closeCompletionModal({{ forloop.counter0 }})">&times;</span>
+        </div>
+        <div class="dept-modal-body">
+            <div class="completion-percentage mb-3">
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar" 
+                         style="width: {{ dept.percentage }}%; 
+                                background: linear-gradient(135deg, #22b14c, #0d8331);"
+                         role="progressbar">
+                        <strong>{{ dept.percentage }}%</strong>
+                    </div>
+                </div>
+                <p class="text-center mt-2"><strong>{{ dept.filled }} / {{ dept.total }} files uploaded</strong></p>
+            </div>
+            
+            <h6 class="mb-3">📄 Document Breakdown</h6>
+            <div class="document-list">
+                {% if dept.documents %}
+                    {% for doc in dept.documents %}
+                        <div class="document-item">
+                            <div class="doc-header">
+                                <strong>
+                                    <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                                </strong>
+                                <span class="doc-percentage 
+                                    {% if doc.percentage == 100 %}text-success
+                                    {% elif doc.percentage >= 50 %}text-warning
+                                    {% else %}text-danger{% endif %}">
+                                    {{ doc.percentage }}%
+                                </span>
+                            </div>
+                            <div class="progress" style="height: 15px; margin: 5px 0;">
+                                <div class="progress-bar 
+                                    {% if doc.percentage == 100 %}bg-success
+                                    {% elif doc.percentage >= 50 %}bg-warning
+                                    {% else %}bg-danger{% endif %}"
+                                     style="width: {{ doc.percentage }}%">
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ doc.filled }} / {{ doc.total }} files</small>
+                            
+                            {% if doc.missing_files %}
+                                <div class="missing-files">
+                                    <small class="text-danger"><strong>Missing Files:</strong></small>
+                                    <ul class="small mb-0">
+                                        {% for file in doc.missing_files %}
                                             <li>{{ file }}</li>
                                         {% endfor %}
                                     </ul>
                                 </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="text-muted">No documents need revision</p>
-                        {% endif %}
-                    </div>
-                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted text-center py-4">No documents in this department</p>
+                {% endif %}
             </div>
-        {% endfor %}
+        </div>
     </div>
 </div>
+{% endfor %}
+
+<!-- Revision Modals -->
+{% for dept in departments %}
+<div id="revisionModal{{ forloop.counter0 }}" class="dept-modal">
+    <div class="dept-modal-content">
+        <div class="dept-modal-header">
+            <h3>⚠️ {{ dept.name }} - Revisions Needed</h3>
+            <span class="dept-modal-close" onclick="closeRevisionModal({{ forloop.counter0 }})">&times;</span>
+        </div>
+        <div class="dept-modal-body">
+            {% if dept.documents_with_revisions %}
+                <p class="mb-3"><strong>{{ dept.documents_with_revisions|length }}</strong> document(s) require revision</p>
+                {% for doc in dept.documents_with_revisions %}
+                    <div class="revision-item">
+                        <strong>
+                            <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                        </strong>
+                        <ul class="mt-2 mb-0">
+                            {% for file in doc.revision_files %}
+                                <li>{{ file }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center py-4">No documents need revision</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 <!-- Floating Help Button -->
 <button class="help-btn" onclick="showHelpModal()" title="Need help?">❓</button>
@@ -657,7 +1020,7 @@
         <div class="help-section">
             <h4>📤 Uploading MOA Files</h4>
             <p>1. Click the wave emoji to reveal controls</p>
-            <p>2. Click "Upload New MOA File" button</p>
+            <p>2. Click "Upload New Partner" button</p>
             <p>3. Fill in the title, select logo image and PDF file</p>
             <p>4. Click "Upload" to save</p>
         </div>
@@ -665,8 +1028,8 @@
         <div class="help-section">
             <h4>✏️ Editing & Deleting MOAs</h4>
             <p>1. Click the wave emoji to reveal controls</p>
-            <p>2. Click "Show / Hide Edit & Delete" button</p>
-            <p>3. Edit or Delete links will appear under each MOA logo</p>
+            <p>2. Click "Show / Hide Delete" button</p>
+            <p>3. Delete links will appear under each MOA logo</p>
         </div>
 
         <div class="help-section">
@@ -689,30 +1052,71 @@
             <p>• Check the "All Document Updates" section daily for recent changes</p>
             <p>• Use color-coded status boxes to quickly identify document states</p>
             <p>• Hover over any ℹ️ icon for context-specific help</p>
+            <p>• Press '?' on your keyboard to open this help modal anytime</p>
+            <p>• Press 'Escape' to close any modal</p>
         </div>
     </div>
 </div>
 
-<!-- JS Toggle -->
+<!-- JavaScript -->
 <script>
-function toggleCompletionCardAccordion(deptId) {
-    const clickedCard = document.getElementById("completion-card-" + deptId);
-    const clickedBox = document.querySelector(`.completion-dept-card[data-dept-id="${deptId}"]`);
-    const allCards = document.querySelectorAll('.completion-detail-card');
-    const allBoxes = document.querySelectorAll('.completion-dept-card');
-    
-    const isOpen = clickedCard.style.display === "block";
-    
-    allCards.forEach(card => card.style.display = "none");
-    allBoxes.forEach(box => box.classList.remove('expanded'));
-    
-    if (!isOpen) {
-        clickedCard.style.display = "block";
-        clickedBox.classList.add('expanded');
-    }
+// Status Modal Functions
+function openStatusModal(statusLabel, index) {
+    document.getElementById('statusModal' + index).style.display = 'block';
 }
 
-// Check if first time visit
+function closeStatusModal(index) {
+    document.getElementById('statusModal' + index).style.display = 'none';
+}
+
+// Completion Modal Functions
+function openCompletionModal(index) {
+    document.getElementById('completionModal' + index).style.display = 'block';
+}
+
+function closeCompletionModal(index) {
+    document.getElementById('completionModal' + index).style.display = 'none';
+}
+
+// Revision Modal Functions
+function openRevisionModal(index) {
+    document.getElementById('revisionModal' + index).style.display = 'block';
+}
+
+function closeRevisionModal(index) {
+    document.getElementById('revisionModal' + index).style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const statusModals = document.querySelectorAll('.status-modal');
+    const deptModals = document.querySelectorAll('.dept-modal');
+    
+    statusModals.forEach(modal => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    deptModals.forEach(modal => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+
+// Close modals with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const allModals = document.querySelectorAll('.status-modal, .dept-modal, .help-modal');
+        allModals.forEach(modal => {
+            modal.style.display = 'none';
+        });
+        document.body.style.overflow = 'auto';
+    }
+});
+
+// Help Modal Functions
 window.onload = function() {
     if (!localStorage.getItem('dashboardVisited')) {
         document.getElementById('welcomeBanner').style.display = 'block';
@@ -736,11 +1140,7 @@ function closeHelpModal(event) {
     }
 }
 
-function toggleRevisionCard(deptId) {
-    const card = document.getElementById("revision-card-" + deptId);
-    card.style.display = (card.style.display === "block") ? "none" : "block";
-}
-
+// MOA Functions
 function toggleMainButtons() {
     const uploadBtn = document.querySelector('.upload-toggle-btn');
     const editBtn = document.querySelector('.toggle-edit-btn');
@@ -768,11 +1168,10 @@ function toggleMOAControls() {
 // Keyboard shortcut: Press '?' to open help
 document.addEventListener('keydown', function(e) {
     if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
         showHelpModal();
-    }
-    if (e.key === 'Escape') {
-        closeHelpModal();
     }
 });
 </script>
+
 {% endblock %}

@@ -16,6 +16,8 @@
         color: white;
         border-radius: 15px;
         text-align: center;
+        position: relative;
+        z-index: 1 !important;
     }
     .dashboard-title {
         font-weight: bold;
@@ -89,14 +91,24 @@
         gap: 10px;
     }
 
-    /* Status box */
+    /* Status box - NOW CLICKABLE */
     .status-box {
         padding: 8px;
         border-radius: 6px;
         min-height: 160px;
         display: flex;
         flex-direction: column;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
     }
+
+    .status-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        border-color: rgba(34, 177, 76, 0.3);
+    }
+
     .status-title {
         font-weight: 600;
         margin-bottom: 6px;
@@ -132,30 +144,129 @@
     .status-completion-recommended { background-color: #e8f5e9; }
     .status-completed { background-color: #f1f8e9; }
 
+    /* Status Modal Styles - FIXED FOR MOBILE */
+    .status-modal {
+        display: none;
+        position: fixed;
+        z-index: 99999 !important;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        animation: fadeIn 0.3s ease;
+        overflow-y: auto;
+    }
+
+    .status-modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 0;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 700px;
+        max-height: 80vh;
+        overflow: hidden;
+        animation: slideDown 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 100000 !important;
+    }
+
+    .status-modal-header {
+        padding: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .status-modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .status-modal-close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: #999;
+        transition: 0.3s;
+        line-height: 1;
+    }
+
+    .status-modal-close:hover {
+        color: #333;
+    }
+
+    .status-modal-body {
+        padding: 20px;
+        max-height: calc(80vh - 100px);
+        overflow-y: auto;
+    }
+
+    .modal-document-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        background: #f9f9f9;
+        border-left: 4px solid #22b14c;
+        transition: 0.2s;
+    }
+
+    .modal-document-item:hover {
+        background: #f0f0f0;
+        transform: translateX(5px);
+    }
+
+    .modal-document-item strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+    }
+
+    .modal-document-item .text-muted {
+        font-size: 0.85rem;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideDown {
+        from {
+            transform: translateY(-50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
     /* Revision section */
     .department-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 15px;
+        transition: all 0.3s ease;
     }
     .department-box {
         background: #f9f9f9;
         border: 1px solid #ddd;
         border-radius: 10px;
-        padding: 12px;
+        padding: 15px;
         cursor: pointer;
-        transition: 0.2s;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
     }
     .department-box:hover {
         background: #f1f1f1;
-    }
-    .revision-card {
-        display: none;
-        margin-top: 10px;
-        padding: 10px;
-        border-radius: 8px;
-        background: #fff8e1;
-        border: 1px solid #ffcc80;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+        border-color: rgba(34, 177, 76, 0.3);
     }
     .revision-warning {
         color: #d32f2f;
@@ -163,59 +274,93 @@
         margin-left: 5px;
     }
 
-    /* Clickable PDF logos */
-    .pdf-logos {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .pdf-logos a img {
-        width: 80px;
-        height: 80px;
-        border-radius: 12px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .pdf-logos a img:hover {
-        transform: scale(1.15);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    /* Department Modal Styles - FIXED FOR MOBILE */
+    .dept-modal {
+        display: none;
+        position: fixed;
+        z-index: 99999 !important;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        animation: fadeIn 0.3s ease;
+        overflow-y: auto;
     }
 
-    /* Responsive tweaks */
-    @media (max-width: 992px) {
-        .dashboard-title { font-size: 1.6rem; }
-        .dashboard-description { font-size: 1rem; }
-    }
-    @media (max-width: 768px) {
-        .dashboard-title { font-size: 1.4rem; }
-        .updates-box { max-height: 250px; }
-    }
-    @media (max-width: 576px) {
-        .dashboard-title { font-size: 1.2rem; }
-        .dashboard-description { font-size: 0.95rem; }
-        .status-grid { grid-template-columns: 1fr; }
-        .updates-box { max-height: 200px; }
-    }
-    /* ✅ PDF Logos */
-    .pdf-logos {
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-top: 20px;
-    }
-    .pdf-logos a img {
-        width: 80px;
-        height: 80px;
+    .dept-modal-content {
+        background-color: #fefefe;
+        margin: 3% auto;
+        padding: 0;
         border-radius: 12px;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        width: 90%;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow: hidden;
+        animation: slideDown 0.3s ease;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        position: relative;
+        z-index: 100000 !important;
     }
-    .pdf-logos a img:hover {
-        transform: scale(1.15);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+
+    .dept-modal-header {
+        padding: 20px;
+        border-bottom: 2px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(135deg, #22b14c, #0d8331);
+        color: white;
+        border-radius: 12px 12px 0 0;
     }
-        /* =============== MOA LOGO GRID =============== */
+
+    .dept-modal-header h3 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .dept-modal-close {
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        color: white;
+        transition: 0.3s;
+        line-height: 1;
+    }
+
+    .dept-modal-close:hover {
+        color: #f0f0f0;
+        transform: scale(1.1);
+    }
+
+    .dept-modal-body {
+        padding: 20px;
+        max-height: calc(85vh - 100px);
+        overflow-y: auto;
+    }
+
+    .dept-modal-body::-webkit-scrollbar {
+        width: 8px;
+    }
+    .dept-modal-body::-webkit-scrollbar-thumb {
+        background: #90caf9;
+        border-radius: 4px;
+    }
+
+    .revision-item {
+        background: #fff8e1;
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 4px solid #ff9800;
+        margin-bottom: 12px;
+    }
+    
+    .revision-item:hover {
+        background: #fff3e0;
+    }
+
+    /* =============== MOA LOGO GRID =============== */
     .pdf-logos {
         margin-top: 25px;
         display: grid;
@@ -224,17 +369,16 @@
         justify-items: center;
     }
 
-.pdf-logos img {
-    width: 90px;
-    height: 90px;
-    object-fit: contain;
-    border-radius: 10px;
-    padding: 8px;
-    /* change background to match dashboard card */
-    background: linear-gradient(135deg, #22b14c, #0d8331);
-    box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-    transition: 0.2s;
-}
+    .pdf-logos img {
+        width: 90px;
+        height: 90px;
+        object-fit: contain;
+        border-radius: 10px;
+        padding: 8px;
+        background: linear-gradient(135deg, #22b14c, #0d8331);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        transition: 0.2s;
+    }
 
     .pdf-logos img:hover {
         transform: scale(1.08);
@@ -265,6 +409,105 @@
     }
     .toggle-edit-btn:hover {
         background: #00695c;
+    }
+
+    /* Prevent body scroll when modal is open */
+    body.modal-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 992px) {
+        .dashboard-title { font-size: 1.6rem; }
+        .dashboard-description { font-size: 1rem; }
+        .status-modal-content,
+        .dept-modal-content {
+            width: 95%;
+            margin: 10% auto;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-title { font-size: 1.4rem; }
+        .updates-box { max-height: 250px; }
+        
+        .status-modal,
+        .dept-modal {
+            padding: 10px;
+            z-index: 99999 !important;
+        }
+        
+        .status-modal-content,
+        .dept-modal-content {
+            width: 92%;
+            max-height: 80vh;
+            margin: 25% auto 5% auto !important;
+            z-index: 100000 !important;
+        }
+        
+        .status-modal-header h3,
+        .dept-modal-header h3 {
+            font-size: 1.2rem;
+        }
+        
+        .status-modal-body,
+        .dept-modal-body {
+            padding: 15px;
+            max-height: calc(80vh - 80px);
+        }
+        
+        .department-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .dashboard-title { font-size: 1.2rem; }
+        .dashboard-description { font-size: 0.95rem; }
+        .status-grid { grid-template-columns: 1fr; }
+        .updates-box { max-height: 200px; }
+        
+        .status-modal,
+        .dept-modal {
+            padding: 5px;
+            z-index: 99999 !important;
+        }
+        
+        .status-modal-content,
+        .dept-modal-content {
+            width: 94%;
+            max-height: 85vh;
+            margin: 30% auto 5% auto !important;
+            border-radius: 8px;
+            z-index: 100000 !important;
+        }
+        
+        .status-modal-header,
+        .dept-modal-header {
+            padding: 15px;
+        }
+        
+        .status-modal-header h3,
+        .dept-modal-header h3 {
+            font-size: 1rem;
+        }
+        
+        .status-modal-close,
+        .dept-modal-close {
+            font-size: 24px;
+        }
+        
+        .status-modal-body,
+        .dept-modal-body {
+            padding: 12px;
+            max-height: calc(85vh - 70px);
+        }
+        
+        .modal-document-item {
+            padding: 10px;
+        }
     }
 </style>
 
@@ -318,7 +561,7 @@
                 </div>
             </div>
 
-            <!-- Right -->
+            <!-- Right - Status Boxes Now Clickable -->
             <div class="col-lg-7">
                 <div class="status-grid">
                     {% for status in status_data %}
@@ -326,15 +569,14 @@
                             {% with status.label|lower|slugify as slabel %}
                                 status-{{ slabel }}
                             {% endwith %}
-                        ">
+                        " onclick="openStatusModal('{{ status.label }}', {{ forloop.counter0 }})">
                             <div class="status-title">{{ status.label }}</div>
                             <div class="status-content">
                                 {% if status.documents %}
-                                    {% for doc in status.documents %}
-                                        <p><strong>{{ doc.name }}</strong>
-                                            <span class="text-muted">{{ doc.status_updated_at|naturaltime }}</span>
-                                        </p>
-                                    {% endfor %}
+                                    <p class="text-center mt-4">
+                                        <strong style="font-size: 2rem;">{{ status.documents|length }}</strong><br>
+                                        <span class="text-muted">document{{ status.documents|length|pluralize }}</span>
+                                    </p>
                                 {% else %}
                                     <p class="text-muted">No documents</p>
                                 {% endif %}
@@ -347,97 +589,128 @@
     </div>
 </div>
 
-<!--<div class="mt-5">
-    <h4>📊 Department Document Completion</h4>
-
-    {% if dept_completion_separated %}
-        {% for dept_name, docs in dept_completion_separated.items %}
-            <div class="mt-3 p-3 border rounded bg-white shadow-sm">
-                <h5>{{ dept_name }}</h5>
-
-                {% if docs %}
-                    {% for doc in docs %}
-                        <div class="p-2 mb-2 border rounded bg-light">
-                            <strong>
-                                <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
-                            </strong>
-                            <div class="progress" style="height:15px; margin:5px 0;">
-                                <div class="progress-bar 
-                                    {% if doc.percentage == 100 %}bg-success
-                                    {% elif doc.percentage >= 50 %}bg-warning
-                                    {% else %}bg-danger{% endif %}"
-                                    style="width: {{ doc.percentage }}%">
-                                    {{ doc.percentage }}%
-                                </div>
-                            </div>
-                            <small class="text-muted">{{ doc.filled }} / {{ doc.total }} files uploaded</small>
-
-                            {% if doc.missing_files %}
-                                <details class="mt-2">
-                                    <summary class="text-danger fw-bold">Missing Files</summary>
-                                    <ul>
-                                        {% for missing in doc.missing_files %}
-                                            <li>{{ missing }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </details>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p class="text-muted">No documents found for this department.</p>
-                {% endif %}
-            </div>
-        {% endfor %}
-    {% else %}
-        <p class="text-muted">No completion data available.</p>
-    {% endif %}
-</div>-->
-
+<!-- Status Modals -->
+{% for status in status_data %}
+<div id="statusModal{{ forloop.counter0 }}" class="status-modal">
+    <div class="status-modal-content">
+        <div class="status-modal-header">
+            <h3>{{ status.label }}</h3>
+            <span class="status-modal-close" onclick="closeStatusModal({{ forloop.counter0 }})">&times;</span>
+        </div>
+        <div class="status-modal-body">
+            {% if status.documents %}
+                {% for doc in status.documents %}
+                    <div class="modal-document-item">
+                        <strong><a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a></strong>
+                        <span class="text-muted">Updated {{ doc.status_updated_at|naturaltime }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center py-4">No documents in this status</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
 
 <!-- Department Revision Section -->
 <div class="mt-5">
     <h4>📂 Department Revisions</h4>
     <div class="department-grid">
         {% for dept in departments %}
-            <div class="department-box" onclick="toggleRevisionCard('{{ dept.id }}')">
+            <div class="department-box" onclick="openRevisionModal({{ forloop.counter0 }})">
                 <div class="department-title">{{ dept.name }}</div>
-                <small>{{ dept.documents_with_revisions|length }} file(s) need revision</small>
-
-                <!-- Hidden Revision Card -->
-                <div id="revision-card-{{ dept.id }}" class="revision-card">
-                    <h6>⚠ Revision Needed Files</h6>
-                    <div class="revision-list">
-                        {% if dept.documents_with_revisions %}
-                            {% for doc in dept.documents_with_revisions %}
-                                <div class="revision-doc mb-2">
-                                    <strong>
-                                        <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
-                                    </strong>
-                                    <ul class="mb-1">
-                                        {% for file in doc.revision_files %}
-                                            <li>{{ file }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p class="text-muted">No documents need revision</p>
-                        {% endif %}
-                    </div>
-                </div>
+                <small><strong>{{ dept.documents_with_revisions|length }}</strong> file(s) need revision</small>
             </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- JS Toggle -->
+<!-- Revision Modals -->
+{% for dept in departments %}
+<div id="revisionModal{{ forloop.counter0 }}" class="dept-modal">
+    <div class="dept-modal-content">
+        <div class="dept-modal-header">
+            <h3>⚠️ {{ dept.name }} - Revisions Needed</h3>
+            <span class="dept-modal-close" onclick="closeRevisionModal({{ forloop.counter0 }})">&times;</span>
+        </div>
+        <div class="dept-modal-body">
+            {% if dept.documents_with_revisions %}
+                <p class="mb-3"><strong>{{ dept.documents_with_revisions|length }}</strong> document(s) require revision</p>
+                {% for doc in dept.documents_with_revisions %}
+                    <div class="revision-item">
+                        <strong>
+                            <a href="{% url 'view_document' doc.id %}">{{ doc.name }}</a>
+                        </strong>
+                        <ul class="mt-2 mb-0">
+                            {% for file in doc.revision_files %}
+                                <li>{{ file }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted text-center py-4">No documents need revision</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- JavaScript -->
 <script>
-function toggleRevisionCard(deptId) {
-    const card = document.getElementById("revision-card-" + deptId);
-    card.style.display = (card.style.display === "block") ? "none" : "block";
+// Status Modal Functions with body scroll lock
+function openStatusModal(statusLabel, index) {
+    document.getElementById('statusModal' + index).style.display = 'block';
+    document.body.classList.add('modal-open');
 }
+
+function closeStatusModal(index) {
+    document.getElementById('statusModal' + index).style.display = 'none';
+    document.body.classList.remove('modal-open');
+}
+
+// Revision Modal Functions with body scroll lock
+function openRevisionModal(index) {
+    document.getElementById('revisionModal' + index).style.display = 'block';
+    document.body.classList.add('modal-open');
+}
+
+function closeRevisionModal(index) {
+    document.getElementById('revisionModal' + index).style.display = 'none';
+    document.body.classList.remove('modal-open');
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const statusModals = document.querySelectorAll('.status-modal');
+    const deptModals = document.querySelectorAll('.dept-modal');
+    
+    statusModals.forEach(modal => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+    });
+    
+    deptModals.forEach(modal => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+    });
+}
+
+// Close modals with Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const allModals = document.querySelectorAll('.status-modal, .dept-modal');
+        allModals.forEach(modal => {
+            modal.style.display = 'none';
+        });
+        document.body.classList.remove('modal-open');
+    }
+});
 </script>
 
 {% endblock %}

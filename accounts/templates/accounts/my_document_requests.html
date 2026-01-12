@@ -1,0 +1,468 @@
+{% extends "accounts/home.html" %}
+
+{% block content %}
+<style>
+    .requests-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .request-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .request-header h1 {
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 28px;
+    }
+
+    .request-header p {
+        color: #666;
+        margin: 0;
+    }
+
+    .nav-tabs-custom {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        overflow: hidden;
+        display: flex;
+    }
+
+    .nav-tabs-custom a {
+        flex: 1;
+        padding: 20px;
+        text-align: center;
+        text-decoration: none;
+        color: #666;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border-bottom: 3px solid transparent;
+    }
+
+    .nav-tabs-custom a.active {
+        color: #667eea;
+        background: #f0f4ff;
+        border-bottom-color: #667eea;
+    }
+
+    .nav-tabs-custom a:hover {
+        background: #f5f5f5;
+    }
+
+    .filter-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        color: #999;
+    }
+
+    .filter-select {
+        position: relative;
+    }
+
+    .filter-select select {
+        padding: 12px 40px 12px 45px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        background: white;
+    }
+
+    .filter-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        color: #999;
+        pointer-events: none;
+    }
+
+    .request-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .request-card:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .request-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .request-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .request-title h3 {
+        color: #333;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .status-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .status-icon.pending { color: #f39c12; }
+    .status-icon.in_progress { color: #3498db; }
+    .status-icon.completed { color: #27ae60; }
+    .status-icon.rejected { color: #e74c3c; }
+
+    .request-meta {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 15px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .department-badge {
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .request-description {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+    }
+
+    .request-footer {
+        font-size: 13px;
+        color: #999;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.in_progress {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-badge.completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .download-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #27ae60;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+    }
+
+    .download-btn:hover {
+        background: #229954;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .delete-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #e74c3c;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 15px;
+        margin-left: 10px;
+    }
+
+    .delete-btn:hover {
+        background: #c0392b;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .no-requests {
+        background: white;
+        padding: 60px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .no-requests-icon {
+        width: 80px;
+        height: 80px;
+        color: #ddd;
+        margin: 0 auto 20px;
+    }
+
+    .no-requests h3 {
+        color: #666;
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    .no-requests p {
+        color: #999;
+    }
+
+    .icon-custom {
+        width: 24px;
+        height: 24px;
+    }
+
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .request-header-content {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .request-meta {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-tabs-custom a {
+            padding: 15px 10px;
+            font-size: 14px;
+        }
+    }
+</style>
+
+<div class="requests-container">
+    <!-- Header -->
+    <div class="request-header">
+        <h1>
+            <svg class="icon-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Document Request Page
+        </h1>
+        <p>Request documents from specific departments</p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs-custom">
+        <a href="{% url 'create_document_request' %}">Create Request</a>
+        <a href="{% url 'my_document_requests' %}" class="active">My Requests ({{ requests.count }})</a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="filter-card">
+        <form method="GET" class="filter-form">
+            <div class="search-box">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search requests..." 
+                    value="{{ search }}"
+                >
+            </div>
+            <div class="filter-select">
+                <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                <select name="status" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Requests List -->
+    {% if requests %}
+        {% for request in requests %}
+        <div class="request-card">
+            <div class="request-header-content">
+                <div style="flex: 1;">
+                    <div class="request-title">
+                        {% if request.status == 'pending' %}
+                        <svg class="status-icon pending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% elif request.status == 'in_progress' %}
+                        <svg class="status-icon in_progress" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        {% elif request.status == 'completed' %}
+                        <svg class="status-icon completed" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% else %}
+                        <svg class="status-icon rejected" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% endif %}
+                        <h3>{{ request.name }}</h3>
+                    </div>
+                    <div class="request-meta">
+                        <span class="meta-item department-badge">
+                            {{ request.department.get_name_display }}
+                        </span>
+                        <span class="meta-item">•</span>
+                        <span class="meta-item">
+                            Requested: {{ request.requested_at|date:"M d, Y" }}
+                        </span>
+                        {% if request.completed_at %}
+                        <span class="meta-item">•</span>
+                        <span class="meta-item">
+                            Completed: {{ request.completed_at|date:"M d, Y" }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    <p class="request-description">{{ request.description }}</p>
+                    <div class="request-footer">
+                        Requested by: <strong>{{ request.requested_by.get_full_name }}</strong>
+                    </div>
+
+                    {% if request.uploaded_document and request.status == 'completed' %}
+                    <a href="{{ request.uploaded_document.url }}" class="download-btn" download>
+                        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Download Document
+                    </a>
+                    {% endif %}
+
+                    {% if request.status == 'pending' or request.status == 'in_progress' %}
+<form method="POST" action="{% url 'cancel_document_request' request.id %}">
+    {% csrf_token %}
+    <button type="submit" class="delete-btn"
+            onclick="return confirm('Are you sure you want to cancel this request?');">
+        <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+            </path>
+        </svg>
+        Cancel Request
+    </button>
+</form>
+
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="status-badge {{ request.status }}">
+                        {{ request.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-requests">
+            <svg class="no-requests-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3>No requests found</h3>
+            <p>Try adjusting your search or filters</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

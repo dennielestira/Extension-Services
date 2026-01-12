@@ -7,6 +7,20 @@
 {% block content %}
 
 <style>
+  /* Fix dropdown positioning in flex containers */
+.list-group-item {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute !important;
+    will-change: transform;
+}
+
+/* Ensure dropdowns show above other content */
+.dropdown-menu.show {
+    z-index: 1050;
+}
   .file-link {
     display: inline-block;
     max-width: 200px; /* adjust width for mobile */
@@ -14,6 +28,32 @@
     overflow: hidden;
     text-overflow: ellipsis;
     vertical-align: bottom;
+  }
+  /* Fix modal z-index to be above everything */
+  .modal {
+      z-index: 10600 !important;
+  }
+
+  .modal-backdrop {
+      z-index: 10500 !important;
+  }
+
+  /* Ensure modal content is above backdrop */
+  .modal-dialog {
+      z-index: 10601 !important;
+  }
+
+  /* Lower chat elements */
+  #chat-list-panel {
+      z-index: 9000 !important;
+  }
+
+  #chat-box-panel {
+      z-index: 9001 !important;
+  }
+
+  .sidebar {
+      z-index: 8000 !important;
   }
 </style>
 
@@ -124,21 +164,27 @@
       </button>
     {% endif %}
 {% endif %}
-    <div class="file-container">
-      {% for name, title, file, status, uploaded_by, uploaded_at in file_list %}
-        {% if file %}
-          <div class="file-item mb-3 p-3 border rounded">
+<div class="file-container">
+  {% for name, title, file, status, uploaded_by, uploaded_at in file_list %}
+    {% if file %}
+      <div class="file-item mb-3 p-3 border rounded">
+        <div class="d-flex flex-wrap align-items-start gap-2">
 
-            <!-- Make row wrap on small screens -->
-            <div class="d-flex flex-wrap align-items-start gap-2">
+          <!-- ✅ FIXED: Using {{ name }} instead of {{ slot }} -->
+          <strong class="me-1">
+            <a href="#"
+               class="text-decoration-none text-primary"
+               data-bs-toggle="modal"
+               data-bs-target="#slotHistoryModal"
+               data-slot="{{ name }}">
+               {{ title }}:
+            </a>
+          </strong>
 
-              <!-- Title -->
-              <strong class="me-1">{{ title }}:</strong>
-
-              <!-- Filename -->
-              <a href="{{ file.url }}" target="_blank" class="text-break">
-                {{ file.name|cut:"documents/" }}
-              </a>
+          <!-- Filename -->
+          <a href="{{ file.url }}" target="_blank" class="text-break">
+            {{ file.name|cut:"documents/" }}
+          </a>
               {% if uploaded_by or uploaded_at %}
                 <small class="text-muted">
                   - Updated by 
@@ -148,88 +194,171 @@
                   {% endif %}
                 </small>
               {% endif %}
-              {% if status != "revision" %}
+{% if status != "revision" %}
+  {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+    <!-- Updated: Opens comment modal first -->
+    <button type="button" 
+            class="btn btn-sm btn-warning ms-2 revision-form"
+            data-bs-toggle="modal" 
+            data-bs-target="#addRevisionCommentModalInitial{{ name }}"
+            style="display:none;">
+      Need Revision
+    </button>
 
-                <!-- Revision Button (your function still works) -->
-                <form method="post" class="revision-form ms-2">
-                  {% csrf_token %}
-                  <input type="hidden" name="revision_doc" value="{{ name }}">
-                  <button type="submit" name="mark_initial_revision"
-                          class="btn btn-sm btn-warning">
-                    Need Revision
-                  </button>
-                </form>
+    <!-- Modal for Adding Revision Comment (Mark for Revision) -->
+    <div class="modal fade" id="addRevisionCommentModalInitial{{ name }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          
+          <div class="modal-header">
+            <h5 class="modal-title">⚠️ Mark for Revision - {{ title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
 
-              {% else %}
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="revision_doc" value="{{ name }}">
+            
+            <div class="modal-body">
+              <div class="alert alert-warning">
+                <strong>Note:</strong> This will mark the file for revision. Please provide a comment explaining what needs to be fixed.
+              </div>
 
-                <span class="text-danger ms-2">⚠ Needs Revision</span>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Comment (required):</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Explain what needs to be revised..." 
+                          required></textarea>
+              </div>
 
-                <!-- 💬 Comments Dropdown -->
-                <div class="dropdown d-inline-block ms-2">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                          type="button" data-bs-toggle="dropdown">
-                    💬 Comments
-                  </button>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+            </div>
 
-                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" 
+                      name="mark_initial_revision" 
+                      class="btn btn-warning">
+                ⚠️ Mark for Revision
+              </button>
+            </div>
+          </form>
 
-                    {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                      <form method="post" enctype="multipart/form-data" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="day_id" value="{{ day.id }}">
-                        <input type="hidden" name="slot_name" value="{{ name }}">
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% else %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalInitial{{ name }}">
+    💬 Comments
+  </button>
 
-                        <textarea name="revision_comment" class="form-control mb-2"
-                                  rows="4" placeholder="Add a comment..." required></textarea>
+  <!-- Comments Modal for Initial Files -->
+  <div class="modal fade" id="commentsModalInitial{{ name }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - {{ title }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
 
-                        <input type="file" name="revision_image"
-                               class="form-control form-control-sm mb-2" accept="image/*">
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="slot_name" value="{{ name }}">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
 
-                        <button type="submit" name="submit_revision_comment"
-                                class="btn btn-primary btn-sm w-100">
-                          💬 Submit Comment
-                        </button>
-                      </form>
-                    {% endif %}
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
 
-                    <hr class="my-2">
-                    <h6 class="fw-bold small mb-1">🗒 Comments:</h6>
+              <button type="submit" 
+                      name="submit_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
 
-                    <div class="comment-list small" style="max-height:180px; overflow-y:auto;">
-                      {% with has_comment=False %}
-                        {% for feedback in revision_feedbacks %}
-                          {% if feedback.slot_name == name %}
-                            {% with has_comment=True %}
-                              <div class="border-bottom py-1">
-                                <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                                <small class="text-muted ms-1">
-                                  {{ feedback.created_at|date:"M d, Y h:i A" }}
-                                </small>
-                                <p class="mb-1">{{ feedback.comment }}</p>
+            <hr>
+          {% endif %}
 
-                                {% if feedback.image %}
-                                  <a href="{{ feedback.image.url }}" target="_blank">
-                                    <img src="{{ feedback.image.url }}"
-                                         class="img-thumbnail mt-1"
-                                         style="max-width:150px;">
-                                  </a>
-                                {% endif %}
-                              </div>
-                            {% endwith %}
-                          {% endif %}
-                        {% endfor %}
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
 
-                        {% if not has_comment %}
-                          <p class="text-muted">No comments yet.</p>
-                        {% endif %}
-                      {% endwith %}
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in revision_feedbacks %}
+                {% if feedback.slot_name == name %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                      </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
+
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
                     </div>
-
                   </div>
+                  {% with has_comment=True %}{% endwith %}
+                {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
                 </div>
-                <!-- End Comments Dropdown -->
-
               {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
             </div>
           </div>
         {% endif %}
@@ -243,7 +372,35 @@
   </div>
 </div>
 </div>
+<!-- ✅ MODAL HTML FIRST -->
+<div class="modal fade" id="slotHistoryModal" tabindex="-1" aria-labelledby="slotHistoryTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
 
+      <div class="modal-header">
+        <h5 class="modal-title">
+          📜 <span id="slotHistoryTitle"></span> – Upload History
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body">
+        <ul class="list-group list-group-flush" id="slotHistoryList">
+          <!-- injected by JS -->
+        </ul>
+
+        <p class="text-muted text-center mt-3 d-none" id="noSlotHistory">
+          No history available for this file.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %} 
 {% if document.status == 'pending' or document.status == 'ongoing' %}
@@ -253,50 +410,69 @@
         <div class="card-body">
             <h5 class="card-title">Edit Initial Uploaded Files</h5>
 
-<button class="btn btn-sm btn-success" 
-        type="button" 
-        data-bs-toggle="collapse" 
-        data-bs-target="#editInitialUploadForm" 
-        aria-expanded="false" 
-        aria-controls="editInitialUploadForm">
-    ✏️ Edit Initial Uploaded Files
-</button>
-
-
-            <div class="collapse mt-3" id="editInitialUploadForm">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    <div class="mb-3">
-                        <label for="initial_slot_choice" class="form-label">Select Initial Document Slot:</label>
-                        <select class="form-select" name="initial_slot_choice" id="initial_slot_choice" required>
-                            <option value="">-- Select Slot --</option>
-                            <option value="Activity_Proposal">Activity Proposal</option>
-                            <option value="Work_and_Financial_Plan">Work and Financial Plan</option>
-                            <option value="Plan_of_Activities">Plan_of_Activities</option>
-                            <option value="doc4">Supporting Document 1</option>
-                            <option value="doc5">Supporting Document 2</option>
-                            <option value="doc6">Supporting Document 3</option>
-                            <option value="doc7">Supporting Document 4</option>
-                            <option value="doc8">Supporting Document 5</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Upload File:</label>
-                        <input type="file" name="initial_selected_file" class="form-control" required>
-                    </div>
-
-                    <div class="mt-4 d-flex gap-2">
-                        <button type="submit" name="submit_initial_upload" class="btn btn-primary">Upload Initial File</button>
-                    </div>
-                </form>
-            </div>
+            <button class="btn btn-sm btn-success" 
+                    type="button" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#editInitialUploadModal">
+                ✏️ Edit Initial Uploaded Files
+            </button>
         </div>
     </div>
     <!-- End Card for Editing Initial Uploads -->
 {% endif %}
 {% endif %}
+
+<!-- Edit Initial Upload Modal -->
+<div class="modal fade" id="editInitialUploadModal" tabindex="-1" aria-labelledby="editInitialUploadTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="editInitialUploadTitle">
+          ✏️ Edit Initial Uploaded Files
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="modal-body">
+          
+          <div class="mb-3">
+            <label for="initial_slot_choice" class="form-label fw-semibold">Select Initial Document Slot:</label>
+            <select class="form-select" name="initial_slot_choice" id="initial_slot_choice" required>
+              <option value="">-- Select Slot --</option>
+              <option value="Activity_Proposal">Activity Proposal</option>
+              <option value="Work_and_Financial_Plan">Work and Financial Plan</option>
+              <option value="Plan_of_Activities">Plan of Activities</option>
+              <option value="doc4">Supporting Document 1</option>
+              <option value="doc5">Supporting Document 2</option>
+              <option value="doc6">Supporting Document 3</option>
+              <option value="doc7">Supporting Document 4</option>
+              <option value="doc8">Supporting Document 5</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Upload File:</label>
+            <input type="file" name="initial_selected_file" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="submit_initial_upload" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload Initial File
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
 {% if document.status != 'pending' %}
 <div class="card shadow mt-3 border-0">
   <div class="card-body">
@@ -305,104 +481,153 @@
 
     <!-- ✅ Manage Days & Reports Section -->
     {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' or user.account_type == 'Staff Extensionist'%} 
-    {% if document.status == 'ongoing' %}
-<button class="btn btn-sm btn-success mb-3" 
-        type="button" 
-        data-bs-toggle="collapse" 
-        data-bs-target="#dayUploadForms">
-    📤 Manage Days & Reports
-</button>
-
-      {% endif %}
-      <div class="collapse" id="dayUploadForms">
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-body bg-light rounded">
-
-            <!-- ➕ Add Day -->{% if user.account_type == 'Department Coordinator' or user.account_type == 'Staff Extensionist'%} 
-            <h6 class="fw-bold text-primary">➕ Add Day</h6>
-            <form method="post" class="mb-3">
-              {% csrf_token %}
-              {{ day_form.as_p }}
-              <button type="submit" name="add_day" class="btn btn-success btn-sm">Save Day</button>
-            </form>
-            {% endif %}
-            <hr>
-
-            <!-- ⬆ Upload Training Report -->
-            <h6 class="fw-bold text-primary">⬆ Upload Training Report</h6>
-<form method="post" enctype="multipart/form-data" class="mb-3">
-  {% csrf_token %}
-  <div class="mb-3">
-    <label class="form-label fw-semibold">Select Day:</label>
-    <select class="form-select" name="day_id" required>
-      <option value="">-- Select Day --</option>
-      {% for day in days %}
-        {% if not day.training_reports.exists %}
-          <option value="{{ day.id }}">{{ day.name }} — {{ day.date }}</option>
+      {% if document.status == 'ongoing' %}
+        {% if user.account_type == 'Department Coordinator' or user.account_type == 'Staff Extensionist'%}
+          <button class="btn btn-sm btn-success mb-3" 
+                  type="button" 
+                  data-bs-toggle="modal" 
+                  data-bs-target="#addDayModal">
+              ➕ Add Day
+          </button>
         {% endif %}
-      {% endfor %}
-    </select>
-  </div>
-
-
-  <div class="mb-3">
-    <label class="form-label fw-semibold">Upload Training Report (.doc/.docx):</label>
-    <input type="file" name="report_file" class="form-control" accept=".doc,.docx" required>
-  </div>
-
-  <button type="submit" name="upload_day_report" class="btn btn-success btn-sm">Upload Report</button>
-</form>
-
-
-            <hr>
-
-            <!-- 📎 Upload Supporting Files -->
-            <h6 class="fw-bold text-primary">📎 Upload Day Supporting Documents</h6>
-            <form method="post" enctype="multipart/form-data" class="border rounded p-3 bg-white shadow-sm">
-              {% csrf_token %}
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Select Day:</label>
-                  <select class="form-select" name="day_id" required>
-                    <option value="">-- Select Day --</option>
-                    {% for day in days %}
-                      <option value="{{ day.id }}">{{ day.name }} — {{ day.date }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-
-                <div class="col-md-6">
-                  <label class="form-label fw-semibold">Select File Slot:</label>
-                  <select class="form-select" name="file_slot" required>
-                    <option value="">-- Select File Slot --</option>
-                    <option value="doc1">Attendance Sheet</option>
-                    <option value="doc2">Photo Documentation</option>
-                    <option value="doc3">Program</option>
-                    <option value="doc4">Accomplished / Evaluation Form</option>
-                    <option value="doc5">Supporting Document 1</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="mt-3">
-                <label class="form-label fw-semibold">Choose File (.pdf/.doc/.docx):</label>
-                <input type="file" name="selected_file" class="form-control" accept=".pdf,.doc,.docx" required>
-              </div>
-
-              <div class="mt-3 text-end">
-                <button type="submit" name="upload_day_files" class="btn btn-success btn-sm">
-                  📎 Upload
-                </button>
-                <button type="reset" class="btn btn-outline-secondary btn-sm">Reset</button>
-              </div>
-            </form>
-
-          </div>
-        </div>
-      </div>
+      {% endif %}
     {% endif %}
     <!-- ✅ End Manage Section -->
-  {% endif %}
+
+    <!-- Your days list goes here -->
+
+  </div>
+
+{% endif %}
+
+<!-- Add Day Modal -->
+<div class="modal fade" id="addDayModal" tabindex="-1" aria-labelledby="addDayTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="addDayTitle">
+          ➕ Add Day
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="modal-body">
+          {{ day_form.as_p }}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="add_day" class="btn btn-success">
+            <i class="fas fa-save"></i> Save Day
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ✅ Training Report Upload Modal -->
+<div class="modal fade" id="uploadTrainingReportModal" tabindex="-1" aria-labelledby="uploadTrainingReportTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadTrainingReportTitle">
+          ⬆ Upload Training Report
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="modal-body">
+          
+          <!-- Info message showing which day was selected -->
+          <div class="alert alert-info py-2" id="autoSelectedInfo">
+            📅 <strong>Selected:</strong> <span id="selectedDayInfo"></span>
+          </div>
+
+          <!-- Hidden input for day_id (automatically filled by JavaScript) -->
+          <input type="hidden" name="day_id" id="trainingReportDaySelect" required>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Upload Training Report (.doc/.docx):</label>
+            <input type="file" name="report_file" id="reportFileInput" class="form-control" accept=".doc,.docx" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="upload_day_report" class="btn btn-success">
+            <i class="fas fa-upload"></i> Upload Report
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+<!-- Modal for Upload Day Supporting Documents -->
+<div class="modal fade" id="uploadSupportingDocsModal" tabindex="-1" aria-labelledby="uploadSupportingDocsTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadSupportingDocsTitle">
+          📎 Upload Day Supporting Documents
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="modal-body">
+          
+          <!-- Info message showing which day was selected -->
+          <div class="alert alert-info py-2" id="autoSelectedSupportingInfo">
+            📅 <strong>Selected:</strong> <span id="selectedSupportingDayInfo"></span>
+          </div>
+
+          <!-- Hidden input for day_id (automatically filled by JavaScript) -->
+          <input type="hidden" name="day_id" id="supportingDocDaySelect" required>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Select File Slot:</label>
+            <select class="form-select" name="file_slot" required>
+              <option value="">-- Select File Slot --</option>
+              <option value="doc1">Attendance Sheet</option>
+              <option value="doc2">Photo Documentation</option>
+              <option value="doc3">Program</option>
+              <option value="doc4">Accomplished / Evaluation Form</option>
+              <option value="doc5">Supporting Document 1</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Choose File (.pdf/.doc/.docx):</label>
+            <input type="file" name="selected_file" id="supportingFileInput" class="form-control" accept=".pdf,.doc,.docx" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="upload_day_files" class="btn btn-success">
+            <i class="fas fa-upload"></i> Upload Document
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
 {% if days %}
   {% for day in days %}
     <div class="card mb-3 shadow-sm border-0">
@@ -416,11 +641,11 @@
           {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
           {% if document.status == 'ongoing' %}
             <div class="d-flex flex-wrap gap-1">
-              <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editDay{{ day.id }}">✏ Edit</button>
+              <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editDay{{ day.id }}">Edit Day</button>
               <form method="post" class="d-inline">
                 {% csrf_token %}
                 <input type="hidden" name="day_id" value="{{ day.id }}">
-                <button type="submit" name="delete_day" class="btn btn-sm btn-danger" onclick="return confirm('Delete this day?');">🗑 Delete</button>
+                <button type="submit" name="delete_day" class="btn btn-sm btn-danger" onclick="return confirm('Delete this day?');">🗑 Delete Day</button>
               </form>
             </div>
           {% endif %}
@@ -437,8 +662,19 @@
           </form>
         </div>
 
-        <!-- Training Reports -->
-        <h6 class="fw-bold text-primary mb-2">📘 Training Reports</h6>
+
+{% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %}
+{% if document.status == 'ongoing' %}
+  <button class="btn btn-success btn-sm" 
+          data-bs-toggle="modal" 
+          data-bs-target="#uploadTrainingReportModal"
+          data-day-id="{{ day.id }}"
+          data-day-name="{{ day.name }}"
+          data-day-date="{{ day.date|date:'M d, Y' }}">
+    📘 Training Reports
+  </button> 
+{% endif %}
+{% endif %}
         <div class="border rounded p-2 bg-light">
           {% if day.training_reports.exists %}
             {% for report in day.training_reports.all %}
@@ -452,7 +688,7 @@
                   <a href="{{ report.file.url }}" download class="btn btn-outline-success btn-sm">⬇ Download</a>
                   {% if user.account_type == 'Staff Extensionist' or user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' %} 
                   {% if document.status == 'ongoing' %}
-                    <button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editReport{{ report.id }}">✏</button>
+                    <!--<button class="btn btn-sm btn-warning" data-bs-toggle="collapse" data-bs-target="#editReport{{ report.id }}">✏</button>-->
                     <form method="post" class="d-inline">
                       {% csrf_token %}
                       <input type="hidden" name="report_id" value="{{ report.id }}">
@@ -505,382 +741,809 @@
 
 <!-- Supporting Documents -->
 <div class="mt-3">
-  <h6 class="fw-bold text-primary mb-2">📁 Supporting Documents</h6>
+  {% if user.account_type == 'Department Coordinator' or user.account_type == 'Extensionist' or user.account_type == 'Staff Extensionist'%} 
+    {% if document.status == 'ongoing' %}
+      <button type="button" class="btn btn-success btn-sm mb-2" 
+              data-bs-toggle="modal" 
+              data-bs-target="#uploadSupportingDocsModal"
+              data-day-id="{{ day.id }}"
+              data-day-name="{{ day.name }}"
+              data-day-date="{{ day.date }}">
+        📁 Supporting Documents
+      </button>
+    {% endif %}
+  {% endif %}
 
   {% if day.day_files.exists %}
     {% with day.day_files.first as files %}
-      <ul class="list-group list-group-flush">
+      <ul class="list-group list-group-flush mt-2">
 
-        <!-- File 1 -->
+        <!-- File 1: Attendance Sheet -->
         {% if files.doc1 %}
-          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-            <div class="mb-1 mb-md-0">
-              📎 Attendance Sheet:
-              <a href="{{ files.doc1.url }}" target="_blank" class="file-link">{{ files.doc1.name|cut:"day_files/" }}</a>
-                    {% if files.doc1_uploaded_by or files.doc1_uploaded_at %}
-                      <small class="text-muted d-block">
-                        Updated by <strong>
-  {% if files.doc1_uploaded_by %}
-    {{ files.doc1_uploaded_by.get_full_name|default:files.doc1_uploaded_by.username }}
-  {% else %}
-    Unknown User (Deleted)
-  {% endif %}
-</strong>
-
-                        {% if files.doc1_uploaded_at %}
-                          ({{ files.doc1_uploaded_at|date:"M d, Y h:i A" }})
-                        {% endif %}
-                      </small>
-                    {% endif %}
-                    
-              {% if files.doc1_status == "revision" %}
-                <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-
-                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    💬 Comments
-                  </button>
-                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
-                    {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-
-                      <form method="post" enctype="multipart/form-data" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="day_id" value="{{ day.id }}">
-                        <input type="hidden" name="slot_name" value="day_doc1">
-                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                      </form>
-                    {% endif %}
-                    {% with has_comment=False %}
-                      {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
-                        {% if feedback.slot_name == "day_doc1" %}
-                          {% with has_comment=True %}
-                            <div class="border rounded p-2 mb-2">
-                              <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                              <small class="text-muted ms-1">{{ feedback.created_at|date:"M d, Y h:i A" }}</small>
-                              <p class="mb-1">{{ feedback.comment }}</p>
-                              {% if feedback.image %}
-                                <a href="{{ feedback.image.url }}" target="_blank">
-                                  <img src="{{ feedback.image.url }}" class="img-thumbnail mt-1" style="max-width:120px;">
-                                </a>
-                              {% endif %}
-                            </div>
-                          {% endwith %}
-                        {% endif %}
-                      {% endfor %}
-                      {% if not has_comment %}
-                        <p class="text-muted small">No comments yet.</p>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1">
+                <strong>
+                  <a href="#" class="text-decoration-none text-primary"
+                     data-bs-toggle="modal" data-bs-target="#slotHistoryModal"
+                     data-slot="day_doc1">
+                     📎 Attendance Sheet:
+                  </a>
+                </strong>
+                <a href="{{ files.doc1.url }}" target="_blank" class="file-link ms-2">
+                  {{ files.doc1.name|cut:"day_files/" }}
+                </a>
+                
+                {% if files.doc1_uploaded_by or files.doc1_uploaded_at %}
+                  <small class="text-muted d-block mt-1">
+                    Updated by <strong>
+                      {% if files.doc1_uploaded_by %}
+                        {{ files.doc1_uploaded_by.get_full_name|default:files.doc1_uploaded_by.username }}
+                      {% else %}
+                        Unknown User (Deleted)
                       {% endif %}
-                    {% endwith %}
+                    </strong>
+                    {% if files.doc1_uploaded_at %}
+                      ({{ files.doc1_uploaded_at|date:"M d, Y h:i A" }})
+                    {% endif %}
+                  </small>
+                {% endif %}
+
+{% if files.doc1_status == "revision" %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalDoc1Day{{ day.id }}">
+    💬 Comments
+  </button>
+
+  <!-- Comments Modal for Doc1 -->
+  <div class="modal fade" id="commentsModalDoc1Day{{ day.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - Attendance Sheet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="day_id" value="{{ day.id }}">
+              <input type="hidden" name="slot_name" value="day_doc1">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+
+              <button type="submit" 
+                      name="submit_day_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
+
+            <hr>
+          {% endif %}
+
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
+
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
+                {% if feedback.slot_name == "day_doc1" %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                      </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
+
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
+                    </div>
                   </div>
+                  {% with has_comment=True %}{% endwith %}
+                {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
                 </div>
               {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+              </div>
             </div>
           </li>
         {% endif %}
 
-        <!-- File 2 -->
+        <!-- File 2: Photo Documentation -->
         {% if files.doc2 %}
-          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-            <div class="mb-1 mb-md-0">
-              📎 Photo Documentation:
-              <a href="{{ files.doc2.url }}" target="_blank" class="file-link">{{ files.doc2.name|cut:"day_files/" }}</a>
-                    {% if files.doc2_uploaded_by or files.doc2_uploaded_at %}
-                      <small class="text-muted d-block">
-                        Updated by <strong>
-  {% if files.doc2_uploaded_by %}
-    {{ files.doc2_uploaded_by.get_full_name|default:files.doc2_uploaded_by.username }}
-  {% else %}
-    Unknown User (Deleted)
-  {% endif %}
-</strong>
-
-                        {% if files.doc2_uploaded_at %}
-                          ({{ files.doc2_uploaded_at|date:"M d, Y h:i A" }})
-                        {% endif %}
-                      </small>
-                    {% endif %}
-              {% if files.doc2_status == "revision" %}
-                <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-
-                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    💬 Comments
-                  </button>
-                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
-                    {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-
-                      <form method="post" enctype="multipart/form-data" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="day_id" value="{{ day.id }}">
-                        <input type="hidden" name="slot_name" value="day_doc2">
-                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                      </form>
-                    {% endif %}
-                    {% with has_comment=False %}
-                      {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
-                        {% if feedback.slot_name == "day_doc2" %}
-                          {% with has_comment=True %}
-                            <div class="border rounded p-2 mb-2">
-                              <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                              <small class="text-muted ms-1">{{ feedback.created_at|date:"M d, Y h:i A" }}</small>
-                              <p class="mb-1">{{ feedback.comment }}</p>
-                              {% if feedback.image %}
-                                <a href="{{ feedback.image.url }}" target="_blank">
-                                  <img src="{{ feedback.image.url }}" class="img-thumbnail mt-1" style="max-width:120px;">
-                                </a>
-                              {% endif %}
-                            </div>
-                          {% endwith %}
-                        {% endif %}
-                      {% endfor %}
-                      {% if not has_comment %}
-                        <p class="text-muted small">No comments yet.</p>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1">
+                <strong>
+                  <a href="#" class="text-decoration-none text-primary"
+                     data-bs-toggle="modal" data-bs-target="#slotHistoryModal"
+                     data-slot="day_doc2">
+                     📎 Photo Documentation:
+                  </a>
+                </strong>
+                <a href="{{ files.doc2.url }}" target="_blank" class="file-link ms-2">
+                  {{ files.doc2.name|cut:"day_files/" }}
+                </a>
+                
+                {% if files.doc2_uploaded_by or files.doc2_uploaded_at %}
+                  <small class="text-muted d-block mt-1">
+                    Updated by <strong>
+                      {% if files.doc2_uploaded_by %}
+                        {{ files.doc2_uploaded_by.get_full_name|default:files.doc2_uploaded_by.username }}
+                      {% else %}
+                        Unknown User (Deleted)
                       {% endif %}
-                    {% endwith %}
+                    </strong>
+                    {% if files.doc2_uploaded_at %}
+                      ({{ files.doc2_uploaded_at|date:"M d, Y h:i A" }})
+                    {% endif %}
+                  </small>
+                {% endif %}
+
+{% if files.doc2_status == "revision" %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalDoc2Day{{ day.id }}">
+    💬 Comments
+  </button>
+
+  <!-- Comments Modal for Doc1 -->
+  <div class="modal fade" id="commentsModalDoc2Day{{ day.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - Attendance Sheet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="day_id" value="{{ day.id }}">
+              <input type="hidden" name="slot_name" value="day_doc2">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+
+              <button type="submit" 
+                      name="submit_day_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
+
+            <hr>
+          {% endif %}
+
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
+
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
+                {% if feedback.slot_name == "day_doc2" %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                      </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
+
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
+                    </div>
                   </div>
+                  {% with has_comment=True %}{% endwith %}
+                {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
                 </div>
               {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+              </div>
             </div>
           </li>
         {% endif %}
 
-        <!-- File 3 -->
+        <!-- File 3: Program -->
         {% if files.doc3 %}
-          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-            <div class="mb-1 mb-md-0">
-              📎 Program:
-              <a href="{{ files.doc3.url }}" target="_blank" class="file-link">{{ files.doc3.name|cut:"day_files/" }}</a>
-                    {% if files.doc3_uploaded_by or files.doc3_uploaded_at %}
-                      <small class="text-muted d-block">
-                        Updated by <strong>
-  {% if files.doc3_uploaded_by %}
-    {{ files.doc3_uploaded_by.get_full_name|default:files.doc3_uploaded_by.username }}
-  {% else %}
-    Unknown User (Deleted)
-  {% endif %}
-</strong>
-
-                        {% if files.doc3_uploaded_at %}
-                          ({{ files.doc3_uploaded_at|date:"M d, Y h:i A" }})
-                        {% endif %}
-                      </small>
-                    {% endif %}
-              {% if files.doc3_status == "revision" %}
-                <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-
-                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    💬 Comments
-                  </button>
-                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
-                    {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-
-                      <form method="post" enctype="multipart/form-data" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="day_id" value="{{ day.id }}">
-                        <input type="hidden" name="slot_name" value="day_doc3">
-                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                      </form>
-                    {% endif %}
-                    {% with has_comment=False %}
-                      {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
-                        {% if feedback.slot_name == "day_doc3" %}
-                          {% with has_comment=True %}
-                            <div class="border rounded p-2 mb-2">
-                              <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                              <small class="text-muted ms-1">{{ feedback.created_at|date:"M d, Y h:i A" }}</small>
-                              <p class="mb-1">{{ feedback.comment }}</p>
-                              {% if feedback.image %}
-                                <a href="{{ feedback.image.url }}" target="_blank">
-                                  <img src="{{ feedback.image.url }}" class="img-thumbnail mt-1" style="max-width:120px;">
-                                </a>
-                              {% endif %}
-                            </div>
-                          {% endwith %}
-                        {% endif %}
-                      {% endfor %}
-                      {% if not has_comment %}
-                        <p class="text-muted small">No comments yet.</p>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1">
+                <strong>
+                  <a href="#" class="text-decoration-none text-primary"
+                     data-bs-toggle="modal" data-bs-target="#slotHistoryModal"
+                     data-slot="day_doc3">
+                     📎 Program:
+                  </a>
+                </strong>
+                <a href="{{ files.doc3.url }}" target="_blank" class="file-link ms-2">
+                  {{ files.doc3.name|cut:"day_files/" }}
+                </a>
+                
+                {% if files.doc3_uploaded_by or files.doc3_uploaded_at %}
+                  <small class="text-muted d-block mt-1">
+                    Updated by <strong>
+                      {% if files.doc3_uploaded_by %}
+                        {{ files.doc3_uploaded_by.get_full_name|default:files.doc3_uploaded_by.username }}
+                      {% else %}
+                        Unknown User (Deleted)
                       {% endif %}
-                    {% endwith %}
+                    </strong>
+                    {% if files.doc3_uploaded_at %}
+                      ({{ files.doc3_uploaded_at|date:"M d, Y h:i A" }})
+                    {% endif %}
+                  </small>
+                {% endif %}
+
+{% if files.doc3_status == "revision" %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalDoc3Day{{ day.id }}">
+    💬 Comments
+  </button>
+
+  <!-- Comments Modal for Doc1 -->
+  <div class="modal fade" id="commentsModalDoc3Day{{ day.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - Attendance Sheet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="day_id" value="{{ day.id }}">
+              <input type="hidden" name="slot_name" value="day_doc3">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+
+              <button type="submit" 
+                      name="submit_day_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
+
+            <hr>
+          {% endif %}
+
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
+
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
+                {% if feedback.slot_name == "day_doc3" %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                      </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
+
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
+                    </div>
                   </div>
+                  {% with has_comment=True %}{% endwith %}
+                {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
                 </div>
               {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+              </div>
             </div>
           </li>
         {% endif %}
 
-        <!-- File 4 -->
+        <!-- File 4: Accomplished / Evaluation Form -->
         {% if files.doc4 %}
-          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-            <div class="mb-1 mb-md-0">
-              📎 Accomplished / Evaluation Form:
-              <a href="{{ files.doc4.url }}" target="_blank" class="file-link">{{ files.doc4.name|cut:"day_files/" }}</a>
-                    {% if files.doc4_uploaded_by or files.doc4_uploaded_at %}
-                      <small class="text-muted d-block">
-                        Updated by <strong>
-  {% if files.doc4_uploaded_by %}
-    {{ files.doc4_uploaded_by.get_full_name|default:files.doc4_uploaded_by.username }}
-  {% else %}
-    Unknown User (Deleted)
-  {% endif %}
-</strong>
-
-                        {% if files.doc4_uploaded_at %}
-                          ({{ files.doc4_uploaded_at|date:"M d, Y h:i A" }})
-                        {% endif %}
-                      </small>
-                    {% endif %}
-              {% if files.doc4_status == "revision" %}
-                <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-
-                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    💬 Comments
-                  </button>
-                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
-                    {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-
-                      <form method="post" enctype="multipart/form-data" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="day_id" value="{{ day.id }}">
-                        <input type="hidden" name="slot_name" value="day_doc4">
-                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                      </form>
-                    {% endif %}
-                    {% with has_comment=False %}
-                      {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
-                        {% if feedback.slot_name == "day_doc4" %}
-                          {% with has_comment=True %}
-                            <div class="border rounded p-2 mb-2">
-                              <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                              <small class="text-muted ms-1">{{ feedback.created_at|date:"M d, Y h:i A" }}</small>
-                              <p class="mb-1">{{ feedback.comment }}</p>
-                              {% if feedback.image %}
-                                <a href="{{ feedback.image.url }}" target="_blank">
-                                  <img src="{{ feedback.image.url }}" class="img-thumbnail mt-1" style="max-width:120px;">
-                                </a>
-                              {% endif %}
-                            </div>
-                          {% endwith %}
-                        {% endif %}
-                      {% endfor %}
-                      {% if not has_comment %}
-                        <p class="text-muted small">No comments yet.</p>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1">
+                <strong>
+                  <a href="#" class="text-decoration-none text-primary"
+                     data-bs-toggle="modal" data-bs-target="#slotHistoryModal"
+                     data-slot="day_doc4">
+                     📎 Accomplished / Evaluation Form:
+                  </a>
+                </strong>
+                <a href="{{ files.doc4.url }}" target="_blank" class="file-link ms-2">
+                  {{ files.doc4.name|cut:"day_files/" }}
+                </a>
+                
+                {% if files.doc4_uploaded_by or files.doc4_uploaded_at %}
+                  <small class="text-muted d-block mt-1">
+                    Updated by <strong>
+                      {% if files.doc4_uploaded_by %}
+                        {{ files.doc4_uploaded_by.get_full_name|default:files.doc4_uploaded_by.username }}
+                      {% else %}
+                        Unknown User (Deleted)
                       {% endif %}
-                    {% endwith %}
+                    </strong>
+                    {% if files.doc4_uploaded_at %}
+                      ({{ files.doc4_uploaded_at|date:"M d, Y h:i A" }})
+                    {% endif %}
+                  </small>
+                {% endif %}
+
+{% if files.doc4_status == "revision" %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalDoc4Day{{ day.id }}">
+    💬 Comments
+  </button>
+
+  <!-- Comments Modal for Doc1 -->
+  <div class="modal fade" id="commentsModalDoc4Day{{ day.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - Attendance Sheet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="day_id" value="{{ day.id }}">
+              <input type="hidden" name="slot_name" value="day_doc4">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+
+              <button type="submit" 
+                      name="submit_day_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
+
+            <hr>
+          {% endif %}
+
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
+
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
+                {% if feedback.slot_name == "day_doc4" %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                      </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
+
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
+                    </div>
                   </div>
+                  {% with has_comment=True %}{% endwith %}
+                {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
                 </div>
               {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+              </div>
             </div>
           </li>
         {% endif %}
 
-        <!-- File 5 -->
+        <!-- File 5: Supporting Document 1 -->
         {% if files.doc5 %}
-          <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-            <div class="mb-1 mb-md-0">
-              📎 Supporting Document 1:
-              <a href="{{ files.doc5.url }}" target="_blank" class="file-link">{{ files.doc5.name|cut:"day_files/" }}</a>
-                    {% if files.doc5_uploaded_by or files.doc5_uploaded_at %}
-                      <small class="text-muted d-block">
-                        Updated by <strong>
-  {% if files.doc5_uploaded_by %}
-    {{ files.doc5_uploaded_by.get_full_name|default:files.doc5_uploaded_by.username }}
-  {% else %}
-    Unknown User (Deleted)
-  {% endif %}
-</strong>
-
-                        {% if files.doc5_uploaded_at %}
-                          ({{ files.doc5_uploaded_at|date:"M d, Y h:i A" }})
-                        {% endif %}
-                      </small>
-                    {% endif %}
-              {% if files.doc5_status == "revision" %}
-                <span class="text-danger ms-2 fw-semibold">⚠ Needs Revision</span>
-
-                <div class="dropdown d-inline ms-0 ms-md-2 mt-1 mt-md-0">
-                  <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    💬 Comments
-                  </button>
-                  <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
-                    {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-
-                      <form method="post" enctype="multipart/form-data" class="mb-2">
-                        {% csrf_token %}
-                        <input type="hidden" name="day_id" value="{{ day.id }}">
-                        <input type="hidden" name="slot_name" value="day_doc5">
-                        <textarea name="revision_comment" class="form-control mb-2" rows="2" placeholder="Add a comment..." required></textarea>
-                        <input type="file" name="revision_image" class="form-control form-control-sm mb-2" accept="image/*">
-                        <button type="submit" name="submit_day_revision_comment" class="btn btn-primary btn-sm w-100">💬 Submit Comment</button>
-                      </form>
-                    {% endif %}
-                    {% with has_comment=False %}
-                      {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
-                        {% if feedback.slot_name == "day_doc5" %}
-                          {% with has_comment=True %}
-                            <div class="border rounded p-2 mb-2">
-                              <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                              <small class="text-muted ms-1">{{ feedback.created_at|date:"M d, Y h:i A" }}</small>
-                              <p class="mb-1">{{ feedback.comment }}</p>
-                              {% if feedback.image %}
-                                <a href="{{ feedback.image.url }}" target="_blank">
-                                  <img src="{{ feedback.image.url }}" class="img-thumbnail mt-1" style="max-width:120px;">
-                                </a>
-                              {% endif %}
-                            </div>
-                          {% endwith %}
-                        {% endif %}
-                      {% endfor %}
-                      {% if not has_comment %}
-                        <p class="text-muted small">No comments yet.</p>
+          <li class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1">
+                <strong>
+                  <a href="#" class="text-decoration-none text-primary"
+                     data-bs-toggle="modal" data-bs-target="#slotHistoryModal"
+                     data-slot="day_doc5">
+                     📎 Supporting Document 1:
+                  </a>
+                </strong>
+                <a href="{{ files.doc5.url }}" target="_blank" class="file-link ms-2">
+                  {{ files.doc5.name|cut:"day_files/" }}
+                </a>
+                
+                {% if files.doc5_uploaded_by or files.doc5_uploaded_at %}
+                  <small class="text-muted d-block mt-1">
+                    Updated by <strong>
+                      {% if files.doc5_uploaded_by %}
+                        {{ files.doc5_uploaded_by.get_full_name|default:files.doc5_uploaded_by.username }}
+                      {% else %}
+                        Unknown User (Deleted)
                       {% endif %}
-                    {% endwith %}
+                    </strong>
+                    {% if files.doc5_uploaded_at %}
+                      ({{ files.doc5_uploaded_at|date:"M d, Y h:i A" }})
+                    {% endif %}
+                  </small>
+                {% endif %}
+
+{% if files.doc5_status == "revision" %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalDoc5Day{{ day.id }}">
+    💬 Comments
+  </button>
+
+  <!-- Comments Modal for Doc1 -->
+  <div class="modal fade" id="commentsModalDoc5Day{{ day.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - Attendance Sheet</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="day_id" value="{{ day.id }}">
+              <input type="hidden" name="slot_name" value="day_doc5">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+
+              <button type="submit" 
+                      name="submit_day_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
+
+            <hr>
+          {% endif %}
+
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
+
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in day.revision_feedbacks.all|dictsortreversed:"created_at" %}
+                {% if feedback.slot_name == "day_doc5" %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
+                      </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
+
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
+                    </div>
                   </div>
+                  {% with has_comment=True %}{% endwith %}
+                {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
                 </div>
               {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+              </div>
             </div>
           </li>
         {% endif %}
 
       </ul>
 
-      <!-- Revision Controls -->
-      {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-      {%  if document.status != 'Completed' %}
-        <div class="mt-3">
-          <button class="btn btn-sm btn-secondary mb-2 toggle-day-revision-btn">Show Revision Controls</button>
-          <div class="day-revision-controls" style="display:none;">
-            <form method="post" class="d-inline">
-              {% csrf_token %}
-              <input type="hidden" name="day_id" value="{{ day.id }}">
-              <select name="revision_doc" class="form-select form-select-sm d-inline w-auto">
-                <option value="">Select File Slot</option>
-                <option value="day_doc1">Attendance sheet</option>
-                <option value="day_doc2">Photo Documentation</option>
-                <option value="day_doc3">Program</option>
-                <option value="day_doc4">Accomplished / Evaluation Form</option>
-                <option value="day_doc5">Supporting Document 1</option>
-              </select>
-              <button type="submit" name="make_day_revision" class="btn btn-sm btn-warning">🚩 Mark for Revision</button>
-            </form>
+<!-- Revision Controls -->
+{% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+  {% if document.status != 'Completed' %}
+    <div class="mt-3">
+      <button class="btn btn-sm btn-secondary mb-2 toggle-day-revision-btn">
+        Show Revision Controls
+      </button>
+      <div class="day-revision-controls" style="display:none;">
+        <!-- Dropdown to select file slot -->
+        <select id="dayRevisionSelect{{ day.id }}" class="form-select form-select-sm d-inline w-auto">
+          <option value="">Select File Slot</option>
+          <option value="day_doc1">Attendance sheet</option>
+          <option value="day_doc2">Photo Documentation</option>
+          <option value="day_doc3">Program</option>
+          <option value="day_doc4">Accomplished / Evaluation Form</option>
+          <option value="day_doc5">Supporting Document 1</option>
+        </select>
+        
+        <button type="button" 
+                class="btn btn-sm btn-warning ms-2" 
+                onclick="openDayRevisionModal({{ day.id }})">
+          🚩 Mark for Revision
+        </button>
+      </div>
+    </div>
+
+    <!-- Universal Day Revision Modal -->
+    <div class="modal fade" id="dayRevisionModal{{ day.id }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          
+          <div class="modal-header">
+            <h5 class="modal-title" id="dayRevisionModalTitle{{ day.id }}">⚠️ Mark for Revision</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
+
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="day_id" value="{{ day.id }}">
+            <input type="hidden" name="revision_doc" id="dayRevisionDocInput{{ day.id }}">
+            
+            <div class="modal-body">
+              <div class="alert alert-warning">
+                <strong>Note:</strong> This will mark the file for revision. Please provide a comment explaining what needs to be fixed.
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Comment (required):</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Explain what needs to be revised..." 
+                          required></textarea>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" 
+                      name="make_day_revision" 
+                      class="btn btn-warning">
+                ⚠️ Mark for Revision
+              </button>
+            </div>
+          </form>
+
         </div>
-      {% endif %}
-        {% endif %}
-    {% endwith %}
-  {% else %}
-    <p class="text-muted">No supporting documents uploaded yet.</p>
+      </div>
+    </div>
   {% endif %}
+{% endif %}
+{% endwith %}
+{% else %}
+<p class="text-muted">No supporting documents uploaded yet.</p>
+{% endif %}
 </div>
 
 
@@ -909,21 +1572,29 @@
         {% endif %}
       {% endif %}
 
-      <div class="file-container">
-        {% for name, title, file, status, uploaded_by, uploaded_at in completion_file_list %}
-          {% if file %}
-            <div class="file-item mb-3 p-3 border rounded">
+<div class="file-container">
+  {% for name, title, file, status, uploaded_by, uploaded_at in completion_file_list %}
+    {% if file %}
+      <div class="file-item mb-3 p-3 border rounded">
 
-              <!-- Make layout wrap properly on smaller screens -->
-              <div class="d-flex flex-wrap align-items-start gap-2">
+        <!-- Make layout wrap properly on smaller screens -->
+        <div class="d-flex flex-wrap align-items-start gap-2">
 
-                <!-- Title -->
-                <strong class="me-1">{{ title }}:</strong>
+          <!-- ✅ FIXED TITLE: Added modal link -->
+          <strong class="me-1">
+            <a href="#"
+               class="text-decoration-none text-primary"
+               data-bs-toggle="modal"
+               data-bs-target="#slotHistoryModal"
+               data-slot="{{ name }}">
+               {{ title }}:
+            </a>
+          </strong>
 
-                <!-- Filename (auto-wrap long names) -->
-                <a href="{{ file.url }}" target="_blank" class="text-break">
-                  {{ file.name|cut:"documents/completion/" }}
-                </a>
+          <!-- Filename (auto-wrap long names) -->
+          <a href="{{ file.url }}" target="_blank" class="text-break">
+            {{ file.name|cut:"documents/completion/" }}
+          </a>
 
                 <!-- Upload Info -->
                 {% if uploaded_by or uploaded_at %}
@@ -935,87 +1606,173 @@
                     {% endif %}
                   </small>
                 {% endif %}
+{% if status != "revision" %}
+  {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+    <!-- Updated: Opens comment modal first -->
+    <button type="button" 
+            class="btn btn-sm btn-warning ms-2 revision-form"
+            data-bs-toggle="modal" 
+            data-bs-target="#addRevisionCommentModalInitial{{ name }}"
+            style="display:none;">
+      Need Revision
+    </button>
 
-                {% if status != "revision" %}
-                  {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                    <!-- SAME FUNCTION, DO NOT TOUCH -->
-                    <form method="post" class="revision-form ms-2">
-                      {% csrf_token %}
-                      <input type="hidden" name="revision_doc" value="{{ name }}">
-                      <button type="submit" name="mark_revision_completion" class="btn btn-sm btn-warning">
-                        Need Revision
-                      </button>
-                    </form>
-                  {% endif %}
-                {% else %}
-                  <!-- Status -->
-                  <span class="text-danger ms-2">⚠ Needs Revision</span>
+    <!-- Modal for Adding Revision Comment (Mark for Revision) -->
+    <div class="modal fade" id="addRevisionCommentModalInitial{{ name }}" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          
+          <div class="modal-header">
+            <h5 class="modal-title">⚠️ Mark for Revision - {{ title }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
 
-                  <!-- 💬 Comments Dropdown -->
-                  <div class="dropdown d-inline-block ms-2">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                      💬 Comments
-                    </button>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="revision_doc" value="{{ name }}">
+            
+            <div class="modal-body">
+              <div class="alert alert-warning">
+                <strong>Note:</strong> This will mark the file for revision. Please provide a comment explaining what needs to be fixed.
+              </div>
 
-                    <div class="dropdown-menu p-3" style="min-width: 280px; max-width: 100%; max-height: 300px; overflow-y: auto;">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Comment (required):</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Explain what needs to be revised..." 
+                          required></textarea>
+              </div>
 
-                      {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
-                        <form method="post" enctype="multipart/form-data" class="mb-2">
-                          {% csrf_token %}
-                          <input type="hidden" name="completion_ocument" value="{{ name }}">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
+            </div>
 
-                          <textarea name="revision_comment" class="form-control mb-2"
-                                    rows="4" placeholder="Add a comment..." required></textarea>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" 
+                      name="mark_initial_revision" 
+                      class="btn btn-warning">
+                ⚠️ Mark for Revision
+              </button>
+            </div>
+          </form>
 
-                          <input type="file" name="revision_image"
-                                 class="form-control form-control-sm mb-2"
-                                 accept="image/*">
+        </div>
+      </div>
+    </div>
+  {% endif %}
+{% else %}
+  <span class="badge bg-danger mt-1">⚠ Needs Revision</span>
+  
+  <!-- 💬 Comments Button -->
+  <button class="btn btn-sm btn-outline-secondary ms-2" 
+          type="button"
+          data-bs-toggle="modal" 
+          data-bs-target="#commentsModalInitial{{ name }}">
+    💬 Comments
+  </button>
 
-                          <button type="submit" name="submit_completion_revision_comment"
-                                  class="btn btn-primary btn-sm w-100">
-                            💬 Submit Comment
-                          </button>
-                        </form>
-                      {% endif %}
+  <!-- Comments Modal for Initial Files -->
+  <div class="modal fade" id="commentsModalInitial{{ name }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+        
+        <div class="modal-header">
+          <h5 class="modal-title">💬 Comments - {{ title }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
 
-                      <hr class="my-2">
-                      <h6 class="fw-bold small mb-1">🗒 Comments:</h6>
+        <div class="modal-body">
+          
+          {% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+            <form method="post" enctype="multipart/form-data" class="mb-3">
+              {% csrf_token %}
+              <input type="hidden" name="slot_name" value="{{ name }}">
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Add a comment:</label>
+                <textarea name="revision_comment" 
+                          class="form-control" 
+                          rows="4" 
+                          placeholder="Type your comment here..." 
+                          required></textarea>
+              </div>
 
-                      <div class="comment-list small" style="max-height:180px; overflow-y:auto;">
-                        {% with has_comment=False %}
-                          {% for feedback in completion_feedbacks %}
-                            {% if feedback.slot_name == name %}
-                              {% with has_comment=True %}
-                                <div class="border-bottom py-1">
-                                  <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
-                                  <small class="text-muted ms-1">
-                                    {{ feedback.created_at|date:"M d, Y h:i A" }}
-                                  </small>
+              <div class="mb-3">
+                <label class="form-label fw-semibold">Attach image (optional):</label>
+                <input type="file" 
+                       name="revision_image" 
+                       class="form-control" 
+                       accept="image/*">
+              </div>
 
-                                  <p class="mb-1">{{ feedback.comment }}</p>
+              <button type="submit" 
+                      name="submit_revision_comment" 
+                      class="btn btn-primary w-100">
+                💬 Submit Comment
+              </button>
+            </form>
 
-                                  {% if feedback.image %}
-                                    <a href="{{ feedback.image.url }}" target="_blank">
-                                      <img src="{{ feedback.image.url }}"
-                                           class="img-thumbnail mt-1"
-                                           style="max-width:150px;">
-                                    </a>
-                                  {% endif %}
-                                </div>
-                              {% endwith %}
-                            {% endif %}
-                          {% endfor %}
-                          {% if not has_comment %}
-                            <p class="text-muted">No comments yet.</p>
-                          {% endif %}
-                        {% endwith %}
+            <hr>
+          {% endif %}
+
+          <h6 class="fw-bold mb-3">🗒 Previous Comments:</h6>
+
+          <div class="comment-list" style="max-height:400px; overflow-y:auto;">
+            {% with has_comment=False %}
+              {% for feedback in revision_feedbacks %}
+                {% if feedback.slot_name == name %}
+                  <div class="card mb-2">
+                    <div class="card-body p-3">
+                      <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong>{{ feedback.user.get_full_name|default:feedback.user.username }}</strong>
+                        <small class="text-muted">
+                          {{ feedback.created_at|date:"M d, Y h:i A" }}
+                        </small>
                       </div>
+                      
+                      <p class="mb-2">{{ feedback.comment }}</p>
 
+                      {% if feedback.image %}
+                        <a href="{{ feedback.image.url }}" target="_blank">
+                          <img src="{{ feedback.image.url }}" 
+                               class="img-thumbnail" 
+                               style="max-width:200px;">
+                        </a>
+                      {% endif %}
                     </div>
                   </div>
-                  <!-- End Comments -->
-
+                  {% with has_comment=True %}{% endwith %}
                 {% endif %}
+              {% endfor %}
+              
+              {% if not has_comment %}
+                <div class="alert alert-info">
+                  <em>No comments yet.</em>
+                </div>
+              {% endif %}
+            {% endwith %}
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+{% endif %}
+  
+
               </div>
             </div>
           {% endif %}
@@ -1029,78 +1786,88 @@
     </div>
   {% endif %}
 </div>
-
 {% if document.status == 'ongoing' and can_upload_completion %}
-<div class="card card-small mt-3 shadow ">
+<div class="card card-small mt-3 shadow">
     <div class="card-body p-3">
         <h5 class="card-title mb-3">📂 Upload or Edit Completion Document</h5>
 
-<button class="btn btn-success mb-3" 
-        type="button" 
-        data-bs-toggle="collapse" 
-        data-bs-target="#completionUploadForm" 
-        aria-expanded="false" 
-        aria-controls="completionUploadForm">
-    📤 Manage Completion Documents
-</button>
-
-
-        <div class="collapse mt-3" id="completionUploadForm">
-            <div class="card card-large">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-3 text-muted">Upload or update completion-related documents for this project.</h6>
-
-                    {% if existing_completion %}
-                        <div class="alert alert-info py-2">
-                            Re-uploading a file in a slot will <strong>replace</strong> the existing one.
-                        </div>
-                    {% endif %}
-
-<!-- COMPLETION UPLOAD FORM -->
-<form method="post" enctype="multipart/form-data" id="completionForm">
-    {% csrf_token %}
-
-    <div class="mb-3">
-        <label for="completion_slot_choice" class="form-label fw-bold">Select Completion Document Slot:</label>
-        <select class="form-select" name="completion_slot_choice" id="completion_slot_choice" required>
-            <option value="">-- Select Slot --</option>
-            <option value="completion_doc1">Approved Letter Request</option>
-            <option value="completion_doc2">Accomplished / Evaluation Form</option>
-            <option value="completion_doc3">Authority to Go</option>
-            <option value="completion_doc4">Supporting Document 1</option>
-            <option value="completion_doc5">Supporting Document 2</option>
-            <option value="completion_doc6">Supporting Document 3</option>
-            <option value="completion_doc7">Supporting Document 4</option>
-            <option value="completion_doc8">Supporting Document 5</option>
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label fw-bold">Upload File:</label>
-        <input type="file" name="selected_file" class="form-control" required>
-    </div>
-
-    <!-- LEAVE ONLY SAVE INSIDE -->
-    <button type="submit" name="save_completion_changes" class="btn btn-secondary">
-        💾 Save Changes
-    </button>
-</form>
-
-
-
-                </div>
-            </div>
-        </div>
+        <button class="btn btn-success mb-3" 
+                type="button" 
+                data-bs-toggle="modal" 
+                data-bs-target="#completionUploadModal">
+            📤 Manage Completion Documents
+        </button>
     </div>
 </div>
 
-<!--  SUBMIT COMPLETION — OUTSIDE FORM -->
+<!--  SUBMIT COMPLETION — OUTSIDE CARD -->
 {% if user.account_type == 'Department Coordinator' %}
 <button class="btn btn-success mt-3" onclick="submitCompletionFinal()">
     📎 Submit Completion File (Finalize)
 </button>
 {% endif %}
 {% endif %}
+
+<!-- Completion Upload Modal -->
+<div class="modal fade" id="completionUploadModal" tabindex="-1" aria-labelledby="completionUploadTitle" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="completionUploadTitle">
+          📤 Manage Completion Documents
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" id="completionForm">
+        {% csrf_token %}
+        
+        <div class="modal-body">
+          <h6 class="text-muted mb-3">Upload or update completion-related documents for this project.</h6>
+
+          {% if existing_completion %}
+            <div class="alert alert-info py-2">
+              Re-uploading a file in a slot will <strong>replace</strong> the existing one.
+            </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label for="completion_slot_choice" class="form-label fw-semibold">Select Completion Document Slot:</label>
+            <select class="form-select" name="completion_slot_choice" id="completion_slot_choice" required>
+              <option value="">-- Select Slot --</option>
+              <option value="completion_doc1">Approved Letter Request</option>
+              <option value="completion_doc2">Accomplished / Evaluation Form</option>
+              <option value="completion_doc3">Authority to Go</option>
+              <option value="completion_doc4">Supporting Document 1</option>
+              <option value="completion_doc5">Supporting Document 2</option>
+              <option value="completion_doc6">Supporting Document 3</option>
+              <option value="completion_doc7">Supporting Document 4</option>
+              <option value="completion_doc8">Supporting Document 5</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Upload File:</label>
+            <input type="file" name="selected_file" class="form-control" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_completion_changes" class="btn btn-primary">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+
+
 
 <!-- JS Toggle -->
 <!-- JS Toggle -->
@@ -1117,12 +1884,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Hide forms on load
     forms.forEach(f => f.style.display = "none");
 
-    toggleBtn.addEventListener("click", function () {
-        hidden = !hidden;
-        forms.forEach(f => f.style.display = hidden ? "none" : "block");
-        toggleBtn.textContent = hidden ? "Show All Revision Buttons" : "Hide All Revision Buttons";
-    });
+    if (toggleBtn) {
+        toggleBtn.addEventListener("click", function () {
+            hidden = !hidden;
+            forms.forEach(f => f.style.display = hidden ? "none" : "block");
+            toggleBtn.textContent = hidden ? "Show All Revision Buttons" : "Hide All Revision Buttons";
+        });
+    }
 });
+
 document.addEventListener("DOMContentLoaded", function () {
     const toggleBtn = document.getElementById("toggle-initial-revision-btn");
     if (!toggleBtn) return;
@@ -1189,20 +1959,46 @@ function updateExistingFileName(dayId) {
     slotSelect.form.dataset.existingFile = "";
   }
 }
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.toggle-day-revision-btn').forEach(btn => {
-      btn.addEventListener('click', function () {
-        const controls = this.nextElementSibling;
-        if (controls.style.display === 'none') {
-          controls.style.display = 'block';
-          this.textContent = 'Hide Revision Controls';
-        } else {
-          controls.style.display = 'none';
-          this.textContent = 'Show Revision Controls';
-        }
-      });
+
+// ===== FIX FOR DAY REVISION CONTROLS =====
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('🔧 Initializing day revision controls...');
+  
+  const toggleButtons = document.querySelectorAll('.toggle-day-revision-btn');
+  console.log('📌 Found', toggleButtons.length, 'toggle buttons');
+  
+  toggleButtons.forEach((btn, index) => {
+    // Find the controls div (next sibling)
+    const controls = btn.nextElementSibling;
+    
+    if (!controls || !controls.classList.contains('day-revision-controls')) {
+      console.error('❌ Controls div not found for button', index);
+      return;
+    }
+    
+    console.log('✅ Setting up button', index + 1);
+    
+    // Ensure controls start hidden
+    controls.style.display = 'none';
+    
+    // Add click event
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      console.log('👆 Toggle clicked for button', index);
+      
+      if (controls.style.display === 'none' || controls.style.display === '') {
+        controls.style.display = 'block';
+        this.textContent = 'Hide Revision Controls';
+        console.log('✅ Controls shown');
+      } else {
+        controls.style.display = 'none';
+        this.textContent = 'Show Revision Controls';
+        console.log('✅ Controls hidden');
+      }
     });
   });
+});
+
 function submitCompletionFinal() {
     let form = document.getElementById("completionForm");
 
@@ -1216,8 +2012,368 @@ function submitCompletionFinal() {
 
     form.submit();
 }
-</script>
 
+document.addEventListener("DOMContentLoaded", function () {
+  const modal = document.getElementById("slotHistoryModal");
+  
+  if (!modal) {
+    console.error("❌ Modal not found!");
+    return;
+  }
+
+  console.log("✅ Modal found and initialized");
+
+  // Use Bootstrap's built-in modal event
+  modal.addEventListener("show.bs.modal", function (event) {
+    console.log("✅ Modal opening...");
+    
+    const trigger = event.relatedTarget;
+    
+    if (!trigger) {
+      console.error("❌ No trigger element");
+      return;
+    }
+
+    const slot = trigger.getAttribute("data-slot");
+    const slotLabel = trigger.innerText.replace(":", "").trim();
+
+    console.log("📂 Opening history for slot:", slot);
+
+    const list = document.getElementById("slotHistoryList");
+    const title = document.getElementById("slotHistoryTitle");
+    const empty = document.getElementById("noSlotHistory");
+
+    title.textContent = slotLabel;
+    list.innerHTML = "";
+    empty.classList.add("d-none");
+
+    let hasItems = false;
+
+    {% for h in file_histories %}
+      if ("{{ h.slot_name }}" === slot) {
+        hasItems = true;
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+        li.innerHTML = `
+          <a href="{{ h.file.url }}" target="_blank" class="text-decoration-none">
+            {{ h.file.name|cut:"documents/history/" }}
+          </a>
+          <br>
+          <small class="text-muted">
+            Uploaded by
+            <strong>
+              {{ h.uploaded_by.get_full_name|default:h.uploaded_by.username|default:"Unknown User" }}
+            </strong>
+            — {{ h.uploaded_at|date:"M d, Y h:i A" }}
+          </small>
+        `;
+        list.appendChild(li);
+      }
+    {% endfor %}
+
+    if (!hasItems) {
+      empty.classList.remove("d-none");
+      console.log("⚠️ No history found for this slot");
+    } else {
+      console.log("✅ History loaded successfully");
+    }
+  });
+
+  // Debug: Check when modal is shown
+  modal.addEventListener("shown.bs.modal", function () {
+    console.log("✅ Modal is now fully visible");
+    console.log("Modal z-index:", window.getComputedStyle(modal).zIndex);
+    console.log("Backdrop z-index:", window.getComputedStyle(document.querySelector('.modal-backdrop')).zIndex);
+  });
+});
+
+// Slot History Modal z-index fix
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('slotHistoryModal');
+  
+  if (modal) {
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  }
+});
+
+// Upload Training Report Modal
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('uploadTrainingReportModal');
+  
+  if (modal) {
+    modal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      
+      if (button) {
+        const dayId = button.getAttribute('data-day-id');
+        const dayName = button.getAttribute('data-day-name');
+        const dayDate = button.getAttribute('data-day-date');
+        
+        const daySelect = document.getElementById('trainingReportDaySelect');
+        if (daySelect && dayId) {
+          daySelect.value = dayId;
+          
+          const infoDiv = document.getElementById('autoSelectedInfo');
+          if (infoDiv) {
+            infoDiv.innerHTML = `
+              <i class="fas fa-calendar-check"></i> 
+              <strong>Selected:</strong> ${dayName} (${dayDate})
+            `;
+            infoDiv.classList.remove('d-none');
+          }
+        }
+        
+        setTimeout(() => {
+          const input = document.getElementById('reportFileInput');
+          if (input) input.focus();
+        }, 100);
+      }
+    });
+
+    // Fix z-index
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  }
+});
+
+// Upload Supporting Documents Modal
+document.addEventListener('DOMContentLoaded', function() {
+  const supportingModal = document.getElementById('uploadSupportingDocsModal');
+  
+  if (supportingModal) {
+    supportingModal.addEventListener('show.bs.modal', function (event) {
+      const button = event.relatedTarget;
+      
+      if (button) {
+        const dayId = button.getAttribute('data-day-id');
+        const dayName = button.getAttribute('data-day-name');
+        const dayDate = button.getAttribute('data-day-date');
+        
+        const daySelect = document.getElementById('supportingDocDaySelect');
+        if (daySelect && dayId) {
+          daySelect.value = dayId;
+          
+          const infoDiv = document.getElementById('selectedSupportingDayInfo');
+          if (infoDiv) {
+            infoDiv.textContent = `${dayName} (${dayDate})`;
+          }
+        }
+        
+        setTimeout(() => {
+          const select = document.querySelector('#uploadSupportingDocsModal select[name="file_slot"]');
+          if (select) select.focus();
+        }, 100);
+      }
+    });
+
+    // Fix z-index
+    supportingModal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(supportingModal);
+      setTimeout(() => {
+        supportingModal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  }
+});
+
+// Add Day Modal
+document.addEventListener('DOMContentLoaded', function() {
+  const addDayModal = document.getElementById('addDayModal');
+  
+  if (addDayModal) {
+    addDayModal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(addDayModal);
+      setTimeout(() => {
+        addDayModal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  }
+});
+
+// Edit Initial Upload Modal
+document.addEventListener('DOMContentLoaded', function() {
+  const editInitialModal = document.getElementById('editInitialUploadModal');
+  
+  if (editInitialModal) {
+    editInitialModal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(editInitialModal);
+      setTimeout(() => {
+        editInitialModal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  }
+});
+
+// Completion Upload Modal
+document.addEventListener('DOMContentLoaded', function() {
+  const completionModal = document.getElementById('completionUploadModal');
+  
+  if (completionModal) {
+    completionModal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(completionModal);
+      setTimeout(() => {
+        completionModal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  }
+});
+
+// All Comments Modals
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="commentsModal"]').forEach(function(modal) {
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  });
+});
+
+// Initial File Comment Modals
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="commentsModalInitial"]').forEach(function(modal) {
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  });
+});
+
+// Completion File Comment Modals
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="commentsModalCompletion"]').forEach(function(modal) {
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  });
+});
+
+// Mark for Revision Modals
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="addRevisionCommentModal"]').forEach(function(modal) {
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+          backdrop.style.zIndex = '99998';
+        }
+      }, 10);
+    });
+  });
+});
+
+// Day Revision Modals z-index fix
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('[id^="dayRevisionModal"]').forEach(function(modal) {
+    modal.addEventListener('show.bs.modal', function() {
+      document.body.appendChild(modal);
+      setTimeout(() => {
+        modal.style.zIndex = '99999';
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.style.zIndex = '99998';
+      }, 10);
+    });
+  });
+});
+
+// Function to open day revision modal with selected slot
+function openDayRevisionModal(dayId) {
+  const select = document.getElementById('dayRevisionSelect' + dayId);
+  
+  if (!select) {
+    console.error('❌ Select element not found for day:', dayId);
+    alert('Error: Could not find file selector.');
+    return;
+  }
+  
+  const selectedSlot = select.value;
+  
+  if (!selectedSlot) {
+    alert('Please select a file slot first.');
+    return;
+  }
+  
+  const fileNames = {
+    'day_doc1': 'Attendance Sheet',
+    'day_doc2': 'Photo Documentation',
+    'day_doc3': 'Program',
+    'day_doc4': 'Accomplished / Evaluation Form',
+    'day_doc5': 'Supporting Document 1'
+  };
+  
+  const modalTitle = document.getElementById('dayRevisionModalTitle' + dayId);
+  if (modalTitle) {
+    modalTitle.textContent = '⚠️ Mark for Revision - ' + fileNames[selectedSlot];
+  }
+  
+  const hiddenInput = document.getElementById('dayRevisionDocInput' + dayId);
+  if (hiddenInput) {
+    hiddenInput.value = selectedSlot;
+  }
+  
+  const modalElement = document.getElementById('dayRevisionModal' + dayId);
+  if (modalElement) {
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+  } else {
+    console.error('❌ Modal element not found for day:', dayId);
+  }
+}
+
+</script>
 
 
 {% endblock %}

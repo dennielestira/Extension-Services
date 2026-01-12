@@ -57,14 +57,16 @@ INSTALLED_APPS = [
 # Use WhiteNoise to serve static files in production
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'accounts.middleware.RedirectAnd404Middleware', 
+    
+    # Your custom middleware (LogoutDetection should come BEFORE RedirectAnd404)
+    'accounts.middleware.LogoutDetectionMiddleware',  # For debugging
+    'accounts.middleware.RedirectAnd404Middleware',   # Your 404 handler
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'

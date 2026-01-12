@@ -11,7 +11,7 @@
 
 <div class="documents-wrapper container mt-5">
     <div class="documents-card p-4 shadow-sm">
-        <h2 class="document-title mb-4">📚 Document List</h2>
+        <h2 class="document-title mb-4">Document List</h2>
 
         <!-- Status Filter Form -->
         <form method="get" class="mb-3" id="statusFilterForm">
@@ -48,7 +48,11 @@
                     {% for doc in documents %}
                     <tr>
                         <td class="fw-semibold">{{ doc.name }}</td>
-                        <td>{{ doc.get_status_display }}</td>
+                        <td>
+                            <span class="badge status-badge status-{{ doc.status }}">
+                                {{ doc.get_status_display }}
+                            </span>
+                        </td>
                         <td>
                             {% if doc.uploaded_by %}
                                 {{ doc.uploaded_by.get_full_name }}
@@ -139,6 +143,81 @@ $(document).ready(function() {
 </script>
 
 <style>
+/* Status Badge Styling */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: capitalize;
+    display: inline-block;
+    min-width: 100px;
+    text-align: center;
+}
+
+/* Pending - Yellow/Orange */
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* Recommended - Blue */
+.status-recommended {
+    background-color: #cfe2ff;
+    color: #084298;
+    border: 1px solid #b6d4fe;
+}
+
+/* Ongoing - Cyan */
+.status-ongoing {
+    background-color: #255f28ff;
+    color: #ffffffff;
+    border: 1px solid #148f51ff;
+}
+
+/* Completed - Green */
+.status-completed {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+/* Rejected - Red */
+.status-rejected {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
+}
+
+/* Completion Processing - Purple */
+.status-completion_processing {
+    background-color: #e7d6f5;
+    color: #6f42c1;
+    border: 1px solid #d4b3f0;
+}
+
+/* Completion Recommended - Light Purple */
+.status-completion_recommended {
+    background-color: #e0cffc;
+    color: #6f42c1;
+    border: 1px solid #d0b8f8;
+}
+
+/* Completion Rejected - Dark Red */
+.status-completion_rejected {
+    background-color: #f8d7da;
+    color: #58151c;
+    border: 1px solid #f1aeb5;
+}
+
+/* Need Revision - Orange */
+.status-need_revision {
+    background-color: #ffe5d0;
+    color: #984c0c;
+    border: 1px solid #ffd3b6;
+}
+
 /* DataTables Custom Styling */
 #documentsTable_wrapper .dataTables_length,
 #documentsTable_wrapper .dataTables_filter {
@@ -219,6 +298,13 @@ $(document).ready(function() {
     /* Keep table inside card width without horizontal scroll */
     .table-responsive {
         overflow-x: auto;
+    }
+    
+    /* Smaller badge on mobile */
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+        min-width: 80px;
     }
 }
 

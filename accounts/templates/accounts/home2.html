@@ -55,28 +55,76 @@
 
     {% if user.is_authenticated %}
     <div class="upload-buttons" style="margin-bottom: 15px;">
-        <!-- Button to upload a new album -->
-        <a href="{% url 'album_upload' %}" class="btn btn-success">+ Upload Album</a>
+        <a href="{% url 'album_upload' %}" class="btn btn-success">
+            + Create Album
+        </a>
     </div>
     {% endif %}
 
     <div class="album-grid">
         {% for album in albums %}
-        <div class="album-card" data-album-id="{{ album.id }}">
-            <!-- Use cover_url property -->
+        <div class="album-card" 
+     data-album-id="{{ album.id }}"
+     data-is-approved="{{ album.is_approved|yesno:'true,false' }}"
+     data-is-public="{{ album.is_public|yesno:'true,false' }}">
+
+            <!-- Album Cover -->
             <img src="{{ album.cover_url }}"
                  alt="{{ album.title }}"
                  data-album-title="{{ album.title }}">
+
+            <!-- Album Overlay -->
             <div class="overlay">
                 <p>{{ album.title }}</p>
+
+                {% if user.is_authenticated %}
+                <small>
+                    {% if not album.is_approved %}
+                        <span class="badge bg-warning">Pending Approval</span>
+                    {% elif album.is_public %}
+                        <span class="badge bg-success">Public</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Hidden</span>
+                    {% endif %}
+                </small>
+                {% endif %}
             </div>
-            <!-- hidden photos for modal -->
+
+{% if user.is_authenticated and user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+
+<div class="album-actions">
+
+    {% if not album.is_approved %}
+        <a href="{% url 'approve_album' album.id %}"
+           class="btn btn-warning btn-sm">
+            Approve
+        </a>
+    {% endif %}
+
+    {% if album.is_approved %}
+        {% if album.is_public %}
+            <a href="{% url 'toggle_album_visibility' album.id %}"
+               class="btn btn-danger btn-sm">
+                Hide
+            </a>
+        {% else %}
+            <a href="{% url 'toggle_album_visibility' album.id %}"
+               class="btn btn-success btn-sm">
+                Show
+            </a>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endif %}
+
+
+            <!-- Hidden photos for modal -->
             <div class="album-photos" style="display:none;">
                 {% for photo in album.photos.all %}
-                    <img src="{{ photo.image_url }}"
-                        alt="{{ photo.caption|default:album.title }}"
-                        data-photo-id="{{ photo.id }}"
-                        data-description="{{ photo.caption|default:album.description|default:'No description' }}">
+                <img src="{{ photo.image_url }}"
+                     alt="{{ photo.caption|default:album.title }}"
+                     data-description="{{ photo.caption|default:album.description|default:'No description' }}">
                 {% endfor %}
             </div>
 
@@ -85,21 +133,25 @@
         <p>No albums available.</p>
         {% endfor %}
     </div>
-    <!-- Album Pagination -->
-<div class="pagination">
-    {% if albums.has_previous %}
-        <a href="?album_page={{ albums.previous_page_number }}#albums" class="page-btn">« Prev</a>
-    {% endif %}
 
-    <span class="page-info">Page {{ albums.number }} of {{ albums.paginator.num_pages }}</span>
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if albums.has_previous %}
+            <a href="?album_page={{ albums.previous_page_number }}#albums"
+               class="page-btn">« Prev</a>
+        {% endif %}
 
-    {% if albums.has_next %}
-        <a href="?album_page={{ albums.next_page_number }}#albums" class="page-btn">Next »</a>
-    {% endif %}
-</div>
+        <span class="page-info">
+            Page {{ albums.number }} of {{ albums.paginator.num_pages }}
+        </span>
 
-
+        {% if albums.has_next %}
+            <a href="?album_page={{ albums.next_page_number }}#albums"
+               class="page-btn">Next »</a>
+        {% endif %}
+    </div>
 </section>
+
 
 <div id="albumModal" class="album-modal" aria-hidden="true">
   <div class="album-modal-inner">
@@ -192,6 +244,38 @@
     </ul>
   </div>
   {% endif %}
+{% if user.account_type == "Campus Admin" or user.account_type == "Staff Extensionist" %}
+<div class="mt-3 d-flex gap-2" id="modalAdminActions">
+    <!-- Approve button (shown only if not approved) -->
+    <a id="modalApproveAlbumBtn" 
+       href="#" 
+       class="btn btn-warning btn-sm" 
+       style="display:none;"
+       data-template-url="{% url 'approve_album' 0 %}">
+        ✔ Approve Album
+    </a>
+
+    <!-- Hide button (shown only if approved and public) -->
+    <a id="modalHideAlbumBtn" 
+       href="#" 
+       class="btn btn-danger btn-sm" 
+       style="display:none;"
+       data-template-url="{% url 'toggle_album_visibility' 0 %}">
+        🙈 Hide Album
+    </a>
+
+    <!-- Show button (shown only if approved and not public) -->
+    <a id="modalShowAlbumBtn" 
+       href="#" 
+       class="btn btn-success btn-sm" 
+       style="display:none;"
+       data-template-url="{% url 'toggle_album_visibility' 0 %}">
+        👁 Show Album
+    </a>
+</div>
+{% endif %}
+
+
 </div>
 
 </div>
@@ -536,7 +620,15 @@ function initAlbums(){
         
         console.log(`Album ${index}: ID=${albumId}, Title=${albumTitle}, Photos=${photos.length}`);
         
-        return { id: albumId, title: albumTitle, cover: coverImg, photos: photos, index: index };
+        return { 
+            id: albumId, 
+            title: albumTitle, 
+            cover: coverImg, 
+            photos: photos, 
+            index: index,
+            isApproved: card.dataset.isApproved === 'true',
+            isPublic: card.dataset.isPublic === 'true'
+        };
     });
 
     // Make the ENTIRE album card clickable, not just the image
@@ -662,6 +754,48 @@ function loadPhotoLazy(){
     const uploadPhotoBtn = document.getElementById("modalUploadPhotoBtn");
     if(uploadPhotoBtn && album.id) {
         uploadPhotoBtn.href = uploadPhotoBtn.dataset.templateUrl.replace("0", album.id);
+    }
+
+    // Update Admin Action Buttons (Approve/Hide/Show)
+    const approveBtn = document.getElementById('modalApproveAlbumBtn');
+    const hideBtn = document.getElementById('modalHideAlbumBtn');
+    const showBtn = document.getElementById('modalShowAlbumBtn');
+    
+    if (approveBtn && hideBtn && showBtn && album.id) {
+        const albumId = album.id;
+        
+        // Read current status directly from DOM (always fresh)
+        const albumCard = document.querySelector(`.album-card[data-album-id="${albumId}"]`);
+        const isApproved = albumCard ? albumCard.dataset.isApproved === 'true' : album.isApproved;
+        const isPublic = albumCard ? albumCard.dataset.isPublic === 'true' : album.isPublic;
+        
+        console.log(`Album ${albumId}: approved=${isApproved}, public=${isPublic}`); // Debug
+        
+        // Approve button - show only if not approved
+        if (!isApproved) {
+            approveBtn.style.display = 'inline-block';
+            approveBtn.href = approveBtn.dataset.templateUrl.replace('0', albumId);
+        } else {
+            approveBtn.style.display = 'none';
+        }
+        
+        // Hide/Show buttons - show only if approved
+        if (isApproved) {
+            if (isPublic) {
+                // Show Hide button
+                hideBtn.style.display = 'inline-block';
+                hideBtn.href = hideBtn.dataset.templateUrl.replace('0', albumId);
+                showBtn.style.display = 'none';
+            } else {
+                // Show Show button
+                showBtn.style.display = 'inline-block';
+                showBtn.href = showBtn.dataset.templateUrl.replace('0', albumId);
+                hideBtn.style.display = 'none';
+            }
+        } else {
+            hideBtn.style.display = 'none';
+            showBtn.style.display = 'none';
+        }
     }
 
     // Update Photo Buttons
@@ -855,6 +989,7 @@ if (sidebarToggle && bacoorexSidebar) {
         }
     });
 }
+
 </script>
 
 {% endblock %}

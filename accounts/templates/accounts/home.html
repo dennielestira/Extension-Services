@@ -15,6 +15,123 @@
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        /* Prevent content from going under topbar */
+        body {
+            padding-top: 60px; /* Adjust this based on your topbar height */
+        }
+        
+        /* Sidebar alignment fix - left align everything */
+        .sidebar .nav-link {
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }
+        
+        .sidebar-header {
+            text-align: left !important;
+        }
+        
+        .sidebar-header .d-flex {
+            justify-content: flex-start !important;
+        }
+        
+        /* Active page indicator */
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #fff;
+            padding-left: calc(1rem - 4px);
+            font-weight: bold;
+        }
+        
+        .sidebar .nav-link:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s ease;
+        }
+        
+        /* Floating chat button */
+        #floating-chat-btn {
+            position: fixed;
+            top: 80px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        #floating-chat-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        #floating-chat-btn .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            border-radius: 50%;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        /* Chat list panel positioning */
+        #chat-list-panel {
+            position: fixed;
+            top: 150px;
+            right: 30px;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 10000;
+            overflow: hidden;
+            display: none;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 70px; /* Slightly more padding for mobile */
+            }
+            
+            #floating-chat-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                top: 120px; /* Moved down to avoid covering logout button */
+                right: 20px;
+            }
+            
+            #chat-list-panel {
+                right: 20px;
+                top: 180px; /* Adjusted to match new button position */
+                width: calc(100vw - 40px);
+                max-width: 350px;
+            }
+        }
+        
+        /* Ensure main content doesn't overflow under topbar */
+        .main-content {
+            margin-top: 0;
+            padding-top: 20px;
+        }
+    </style>
+    
     {% block extra_head %}
     {% endblock %}
 </head> 
@@ -24,250 +141,238 @@
 <div class="topbar d-flex align-items-center justify-content-between px-3">
     <!-- Center: Title -->
     <div class="topbar-title flex-grow-1 text-center">
-        Cavite State University Extension Services - Bacoor Campus
+        Cavite State University - Bacoor Campus Extension Services
     </div>
 
     <!-- Right: Logout + Sidebar Toggle -->
     <div class="d-flex align-items-center gap-2">
-               <button class="navbar-toggler d-lg-none" type="button" id="sidebarToggle" aria-label="Toggle navigation">
+        <button class="navbar-toggler d-lg-none" type="button" id="sidebarToggle" aria-label="Toggle navigation">
             <i class="fas fa-bars text-white"></i>
         </button>
         <a href="{% url 'logout' %}" class="btn btn-outline-light btn-logout">
             Logout
         </a>
- 
     </div>
 </div>
 
-
-
-
-
-
 <!-- Sidebar -->
-<div class="sidebar text-white d-flex flex-column d-lg-flex"
-     id="sidebar" >
-    <!-- Sidebar header & menu remains unchanged -->
-    <div class="sidebar-header text-center mb-4">
-        <div class="d-flex justify-content-center align-items-center gap-2 mb-2">
-            <img src="{% static 'image/logo.png' %}" alt="CVSU Logo" style="width: 80px;">
-            <img src="{% static 'image/logo2.png' %}" alt="CVSU Logo 2" style="width: 70px;">
+<div class="sidebar text-white d-flex flex-column d-lg-flex" id="sidebar">
+    <!-- Sidebar header -->
+    <div class="sidebar-header mb-4 px-3">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="{% static 'image/logo.png' %}" alt="CVSU Logo" style="width: 60px;">
+            <img src="{% static 'image/logo2.png' %}" alt="CVSU Logo 2" style="width: 50px;">
         </div>
         {% if request.user.account_type == 'Super Admin' %}
-    <a class="nav-link text-white fs-4" href="{% url 'super_admin_dashboard' %}">Dashboard</a>
-{% elif request.user.account_type == 'Campus Admin' %}
-    <a class="nav-link text-white fs-4" href="{% url 'campus_admin_dashboard' %}">Dashboard</a>
-{% elif request.user.account_type == 'Staff Extensionist' %}
-    <a class="nav-link text-white fs-4" href="{% url 'staff_extensionist_dashboard' %}">Dashboard</a>
-{% elif request.user.account_type == 'Department Coordinator' %}
-    <a class="nav-link text-white fs-4" href="{% url 'department_coordinator_dashboard' %}">Dashboard</a>
-{% elif request.user.account_type == 'Extensionist' %}
-    <a class="nav-link text-white fs-4" href="{% url 'extensionist_dashboard' %}">Dashboard</a>
-{% else %}
-    <a class="nav-link text-white fs-4" href="{% url 'permission_denied' %}">Dashboard</a>
-{% endif %}
-
+            <a class="nav-link text-white fs-5 p-0" href="{% url 'super_admin_dashboard' %}">Dashboard</a>
+        {% elif request.user.account_type == 'Campus Admin' %}
+            <a class="nav-link text-white fs-5 p-0" href="{% url 'campus_admin_dashboard' %}">Dashboard</a>
+        {% elif request.user.account_type == 'Staff Extensionist' %}
+            <a class="nav-link text-white fs-5 p-0" href="{% url 'staff_extensionist_dashboard' %}">Dashboard</a>
+        {% elif request.user.account_type == 'Department Coordinator' %}
+            <a class="nav-link text-white fs-5 p-0" href="{% url 'department_coordinator_dashboard' %}">Dashboard</a>
+        {% elif request.user.account_type == 'Extensionist' %}
+            <a class="nav-link text-white fs-5 p-0" href="{% url 'extensionist_dashboard' %}">Dashboard</a>
+        {% else %}
+            <a class="nav-link text-white fs-5 p-0" href="{% url 'permission_denied' %}">Dashboard</a>
+        {% endif %}
     </div>
 
-        <ul class="nav flex-column">
-    <a href="#" class="nav-link" id="open-chat-list">
-        <i class="nav-icon fas fa-comments"></i>
-        <p>Chats</p>
-    </a>
-            <!-- Document Menu -->
-            <li class="nav-item mb-2">
-    <a class="nav-link text-white d-flex justify-content-center align-items-center gap-2" data-bs-toggle="collapse" href="#documentMenu" role="button" aria-expanded="false" aria-controls="documentMenu">
-        <span>Document Process</span>
-        <i class="fas fa-caret-down rotate-icon-doc"></i>
-    </a>
-    <div class="collapse" id="documentMenu">
-        <ul class="nav flex-column ms-3">
-            <li class="nav-item">
+    <ul class="nav flex-column px-3">
+        <!-- Document Menu -->
+        <li class="nav-item mb-2">
+            <a class="nav-link text-white d-flex align-items-center gap-2" data-bs-toggle="collapse" href="#documentMenu" role="button" aria-expanded="false" aria-controls="documentMenu">
+                <span>Document Process</span>
+                <i class="fas fa-caret-down ms-auto rotate-icon-doc"></i>
+            </a>
+            <div class="collapse" id="documentMenu">
+                <ul class="nav flex-column ms-3">
+                    {% if user.account_type == 'Campus Admin' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'recommended_documents' %}active{% endif %}" href="{% url 'recommended_documents' %}">Recommended</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completion_pending_documents' %}active{% endif %}" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completion_recommended_documents' %}active{% endif %}" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completed_documents' %}active{% endif %}" href="{% url 'completed_documents' %}">Completed</a></li>
+                    {% elif user.account_type == 'Staff Extensionist' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'pending_documents' %}active{% endif %}" href="{% url 'pending_documents' %}">Pending</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completion_pending_documents' %}active{% endif %}" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completion_recommended_documents' %}active{% endif %}" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completed_documents' %}active{% endif %}" href="{% url 'completed_documents' %}">Completed</a></li>
+                    {% elif user.account_type == 'Department Coordinator' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'pending_documents' %}active{% endif %}" href="{% url 'pending_documents' %}">Pending</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'ongoing_documents' %}active{% endif %}" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completion_pending_documents' %}active{% endif %}" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completed_documents' %}active{% endif %}" href="{% url 'completed_documents' %}">Completed</a></li>
+                    {% elif user.account_type == 'Extensionist' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'ongoing_documents' %}active{% endif %}" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'completed_documents' %}active{% endif %}" href="{% url 'completed_documents' %}">Completed</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </li>
 
+        <!-- Dashboards -->
+        {% if user.account_type == 'Super Admin' %}
+            <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Add Staff</a></li>
+
+        {% elif user.account_type == 'Campus Admin' %}
+            <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'list_annual_reports' %}active{% endif %}" href="{% url 'list_annual_reports' %}">Annual Reports</a></li>
+            <li>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'create_document_request' or request.resolver_match.url_name == 'my_document_requests' %}active{% endif %}"
+       href="{% url 'create_document_request' %}">
+        Request Document
+    </a>
 </li>
-
-            {% if user.account_type == 'Campus Admin' %}
-                <li><a class="nav-link text-white" href="{% url 'recommended_documents' %}">Recommended</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
-            {% elif user.account_type == 'Staff Extensionist' %}
-                <li><a class="nav-link text-white" href="{% url 'pending_documents' %}">Pending</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_recommended_documents' %}">Completion Recommended</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
-            {% elif user.account_type == 'Department Coordinator' %}
-                <li><a class="nav-link text-white" href="{% url 'pending_documents' %}">Pending</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'rejected_documents' %}">Rejected</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completion_pending_documents' %}">Completion Reviewing</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
-            {% elif user.account_type == 'Extensionist' %}
-                <li><a class="nav-link text-white" href="{% url 'ongoing_documents' %}">Ongoing</a></li>
-                <li><a class="nav-link text-white" href="{% url 'completed_documents' %}">Completed</a></li>
-            {% endif %}
-
-        </ul>
-    </div>
-</li>
-
-
-            <!-- Dashboards -->
-            {% if user.account_type == 'Super Admin' %}
-                <!--<li><a class="nav-link text-white" href="{% url 'super_admin' %}">Super Admin Dashboard</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'register' %}">Add Staff</a></li>
-            {% elif user.account_type == 'Campus Admin' %}
-                <!--<li><a class="nav-link text-white" href="{% url 'campus_admin' %}">Campus Admin Dashboard</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'list_annual_reports' %}">Annual Reports</a></li>
-                
-                <!--<li><a class="nav-link text-white" href="{% url 'list_quarterly_reports' %}">Quarterly Reports</a></li>-->
-            {% elif user.account_type == 'Staff Extensionist' %}
-                <!--<li><a class="nav-link text-white" href="{% url 'staff_extensionist' %}">Staff Dashboard</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'list_annual_reports' %}">Annual Reports</a></li>
-                <li><a class="nav-link text-white" href="{% url 'upload_document' %}">Upload Activity</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'list_quarterly_reports' %}">Quarterly Reports</a></li>-->
-            {% elif user.account_type == 'Department Coordinator' %}
-            <li><a class="nav-link text-white" href="{% url 'upload_document' %}">Upload Activity</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'department_coordinator' %}">Coordinator Dashboard</a></li>-->
-            {% elif user.account_type == 'Extensionist' %}
-                <!--<li><a class="nav-link text-white" href="{% url 'extensionist' %}">Extensionist Dashboard</a></li>-->
-            {% elif request.user.is_superuser %}
-                <li><a class="nav-link text-white" href="{% url 'register' %}">Add Staff</a></li>
-            {% endif %}
-
-            <hr class="bg-light">
-
-            <!-- Common Links -->
-            <li><a class="nav-link text-white" href="{% url 'document_list' %}">All Documents</a></li>
-            <li><a class="nav-link text-white" href="{% url 'template_list' %}">All Templates</a></li>
-            <li><a class="nav-link text-white" href="{% url 'quarterly_report_list' %}">Quarterly Day Training Reports</a></li>
-            
-
-
-           
-<li class="nav-item mb-2">
-    <a class="nav-link text-white d-flex justify-content-center align-items-center gap-2" data-bs-toggle="collapse" href="#accountMenu" role="button" aria-expanded="false" aria-controls="accountMenu">
-        <span>Manage Accounts</span>
-        <i class="fas fa-caret-down rotate-icon"></i>
+        {% elif user.account_type == 'Staff Extensionist' %}
+            <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'list_annual_reports' %}active{% endif %}" href="{% url 'list_annual_reports' %}">Annual Reports</a></li>
+            <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'upload_document' %}active{% endif %}" href="{% url 'upload_document' %}">Upload Activity</a></li>
+            <li>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'create_document_request' or request.resolver_match.url_name == 'my_document_requests' %}active{% endif %}"
+       href="{% url 'create_document_request' %}">
+        Request Document
     </a>
-    <div class="collapse" id="accountMenu">
-        <ul class="nav flex-column ms-3">
-            {% if user.account_type == 'Super Admin' %}
-                <li><a class="nav-link text-white" href="{% url 'register' %}">Add Staff</a></li>
-                <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
-            {% elif user.account_type == 'Campus Admin' %}
-                <li><a class="nav-link text-white" href="{% url 'register' %}">Add Staff</a></li>
-                <li><a class="nav-link text-white" href="{% url 'register_department_coordinator' %}">Add Coordinator</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
-                <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
-                <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
-            {% elif user.account_type == 'Staff Extensionist' %}
-                <li><a class="nav-link text-white" href="{% url 'register_department_coordinator' %}">Add Coordinator</a></li>
-                <!--<li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>-->
-                <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
-                <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
-                <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
-            {% elif user.account_type == 'Department Coordinator' %}
-                <li><a class="nav-link text-white" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>
-                <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
-                <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
-                <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
-            {% else %}
-                <li><a class="nav-link text-white" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
-                <li><a class="nav-link text-white" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
-                <li><a class="nav-link text-white" href="{% url 'update_account' %}">Update My Account</a></li>
-            {% endif %}
-        </ul>
-    </div>
+</li>
+        {% elif user.account_type == 'Department Coordinator' %}
+            <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'upload_document' %}active{% endif %}" href="{% url 'upload_document' %}">Upload Activity</a></li>
+            <li>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_document_requests' %}active{% endif %}"
+       href="{% url 'manage_document_requests' %}">
+        Manage Document Requests
+    </a>
+</li>
+    {% elif user.account_type == 'Extensionist' %}
+            <li>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'manage_document_requests' %}active{% endif %}"
+       href="{% url 'manage_document_requests' %}">
+        Manage Document Requests
+    </a>
+</li>
+        {% elif request.user.is_superuser %}
+            <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Add Staff</a></li>
+        {% endif %}
+
+        <hr class="bg-light">
+
+        <!-- Common Links -->
+        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'document_list' %}active{% endif %}" href="{% url 'document_list' %}">All Documents</a></li>
+        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}" href="{% url 'template_list' %}">All Templates</a></li>
+        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'quarterly_report_list' %}active{% endif %}" href="{% url 'quarterly_report_list' %}">Quarterly Day Training Reports</a></li>
+<li>
+    <a class="nav-link text-white {% if request.resolver_match.url_name == 'ongoing_document_list' %}active{% endif %}"
+       href="{% url 'ongoing_document_list' %}">
+        View Ongoing Trainings
+    </a>
 </li>
 
 
- {% if user.account_type == 'Super Admin' %}
-                
-            {% elif user.account_type == 'Campus Admin' %}
-                <!--<li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>-->
-            {% elif user.account_type == 'Staff Extensionist' %}
-                <!--#<li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>-->
-            {% elif user.account_type == 'Department Coordinator' %}
+        <!-- Manage Accounts -->
+        <li class="nav-item mb-2">
+            <a class="nav-link text-white d-flex align-items-center gap-2" data-bs-toggle="collapse" href="#accountMenu" role="button" aria-expanded="false" aria-controls="accountMenu">
+                <span>Manage Accounts</span>
+                <i class="fas fa-caret-down ms-auto rotate-icon"></i>
+            </a>
+            <div class="collapse" id="accountMenu">
+                <ul class="nav flex-column ms-3">
+                    {% if user.account_type == 'Super Admin' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Add Staff</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'update_account' %}active{% endif %}" href="{% url 'update_account' %}">Update My Account</a></li>
+                    {% elif user.account_type == 'Campus Admin' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Add Staff</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register_department_coordinator' %}active{% endif %}" href="{% url 'register_department_coordinator' %}">Add Coordinator</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'department_coordinators_list' %}active{% endif %}" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'extensionists_list' %}active{% endif %}" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'update_account' %}active{% endif %}" href="{% url 'update_account' %}">Update My Account</a></li>
+                    {% elif user.account_type == 'Staff Extensionist' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register_department_coordinator' %}active{% endif %}" href="{% url 'register_department_coordinator' %}">Add Coordinator</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'department_coordinators_list' %}active{% endif %}" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'extensionists_list' %}active{% endif %}" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'update_account' %}active{% endif %}" href="{% url 'update_account' %}">Update My Account</a></li>
+                    {% elif user.account_type == 'Department Coordinator' %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'register_extensionist' %}active{% endif %}" href="{% url 'register_extensionist' %}">Add Extensionist</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'department_coordinators_list' %}active{% endif %}" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'extensionists_list' %}active{% endif %}" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'update_account' %}active{% endif %}" href="{% url 'update_account' %}">Update My Account</a></li>
+                    {% else %}
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'department_coordinators_list' %}active{% endif %}" href="{% url 'department_coordinators_list' %}">View Coordinators</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'extensionists_list' %}active{% endif %}" href="{% url 'extensionists_list' %}">View Extensionists</a></li>
+                        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'update_account' %}active{% endif %}" href="{% url 'update_account' %}">Update My Account</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </li>
 
-                <!--<li><a class="nav-link text-white" href="{% url 'archived_documents' %}">Archived Documents</a></li>-->
-            {% else %}
+        <li><a class="nav-link text-white {% if request.resolver_match.url_name == 'home2' %}active{% endif %}" href="{% url 'home2' %}">Open Public Website</a></li>
+    </ul>
+</div>
 
-            {% endif %}
-            <!--<li><a class="nav-link text-white" href="{% url 'user_hierarchy' %}">View User Hierarchy</a></li>-->
-                        <!-- 📩 Chat Trigger Button -->
-            <li><a class="nav-link text-white" href="{% url 'home2' %}">Edit public Website</a></li>
-            {% if user.is_authenticated %}
+<!-- Floating Chat Button -->
+<button id="floating-chat-btn" onclick="toggleChatList()">
+    <i class="fas fa-comments"></i>
+    <span id="chat-badge" class="badge" style="display: none;">0</span>
+</button>
 
-{% endif %}
-
-        </ul>
-    </div>
-
-<!-- Replace your current chat-list-panel div with this responsive version -->
-
-<div id="chat-list-panel" style="display:none; position: fixed; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10000; overflow: hidden;">
+<!-- Chat List Panel -->
+<div id="chat-list-panel">
     <!-- Fixed Header -->
-    <div class="bg-primary text-white p-2 d-flex justify-content-between align-items-center" style="position: sticky; top: 0; z-index: 10;">
-        <span>Document Chats</span>
-        <button onclick="closeChatList()" class="btn btn-sm btn-light">X</button>
+    <div class="bg-primary text-white p-3 d-flex justify-content-between align-items-center" style="border-radius: 12px 12px 0 0;">
+        <span class="fw-bold">Document Chats</span>
+        <button onclick="closeChatList()" class="btn btn-sm btn-light">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
     
     <!-- Scrollable Content -->
-    <div id="document-chat-list" class="p-2" style="height: calc(100% - 44px); overflow-y: auto;"></div>
+    <div id="document-chat-list" class="p-2" style="max-height: 420px; overflow-y: auto;"></div>
 </div>
 
-
-
-<!-- 💬 Chat Box Panel (Bottom Right) -->
+<!-- Chat Box Panel (Bottom Right) -->
 <div id="chat-box-panel"
-     style="display: none; position: fixed; bottom: 20px; right: 20px; width: 320px; height: 450px; background: white; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); z-index: 10001; flex-direction: column;">
-
+     style="display: none; position: fixed; bottom: 20px; right: 30px; width: 350px; height: 500px; background: white; border: 1px solid #ccc; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 10001; flex-direction: column;">
 
     <!-- Header -->
-    <div class="bg-secondary text-white p-2 d-flex justify-content-between align-items-center">
-        <span id="chat-box-title">Chat</span>
-        <button onclick="closeChatBox()" class="btn btn-sm btn-light">X</button>
+    <div class="bg-secondary text-white p-3 d-flex justify-content-between align-items-center" style="border-radius: 12px 12px 0 0;">
+        <span id="chat-box-title" class="fw-bold">Chat</span>
+        <button onclick="closeChatBox()" class="btn btn-sm btn-light">
+            <i class="fas fa-times"></i>
+        </button>
     </div>
 
     <!-- Message List -->
-    <div id="chat-messages" class="chat-list" style="flex: 1; overflow-y: auto; padding: 10px;">
+    <div id="chat-messages" class="chat-list" style="flex: 1; overflow-y: auto; padding: 15px;">
         {% for chat_message in chat_messages %}
             <strong>{{ chat_message.sender.get_full_name|default:chat_message.sender_name_snapshot }}</strong><br>
             {{ chat_message.text }}
         {% endfor %}
-
     </div>
 
     <!-- Chat Input -->
-    <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-2 d-flex">
+    <form id="chat-form" onsubmit="sendChatMessage(event)" class="p-3 d-flex border-top">
         {% csrf_token %}
         <input type="text" id="chat-input" class="form-control me-2" placeholder="Type a message...">
-        <button class="btn btn-primary">Send</button>
+        <button class="btn btn-primary">
+            <i class="fas fa-paper-plane"></i>
+        </button>
     </form>
 </div>
 
 <input type="hidden" id="current-user-id" value="{{ request.user.id }}">
 
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="content-wrapper full-width">
-            {% block content %}
-            {% endblock %}
-        </div>
+<!-- Main Content -->
+<div class="main-content">
+    <div class="content-wrapper full-width">
+        {% block content %}
+        {% endblock %}
     </div>
+</div>
 
 <script>
+let totalUnreadCount = 0;
+
 document.addEventListener('DOMContentLoaded', function () {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const sidebar = document.getElementById('sidebar');
     const chatListPanel = document.getElementById('chat-list-panel');
     const chatBoxPanel = document.getElementById('chat-box-panel');
-    const openChatListBtn = document.getElementById('open-chat-list');
+    
     // Restore chat box state if previously open
     const wasOpen = sessionStorage.getItem('chat_open');
     const docId = sessionStorage.getItem('chat_doc_id');
@@ -276,11 +381,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (wasOpen && docId && docName) {
         openChatBox(docId, docName);
     }
+    
+    // Initial fetch to show badge
+    fetchDocumentChats();
+    
+    // Poll for new messages every 10 seconds
+    setInterval(fetchDocumentChats, 10000);
 
     // Toggle sidebar (mobile)
-    sidebarToggle.addEventListener('click', function () {
-        sidebar.classList.toggle('active');
-    });
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function () {
+            sidebar.classList.toggle('active');
+        });
+    }
 
     // Hide sidebar if clicked outside (mobile)
     document.addEventListener('click', function (event) {
@@ -288,12 +401,14 @@ document.addEventListener('DOMContentLoaded', function () {
             sidebar.contains(event.target) ||
             chatListPanel.contains(event.target) ||
             chatBoxPanel.contains(event.target);
-        const isClickOnToggle = sidebarToggle.contains(event.target);
+        const isClickOnToggle = sidebarToggle && sidebarToggle.contains(event.target);
+        const isClickOnFloatingBtn = event.target.closest('#floating-chat-btn');
 
         if (window.innerWidth <= 991 &&
             sidebar.classList.contains('active') &&
             !isClickInsideSidebar &&
-            !isClickOnToggle) {
+            !isClickOnToggle &&
+            !isClickOnFloatingBtn) {
             sidebar.classList.remove('active');
         }
     });
@@ -317,21 +432,21 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     });
-
-    openChatListBtn.addEventListener('click', function () {
-        chatListPanel.style.display = "block";
-        fetchDocumentChats();
-        closeChatBox();
-        
-        // Close sidebar on mobile when opening chat list
-        if (window.innerWidth <= 991) {
-            sidebar.classList.remove('active');
-        }
-    });
 });
 
 // Global state for current document
 let selectedDocumentId = null;
+
+function toggleChatList() {
+    const panel = document.getElementById("chat-list-panel");
+    if (panel.style.display === "none" || panel.style.display === "") {
+        panel.style.display = "block";
+        fetchDocumentChats();
+        closeChatBox();
+    } else {
+        closeChatList();
+    }
+}
 
 function closeChatList() {
     document.getElementById("chat-list-panel").style.display = "none";
@@ -347,35 +462,47 @@ function closeChatBox() {
     sessionStorage.removeItem('chat_doc_id');
     sessionStorage.removeItem('chat_doc_name');
 }
+
 function fetchDocumentChats() {
     fetch("{% url 'document_chat_list' %}")
         .then(response => response.json())
         .then(data => {
             const list = document.getElementById("document-chat-list");
             list.innerHTML = '';
+            
+            totalUnreadCount = 0;
 
-            // No sorting needed here; backend already returns sorted list
             data.documents.forEach(doc => {
+                totalUnreadCount += doc.unread;
+                
                 const btn = document.createElement('button');
-                btn.className = 'btn btn-outline-dark btn-sm w-100 mb-1 text-start d-flex justify-content-between align-items-center';
+                btn.className = 'btn btn-outline-dark btn-sm w-100 mb-2 text-start d-flex justify-content-between align-items-center';
                 
                 btn.innerHTML = `
-                    <span>${doc.name}</span>
-                    ${doc.unread > 0 ? `<span class="badge bg-danger">${doc.unread}</span>` : ''}
+                    <span class="text-truncate">${doc.name}</span>
+                    ${doc.unread > 0 ? `<span class="badge bg-danger ms-2">${doc.unread}</span>` : ''}
                 `;
 
                 btn.onclick = () => openChatBox(doc.id, doc.name);
                 list.appendChild(btn);
             });
+            
+            // Update floating badge
+            const badge = document.getElementById('chat-badge');
+            if (totalUnreadCount > 0) {
+                badge.textContent = totalUnreadCount > 99 ? '99+' : totalUnreadCount;
+                badge.style.display = 'block';
+            } else {
+                badge.style.display = 'none';
+            }
         });
 }
-
-
 
 function openChatBox(docId, docName) {
     selectedDocumentId = docId;
     document.getElementById("chat-box-title").textContent = docName;
     document.getElementById("chat-box-panel").style.display = "flex";
+    closeChatList();
 
     // Save state
     sessionStorage.setItem('chat_open', '1');
@@ -393,8 +520,6 @@ function openChatBox(docId, docName) {
         });
     });
 }
-
-
 
 function fetchMessages() {
     return fetch(`/accounts/chat/fetch/${selectedDocumentId}/`)
@@ -450,8 +575,6 @@ function fetchMessages() {
         });
 }
 
-
-
 function sendChatMessage(e) {
     e.preventDefault();
 
@@ -474,24 +597,12 @@ function sendChatMessage(e) {
     .then(data => {
         if (data.status === 'ok') {
             input.value = '';
-
-            // Refresh messages and chat list
             fetchMessages();
-            fetchDocumentChats(); // ✅ Add this line here
+            fetchDocumentChats();
         }
     });
 }
-
 </script>
 
-
-
-    
-    <!-- Responsive behavior CSS -->
-
-    
-    
-    <!-- Bootstrap Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    </body>
-    </html>
+</body>
+</html>

@@ -11,9 +11,9 @@
 
         <h2 style="text-align:center; color:#28a745; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin-bottom:25px;">
             {% if album %}
-                ✏️ Edit Album: <strong>{{ album.title }}</strong>
+                 Edit Album: <strong>{{ album.title }}</strong>
             {% else %}
-                📂 Create a New Album
+                 Create a New Album
             {% endif %}
         </h2>
 
@@ -48,7 +48,7 @@
                     style="padding:12px 20px; background:#28a745; color:white; 
                            border:none; border-radius:8px; font-size:16px; 
                            cursor:pointer; transition:0.3s ease;">
-                    {% if album %}💾 Update Album{% else %}➕ Create Album{% endif %}
+                    {% if album %} Update Album{% else %}➕ Create Album{% endif %}
                 </button>
             </div>
         </form>

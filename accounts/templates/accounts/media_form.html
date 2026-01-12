@@ -2,7 +2,7 @@
 {% block content %}
 <div class="upload-wrapper">
     <div class="upload-card">
-        <h2>📂 Upload / Edit Media</h2>
+        <h2>Upload / Edit Media</h2>
         
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
@@ -11,7 +11,7 @@
                 {{ form.as_p }}
             </div>
 
-            <button type="submit">💾 Save</button>
+            <button type="submit">Save</button>
         </form>
     </div>
 </div>

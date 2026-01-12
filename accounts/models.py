@@ -413,10 +413,18 @@ class Media(models.Model):
 from django.db import models
 from django.conf import settings
 
+from django.conf import settings
+from django.db import models
+
 class PhotoAlbum(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    cover_photo = models.ImageField(upload_to='album_covers/', blank=True, null=True)  # 👈 allow empty
+    cover_photo = models.ImageField(upload_to='album_covers/', blank=True, null=True)
+
+    # 🔐 NEW FIELDS
+    is_approved = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
@@ -432,6 +440,7 @@ class PhotoAlbum(models.Model):
             return self.cover_photo.url
         from django.templatetags.static import static
         return static('image/no-image.png')
+
 
 
 class Photo(models.Model):
@@ -696,3 +705,64 @@ class ShowcaseImage(models.Model):
     class Meta:
         ordering = ['position']  # Show ordered images
 
+class DocumentFileHistory(models.Model):
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="file_histories"
+    )
+
+    slot_name = models.CharField(max_length=50)
+    file = models.FileField(upload_to="documents/history/")
+
+    uploaded_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-uploaded_at"]  # newest first
+
+    def __str__(self):
+        return f"{self.document.name} - {self.slot_name}"
+
+# Add this at the end of your accounts/models.py file
+
+class DocumentRequest(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('rejected', 'Rejected'),
+    ]
+
+    name = models.CharField(max_length=255)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    description = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
+    # Track who made the request
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='document_requests'
+    )
+    requested_at = models.DateTimeField(auto_now_add=True)
+    
+    # Optional: uploaded document when completed
+    uploaded_document = models.FileField(upload_to='requested_documents/', null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='completed_requests'
+    )
+    
+    # Optional: rejection reason
+    rejection_reason = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-requested_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.department.name}"

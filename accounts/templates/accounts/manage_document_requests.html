@@ -1,0 +1,429 @@
+{% extends "accounts/home.html" %}
+
+{% block content %}
+<style>
+    .manage-requests-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .manage-header {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .manage-header h1 {
+        color: #333;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 28px;
+    }
+
+    .manage-header p {
+        color: #666;
+        margin: 0;
+    }
+
+    .filter-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .filter-form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-box {
+        flex: 1;
+        min-width: 250px;
+        position: relative;
+    }
+
+    .search-box input {
+        width: 100%;
+        padding: 12px 15px 12px 45px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        color: #999;
+    }
+
+    .filter-select {
+        position: relative;
+    }
+
+    .filter-select select {
+        padding: 12px 40px 12px 45px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+        background: white;
+    }
+
+    .filter-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 20px;
+        height: 20px;
+        color: #999;
+        pointer-events: none;
+    }
+
+    .request-card-manage {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .request-card-manage:hover {
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .request-header-manage {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 15px;
+    }
+
+    .request-title-manage {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .request-title-manage h3 {
+        color: #333;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .status-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .status-icon.pending { color: #f39c12; }
+    .status-icon.in_progress { color: #3498db; }
+    .status-icon.completed { color: #27ae60; }
+    .status-icon.rejected { color: #e74c3c; }
+
+    .request-meta-manage {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 15px;
+    }
+
+    .requester-badge {
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .request-description-manage {
+        color: #555;
+        line-height: 1.6;
+        margin-bottom: 15px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .request-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+    }
+
+    .btn-upload {
+        background: #27ae60;
+        color: white;
+    }
+
+    .btn-upload:hover {
+        background: #229954;
+        color: white;
+    }
+
+    .btn-progress {
+        background: #3498db;
+        color: white;
+    }
+
+    .btn-progress:hover {
+        background: #2980b9;
+        color: white;
+    }
+
+    .btn-view {
+        background: #667eea;
+        color: white;
+    }
+
+    .btn-view:hover {
+        background: #5568d3;
+        color: white;
+    }
+
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .status-badge.pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-badge.in_progress {
+        background: #cce5ff;
+        color: #004085;
+    }
+
+    .status-badge.completed {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .no-requests {
+        background: white;
+        padding: 60px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .no-requests-icon {
+        width: 80px;
+        height: 80px;
+        color: #ddd;
+        margin: 0 auto 20px;
+    }
+
+    .no-requests h3 {
+        color: #666;
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    .icon-custom {
+        width: 24px;
+        height: 24px;
+    }
+
+    .icon-small {
+        width: 18px;
+        height: 18px;
+    }
+
+    @media (max-width: 768px) {
+        .filter-form {
+            flex-direction: column;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .request-header-manage {
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .request-actions {
+            flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="manage-requests-container">
+    <!-- Header -->
+    <div class="manage-header">
+        <h1>
+            <svg class="icon-custom" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Manage Document Requests
+        </h1>
+        <p>Fulfill document requests for your department</p>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="filter-card">
+        <form method="GET" class="filter-form">
+            <div class="search-box">
+                <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input 
+                    type="text" 
+                    name="search" 
+                    placeholder="Search requests..." 
+                    value="{{ search }}"
+                >
+            </div>
+            <div class="filter-select">
+                <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                </svg>
+                <select name="status" onchange="this.form.submit()">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Requests List -->
+    {% if requests %}
+        {% for request in requests %}
+        <div class="request-card-manage">
+            <div class="request-header-manage">
+                <div style="flex: 1;">
+                    <div class="request-title-manage">
+                        {% if request.status == 'pending' %}
+                        <svg class="status-icon pending" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% elif request.status == 'in_progress' %}
+                        <svg class="status-icon in_progress" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        {% elif request.status == 'completed' %}
+                        <svg class="status-icon completed" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% else %}
+                        <svg class="status-icon rejected" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {% endif %}
+                        <h3>{{ request.name }}</h3>
+                    </div>
+                    <div class="request-meta-manage">
+                        <span class="requester-badge">
+                            Requested by: {{ request.requested_by.get_full_name }}
+                        </span>
+                        <span>•</span>
+                        <span>{{ request.requested_at|date:"M d, Y" }}</span>
+                        {% if request.completed_at %}
+                        <span>•</span>
+                        <span>Completed: {{ request.completed_at|date:"M d, Y" }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="request-description-manage">
+                        <strong>Description:</strong><br>
+                        {{ request.description }}
+                    </div>
+
+                    {% if request.rejection_reason %}
+                    <div class="request-description-manage" style="background: #f8d7da; border-left: 3px solid #dc3545;">
+                        <strong>Rejection Reason:</strong><br>
+                        {{ request.rejection_reason }}
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="request-actions">
+                        {% if request.status == 'pending' or request.status == 'in_progress' %}
+                            <a href="{% url 'upload_requested_document' request.id %}" class="btn-action btn-upload">
+                                <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                Upload Document
+                            </a>
+                        {% endif %}
+
+                        {% if request.uploaded_document %}
+                            <a href="{{ request.uploaded_document.url }}" class="btn-action btn-view" download>
+                                <svg class="icon-small" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                View Uploaded
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div>
+                    <span class="status-badge {{ request.status }}">
+                        {{ request.get_status_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-requests">
+            <svg class="no-requests-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3>No document requests</h3>
+            <p>There are no requests for your department at this time</p>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}

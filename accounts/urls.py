@@ -124,6 +124,18 @@ urlpatterns = [
     path('document/<int:document_id>/recommend-completion/', views.recommend_completion, name='recommend_completion'),
     path('document/<int:document_id>/approve-completion/', views.approve_completion, name='approve_completion'),
     path('document/<int:document_id>/reject-completion/', views.reject_completion, name='reject_completion'),
+    path('album/<int:album_id>/approve/', views.approve_album, name='approve_album'),
+    path('album/<int:album_id>/toggle/', views.toggle_album_visibility, name='toggle_album_visibility'),
+    path('ongoing-document-list/', views.ongoing_document_list, name='ongoing_document_list'),
+    path('document-requests/create/', views.create_document_request, name='create_document_request'),
+    path('document-requests/my-requests/', views.my_document_requests, name='my_document_requests'),
+    path('document-requests/manage/', views.manage_document_requests, name='manage_document_requests'),
+    path('document-requests/upload/<int:request_id>/', views.upload_requested_document, name='upload_requested_document'),
+    path(
+    'document-request/<int:request_id>/cancel/',
+    views.cancel_document_request,
+    name='cancel_document_request'
+    ),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
