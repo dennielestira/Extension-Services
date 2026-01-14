@@ -1058,120 +1058,174 @@
     </div>
 </div>
 
-<!-- JavaScript -->
 <script>
-// Status Modal Functions
-function openStatusModal(statusLabel, index) {
-    document.getElementById('statusModal' + index).style.display = 'block';
-}
+document.addEventListener('DOMContentLoaded', function () {
 
-function closeStatusModal(index) {
-    document.getElementById('statusModal' + index).style.display = 'none';
-}
+    /* ==========================
+       CORE MODAL HANDLER
+    ========================== */
+    function openModal(modal) {
+        if (!modal) return;
 
-// Completion Modal Functions
-function openCompletionModal(index) {
-    document.getElementById('completionModal' + index).style.display = 'block';
-}
+        document.body.appendChild(modal);
+        modal.style.display = 'block';
+        modal.style.zIndex = '99999';
+        document.body.classList.add('modal-open');
+        document.body.style.overflow = 'hidden';
 
-function closeCompletionModal(index) {
-    document.getElementById('completionModal' + index).style.display = 'none';
-}
-
-// Revision Modal Functions
-function openRevisionModal(index) {
-    document.getElementById('revisionModal' + index).style.display = 'block';
-}
-
-function closeRevisionModal(index) {
-    document.getElementById('revisionModal' + index).style.display = 'none';
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const statusModals = document.querySelectorAll('.status-modal');
-    const deptModals = document.querySelectorAll('.dept-modal');
-    
-    statusModals.forEach(modal => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
+        let backdrop = document.querySelector('.modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            backdrop.style.zIndex = '99998';
+            document.body.appendChild(backdrop);
         }
-    });
-    
-    deptModals.forEach(modal => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
-    });
-}
-
-// Close modals with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const allModals = document.querySelectorAll('.status-modal, .dept-modal, .help-modal');
-        allModals.forEach(modal => {
-            modal.style.display = 'none';
-        });
-        document.body.style.overflow = 'auto';
     }
-});
 
-// Help Modal Functions
-window.onload = function() {
+    function closeModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    }
+
+    function closeAllModals() {
+        document.querySelectorAll('.status-modal, .dept-modal, .help-modal')
+            .forEach(modal => modal.style.display = 'none');
+
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = 'auto';
+
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    }
+
+    /* ==========================
+       STATUS MODALS
+    ========================== */
+    window.openStatusModal = function (statusLabel, index) {
+        openModal(document.getElementById('statusModal' + index));
+    };
+
+    window.closeStatusModal = function (index) {
+        closeModal(document.getElementById('statusModal' + index));
+    };
+
+    /* ==========================
+       COMPLETION MODALS
+    ========================== */
+    window.openCompletionModal = function (index) {
+        openModal(document.getElementById('completionModal' + index));
+    };
+
+    window.closeCompletionModal = function (index) {
+        closeModal(document.getElementById('completionModal' + index));
+    };
+
+    /* ==========================
+       REVISION MODALS
+    ========================== */
+    window.openRevisionModal = function (index) {
+        openModal(document.getElementById('revisionModal' + index));
+    };
+
+    window.closeRevisionModal = function (index) {
+        closeModal(document.getElementById('revisionModal' + index));
+    };
+
+    /* ==========================
+       HELP MODAL
+    ========================== */
+    window.showHelpModal = function () {
+        openModal(document.getElementById('helpModal'));
+    };
+
+    window.closeHelpModal = function (event) {
+        if (!event || event.target.id === 'helpModal') {
+            closeModal(document.getElementById('helpModal'));
+        }
+    };
+
+    /* ==========================
+       CLICK OUTSIDE TO CLOSE
+    ========================== */
+    window.addEventListener('click', function (event) {
+        if (
+            event.target.classList.contains('status-modal') ||
+            event.target.classList.contains('dept-modal') ||
+            event.target.classList.contains('help-modal')
+        ) {
+            closeModal(event.target);
+        }
+    });
+
+    /* ==========================
+       ESC KEY CLOSE
+    ========================== */
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            closeAllModals();
+        }
+    });
+
+    /* ==========================
+       WELCOME BANNER
+    ========================== */
     if (!localStorage.getItem('dashboardVisited')) {
-        document.getElementById('welcomeBanner').style.display = 'block';
+        const banner = document.getElementById('welcomeBanner');
+        if (banner) banner.style.display = 'block';
     }
-};
 
-function dismissWelcome() {
-    document.getElementById('welcomeBanner').style.display = 'none';
-    localStorage.setItem('dashboardVisited', 'true');
-}
+    window.dismissWelcome = function () {
+        const banner = document.getElementById('welcomeBanner');
+        if (banner) banner.style.display = 'none';
+        localStorage.setItem('dashboardVisited', 'true');
+    };
 
-function showHelpModal() {
-    document.getElementById('helpModal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
+    /* ==========================
+       MOA FUNCTIONS
+    ========================== */
+    window.toggleMainButtons = function () {
+        document.querySelectorAll('.upload-toggle-btn, .toggle-edit-btn')
+            .forEach(btn => {
+                btn.style.display =
+                    (btn.style.display === 'none' || btn.style.display === '')
+                        ? 'inline-block'
+                        : 'none';
+            });
+    };
 
-function closeHelpModal(event) {
-    if (!event || event.target.id === 'helpModal') {
-        document.getElementById('helpModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-    }
-}
+    window.toggleMOAUpload = function () {
+        const box = document.getElementById('moa-upload-box');
+        if (box) box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    };
 
-// MOA Functions
-function toggleMainButtons() {
-    const uploadBtn = document.querySelector('.upload-toggle-btn');
-    const editBtn = document.querySelector('.toggle-edit-btn');
+    window.toggleMOAControls = function () {
+        document.querySelectorAll('.moa-controls')
+            .forEach(c => {
+                c.style.display =
+                    (c.style.display === 'none' || c.style.display === '')
+                        ? 'block'
+                        : 'none';
+            });
+    };
 
-    [uploadBtn, editBtn].forEach(btn => {
-        if (btn) {
-            btn.style.display = (btn.style.display === 'none' || btn.style.display === '') 
-                                ? 'inline-block' : 'none';
+    /* ==========================
+       KEYBOARD SHORTCUT (?)
+    ========================== */
+    document.addEventListener('keydown', function (e) {
+        if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            showHelpModal();
         }
     });
-}
 
-function toggleMOAUpload() {
-    const box = document.getElementById("moa-upload-box");
-    box.style.display = box.style.display === "none" ? "block" : "none";
-}
-
-function toggleMOAControls() {
-    let controls = document.querySelectorAll(".moa-controls");
-    controls.forEach(c => {
-        c.style.display = (c.style.display === "none" || c.style.display === "") ? "block" : "none";
-    });
-}
-
-// Keyboard shortcut: Press '?' to open help
-document.addEventListener('keydown', function(e) {
-    if (e.key === '?' && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        showHelpModal();
-    }
 });
 </script>
+
 
 {% endblock %}

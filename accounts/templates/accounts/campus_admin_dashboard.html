@@ -668,6 +668,7 @@
             padding: 10px;
         }
     }
+    
 </style>
 
 <div class="container-fluid py-3">
@@ -944,121 +945,164 @@
 </div>
 {% endfor %}
 
-<!-- JS Toggle -->
 <script>
-// Status Modal Functions with body scroll lock
-function openStatusModal(statusLabel, index) {
-    document.getElementById('statusModal' + index).style.display = 'block';
-    document.body.classList.add('modal-open');
-}
+document.addEventListener('DOMContentLoaded', function () {
 
-function closeStatusModal(index) {
-    document.getElementById('statusModal' + index).style.display = 'none';
-    document.body.classList.remove('modal-open');
-}
+    /* ==============================
+       GENERIC MODAL HANDLER
+    ============================== */
+    function openModal(modal) {
+        if (!modal) return;
 
-// Completion Modal Functions with body scroll lock
-function openCompletionModal(index) {
-    document.getElementById('completionModal' + index).style.display = 'block';
-    document.body.classList.add('modal-open');
-}
+        // Move modal to body to avoid stacking issues
+        document.body.appendChild(modal);
 
-function closeCompletionModal(index) {
-    document.getElementById('completionModal' + index).style.display = 'none';
-    document.body.classList.remove('modal-open');
-}
+        modal.style.display = 'block';
+        document.body.classList.add('modal-open');
 
-// Revision Modal Functions with body scroll lock
-function openRevisionModal(index) {
-    document.getElementById('revisionModal' + index).style.display = 'block';
-    document.body.classList.add('modal-open');
-}
-
-function closeRevisionModal(index) {
-    document.getElementById('revisionModal' + index).style.display = 'none';
-    document.body.classList.remove('modal-open');
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modals = document.querySelectorAll('.status-modal, .dept-modal');
-    modals.forEach(modal => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
+        // Create backdrop if missing
+        let backdrop = document.querySelector('.modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
         }
-    });
-}
 
-// Close modal with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modals = document.querySelectorAll('.status-modal, .dept-modal');
-        modals.forEach(modal => {
-            modal.style.display = 'none';
-        });
+        // Force correct stacking
+        setTimeout(() => {
+            modal.style.zIndex = '99999';
+            backdrop.style.zIndex = '99998';
+        }, 10);
+    }
+
+    function closeModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = 'none';
         document.body.classList.remove('modal-open');
+
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
     }
-});
 
-function toggleRevisionCard(deptId) {
-    const card = document.getElementById("revision-card-" + deptId);
-    card.style.display = (card.style.display === "block") ? "none" : "block";
-}
+    /* ==============================
+       STATUS MODALS
+    ============================== */
+    window.openStatusModal = function (statusLabel, index) {
+        openModal(document.getElementById('statusModal' + index));
+    };
 
-function toggleCompletionCard(deptId) {
-    const card = document.getElementById("completion-card-" + deptId);
-    card.style.display = (card.style.display === "block") ? "none" : "block";
-}
+    window.closeStatusModal = function (index) {
+        closeModal(document.getElementById('statusModal' + index));
+    };
 
-// New accordion function for completion cards
-function toggleCompletionCardAccordion(deptId) {
-    const clickedCard = document.getElementById("completion-card-" + deptId);
-    const clickedBox = document.querySelector(`.completion-dept-card[data-dept-id="${deptId}"]`);
-    const allCards = document.querySelectorAll('.completion-detail-card');
-    const allBoxes = document.querySelectorAll('.completion-dept-card');
-    
-    // Check if clicked card is currently open
-    const isOpen = clickedCard.style.display === "block";
-    
-    // Close all cards and remove expanded class
-    allCards.forEach(card => {
-        card.style.display = "none";
-    });
-    allBoxes.forEach(box => {
-        box.classList.remove('expanded');
-    });
-    
-    // If the clicked card was closed, open it
-    if (!isOpen) {
-        clickedCard.style.display = "block";
-        clickedBox.classList.add('expanded');
-    }
-}
+    /* ==============================
+       COMPLETION MODALS
+    ============================== */
+    window.openCompletionModal = function (index) {
+        openModal(document.getElementById('completionModal' + index));
+    };
 
-function toggleMainButtons() {
-    const uploadBtn = document.querySelector('.upload-toggle-btn');
-    const editBtn = document.querySelector('.toggle-edit-btn');
+    window.closeCompletionModal = function (index) {
+        closeModal(document.getElementById('completionModal' + index));
+    };
 
-    [uploadBtn, editBtn].forEach(btn => {
-        if (btn) {
-            btn.style.display = (btn.style.display === 'none' || btn.style.display === '') 
-                                ? 'inline-block' : 'none';
+    /* ==============================
+       REVISION MODALS
+    ============================== */
+    window.openRevisionModal = function (index) {
+        openModal(document.getElementById('revisionModal' + index));
+    };
+
+    window.closeRevisionModal = function (index) {
+        closeModal(document.getElementById('revisionModal' + index));
+    };
+
+    /* ==============================
+       CLICK OUTSIDE TO CLOSE
+    ============================== */
+    window.addEventListener('click', function (event) {
+        if (event.target.classList.contains('status-modal') ||
+            event.target.classList.contains('dept-modal')) {
+            closeModal(event.target);
         }
     });
-}
 
-function toggleMOAUpload() {
-    const box = document.getElementById("moa-upload-box");
-    box.style.display = box.style.display === "none" ? "block" : "none";
-}
+    /* ==============================
+       ESC KEY TO CLOSE ALL
+    ============================== */
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.status-modal, .dept-modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
 
-function toggleMOAControls() {
-    let controls = document.querySelectorAll(".moa-controls");
-    controls.forEach(c => {
-        c.style.display = (c.style.display === "none" || c.style.display === "") ? "block" : "none";
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
+        }
     });
-}
+
+    /* ==============================
+       CARD TOGGLES
+    ============================== */
+    window.toggleRevisionCard = function (deptId) {
+        const card = document.getElementById('revision-card-' + deptId);
+        card.style.display = card.style.display === 'block' ? 'none' : 'block';
+    };
+
+    window.toggleCompletionCard = function (deptId) {
+        const card = document.getElementById('completion-card-' + deptId);
+        card.style.display = card.style.display === 'block' ? 'none' : 'block';
+    };
+
+    window.toggleCompletionCardAccordion = function (deptId) {
+        const clickedCard = document.getElementById('completion-card-' + deptId);
+        const clickedBox = document.querySelector(`.completion-dept-card[data-dept-id="${deptId}"]`);
+
+        document.querySelectorAll('.completion-detail-card').forEach(card => {
+            card.style.display = 'none';
+        });
+
+        document.querySelectorAll('.completion-dept-card').forEach(box => {
+            box.classList.remove('expanded');
+        });
+
+        if (clickedCard && clickedCard.style.display !== 'block') {
+            clickedCard.style.display = 'block';
+            clickedBox.classList.add('expanded');
+        }
+    };
+
+    /* ==============================
+       BUTTON TOGGLES
+    ============================== */
+    window.toggleMainButtons = function () {
+        document.querySelectorAll('.upload-toggle-btn, .toggle-edit-btn')
+            .forEach(btn => {
+                btn.style.display =
+                    (btn.style.display === 'none' || btn.style.display === '')
+                        ? 'inline-block'
+                        : 'none';
+            });
+    };
+
+    window.toggleMOAUpload = function () {
+        const box = document.getElementById('moa-upload-box');
+        box.style.display = box.style.display === 'none' ? 'block' : 'none';
+    };
+
+    window.toggleMOAControls = function () {
+        document.querySelectorAll('.moa-controls').forEach(control => {
+            control.style.display =
+                (control.style.display === 'none' || control.style.display === '')
+                    ? 'block'
+                    : 'none';
+        });
+    };
+
+});
 </script>
+
 
 {% endblock %}

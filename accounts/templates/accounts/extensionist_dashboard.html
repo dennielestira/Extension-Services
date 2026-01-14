@@ -589,58 +589,89 @@ body.modal-open {
 
 <!-- JavaScript -->
 <script>
-// Status Modal Functions with body scroll lock
-function openStatusModal(statusLabel, index) {
-    document.getElementById('statusModal' + index).style.display = 'block';
-    document.body.classList.add('modal-open');
-}
+document.addEventListener('DOMContentLoaded', function () {
 
-function closeStatusModal(index) {
-    document.getElementById('statusModal' + index).style.display = 'none';
-    document.body.classList.remove('modal-open');
-}
+    function openModal(modal) {
+        if (!modal) return;
 
-// Revision Modal Functions with body scroll lock
-function openRevisionModal(index) {
-    document.getElementById('revisionModal' + index).style.display = 'block';
-    document.body.classList.add('modal-open');
-}
+        // Move modal to body to avoid stacking problems
+        document.body.appendChild(modal);
 
-function closeRevisionModal(index) {
-    document.getElementById('revisionModal' + index).style.display = 'none';
-    document.body.classList.remove('modal-open');
-}
+        modal.style.display = 'block';
+        modal.style.zIndex = '99999';
+        document.body.classList.add('modal-open');
 
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const statusModals = document.querySelectorAll('.status-modal');
-    const deptModals = document.querySelectorAll('.dept-modal');
-    
-    statusModals.forEach(modal => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
+        // Add backdrop if missing
+        let backdrop = document.querySelector('.modal-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop fade show';
+            document.body.appendChild(backdrop);
         }
-    });
-    
-    deptModals.forEach(modal => {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-            document.body.classList.remove('modal-open');
-        }
-    });
-}
-
-// Close modals with Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const allModals = document.querySelectorAll('.status-modal, .dept-modal');
-        allModals.forEach(modal => {
-            modal.style.display = 'none';
-        });
-        document.body.classList.remove('modal-open');
+        backdrop.style.zIndex = '99998';
     }
+
+    function closeModal(modal) {
+        if (!modal) return;
+
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) backdrop.remove();
+    }
+
+    // ==========================
+    // Status Modals
+    // ==========================
+    window.openStatusModal = function (statusLabel, index) {
+        openModal(document.getElementById('statusModal' + index));
+    };
+
+    window.closeStatusModal = function (index) {
+        closeModal(document.getElementById('statusModal' + index));
+    };
+
+    // ==========================
+    // Revision Modals
+    // ==========================
+    window.openRevisionModal = function (index) {
+        openModal(document.getElementById('revisionModal' + index));
+    };
+
+    window.closeRevisionModal = function (index) {
+        closeModal(document.getElementById('revisionModal' + index));
+    };
+
+    // ==========================
+    // Click Outside to Close
+    // ==========================
+    window.addEventListener('click', function (event) {
+        if (
+            event.target.classList.contains('status-modal') ||
+            event.target.classList.contains('dept-modal')
+        ) {
+            closeModal(event.target);
+        }
+    });
+
+    // ==========================
+    // ESC Key Close
+    // ==========================
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.status-modal, .dept-modal').forEach(modal => {
+                modal.style.display = 'none';
+            });
+
+            document.body.classList.remove('modal-open');
+            const backdrop = document.querySelector('.modal-backdrop');
+            if (backdrop) backdrop.remove();
+        }
+    });
+
 });
 </script>
+
 
 {% endblock %}
