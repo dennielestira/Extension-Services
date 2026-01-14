@@ -4639,6 +4639,7 @@ Thank you."""
 
 @login_required
 def my_document_requests(request):
+    # Only Campus Admin or Staff Extensionist can access
     if request.user.account_type not in ['Campus Admin', 'Staff Extensionist']:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('login')
@@ -4646,24 +4647,42 @@ def my_document_requests(request):
     search = request.GET.get('search', '')
     status_filter = request.GET.get('status', 'all')
 
-    requests_list = DocumentRequest.objects.filter(
-        requested_by=request.user
-    )
+    # ---------------------------
+    # Show requests based on role
+    # ---------------------------
+    if request.user.account_type in ['Campus Admin', 'Staff Extensionist']:
+        # Show requests from both Campus Admin and Staff Extensionist
+        requests_list = DocumentRequest.objects.filter(
+            requested_by__account_type__in=['Campus Admin', 'Staff Extensionist']
+        )
+    else:
+        # Fallback (should not happen due to access check)
+        requests_list = DocumentRequest.objects.filter(requested_by=request.user)
 
+    # ---------------------------
+    # Apply search filter
+    # ---------------------------
     if search:
         requests_list = requests_list.filter(
             models.Q(name__icontains=search) |
             models.Q(department__name__icontains=search)
         )
 
+    # ---------------------------
+    # Apply status filter
+    # ---------------------------
     if status_filter != 'all':
         requests_list = requests_list.filter(status=status_filter)
+
+    # Order by latest requested first
+    requests_list = requests_list.order_by('-requested_at')
 
     return render(request, 'accounts/my_document_requests.html', {
         'requests': requests_list,
         'search': search,
         'status_filter': status_filter
     })
+
 
 # accounts/views.py - Add these views for Department Coordinators and Extensionists
 from django.shortcuts import get_object_or_404, redirect
