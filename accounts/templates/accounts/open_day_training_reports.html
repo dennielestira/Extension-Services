@@ -9,128 +9,121 @@
     <a href="{% url 'quarterly_report_list' %}" class="btn btn-outline-secondary">
       <i class="bi bi-arrow-left"></i> Back to Quarters
     </a>
-<a href="{% url 'download_day_training_reports_excel' quarter year %}" 
-   class="btn btn-success">
-  <i class="bi bi-file-earmark-excel"></i> Download Excel/CSV
-</a>
 
+    <a href="{% url 'download_day_training_reports_excel' quarter year %}" 
+       class="btn btn-success">
+      <i class="bi bi-file-earmark-excel"></i> Download Excel/CSV
+    </a>
   </div>
 </div>
-  
+
 <div class="card shadow-sm border-0 rounded-3">
   <div class="card-body p-0">
     <div class="table-responsive">
       <table class="table table-bordered table-sm align-middle text-center">
-        <thead class="table-success">
-          <tr>
-            <th rowspan="3">Training No.</th>
-            <th rowspan="2">Code</th>
-            <th colspan="3" rowspan="2">Lead Unit</th>
-            <th colspan="1" rowspan="2">Related Curricular Offering</th>
-            <th rowspan="3">Collaborating Agency/ies</th>
-            <th colspan="1" rowspan="2">Contact Person / Training Coordinator</th>
-            <th colspan="1" rowspan="2">Project No.</th>
-            <th colspan="1" rowspan="2">Category</th>
-            <th rowspan="3" class="training-title">Title of Training</th>
-            <th rowspan="3">Inclusive Dates</th>
-            <th rowspan="3">Venue</th> 
-            <th colspan="3" rowspan="2">No. of participants by sex</th>
-            <th colspan="8" rowspan="2">No. of participants by category</th>
-            <th colspan="4" rowspan="2">For TVL Trainings Only</th>
-            <th rowspan="3">Total Persons Trained</th> <!-- 🟢 Added -->
-            <th colspan="5" rowspan="2">Number of days trained (please check)</th>
-            
-            <th rowspan="3">Number of days trained per weight of training</th>
-            <th rowspan="3">Total No. of trainees surveyed</th>
-            <th colspan="6">Client's rating on the training (relevance)</th>
-            <th colspan="6">Client's rating on the training (quality)</th>
-            <th colspan="6">Client's rating on the training (timeliness)</th>
-            <th rowspan="3">Overall Avg</th>
-            <th rowspan="3">Total number of clients requesting trainings</th>
-            <th rowspan="3">Total number of requests for trainings responded in the next 3 days</th>
-            <th colspan="3" rowspan="2">Estimated Expenses and source of fund</th>
-            
+<thead class="table-success">
+  <tr>
+    <th rowspan="2">Training No.</th>
+    <th rowspan="2">Code</th>
 
-          </tr>
-          <tr></tr>
-          <tr>
-            <th >(c/o Extension Services)</th>
-            <th>Department / Unit</th>
-            <th>Contact Person / Training Coordinator</th>
-            <th>Number / Email</th>
-            <th>
-  <small class="subtext">e.g. BS Agriculture</small>
-</th>
-<th>
-  <small class="subtext">Training Coordinator</small>
-</th>
+    <th colspan="3">Lead Unit</th>
+    <th rowspan="2">Related Curricular Offering</th>
+    <th rowspan="2">Collaborating Agency/ies</th>
+    <th rowspan="2">Training Coordinator</th>
+    <th rowspan="2">Project No.</th>
+    <th rowspan="2">Category</th>
 
-<th>
+    <th rowspan="2" class="training-title">Title of Training</th>
+    <th rowspan="2">Inclusive Dates</th>
+    <th rowspan="2">Venue</th>
 
-  <small class="subtext">
-    Use no. indicated under Internally Funded Extension Projects and Externally Funded Projects;
-    indicate NA if not under a project
-  </small>
-</th>
+    <th colspan="3">Participants by Sex</th>
+    <th colspan="8">Participants by Category</th>
+    <th colspan="4">TVL Only</th>
 
-<th>
+    <th rowspan="2">Total Persons Trained</th>
 
-  <small class="subtext">
-    TVL–technical, vocational, livelihood; AE–agricultural and environmental trainings;
-    CE–continuing education for professionals; BE–basic education;
-    GAD–Gender and Development; O–others
-  </small>
-</th>
+    <th colspan="5">Days Trained</th>
 
-            <th>Male</th>
-            <th>Female</th>
-            <th>Total</th>
-            <th>Student</th>
-            <th>Farmer</th>
-            <th>Fisherfolk</th>
-            <th>Agric. Tech</th>
-            <th>Govt Emp</th>
-            <th>Priv Emp</th>
-            <th>Other</th>
-            <th>Total</th>
-            <th>Solo Parent</th>
-            <th>4Ps</th>
-            <th>PWD</th>
-            <th>Type of Disability</th>
-            <th>5</th>
-            <th>3-4</th>
-            <th>2</th>
-            <th>1</th>
-            <th>less than 8hrs</th>
-            <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>Avg</th>
-            <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>Avg</th>
-            <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>Avg</th>
-            <th>Amount Charged to CvSU (campus/college/unit)</th>
-            <th>Amount Charged to Partner Agency (PhP)</th>
-            <th>Total number of requests for trainings responded in the next 3 days</th>
-          </tr>
-        </thead>
+    <th rowspan="2">Weight</th>
+    <th rowspan="2">Surveyed</th>
+
+    <th colspan="6">Relevance</th>
+    <th colspan="6">Quality</th>
+    <th colspan="6">Timeliness</th>
+
+    <th rowspan="2">Overall Avg</th>
+    <th rowspan="2">Clients Requesting</th>
+    <th rowspan="2">Responded in 3 Days</th>
+
+    <th colspan="2">Estimated Expenses</th>
+  </tr>
+
+  <tr>
+    <!-- Lead Unit -->
+    <th>Department</th>
+    <th>Contact Person</th>
+    <th>Email/No.</th>
+
+    <!-- Participants by Sex -->
+    <th>Male</th>
+    <th>Female</th>
+    <th>Total</th>
+
+    <!-- Participants by Category -->
+    <th>Student</th>
+    <th>Farmer</th>
+    <th>Fisherfolk</th>
+    <th>Agric Tech</th>
+    <th>Govt</th>
+    <th>Private</th>
+    <th>Other</th>
+    <th>Total</th>
+
+    <!-- TVL -->
+    <th>Solo Parent</th>
+    <th>4Ps</th>
+    <th>PWD</th>
+    <th>Disability</th>
+
+    <!-- Days -->
+    <th>5</th>
+    <th>3-4</th>
+    <th>2</th>
+    <th>1</th>
+    <th>&lt;8hrs</th>
+
+    <!-- Relevance -->
+    <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>Avg</th>
+
+    <!-- Quality -->
+    <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>Avg</th>
+
+    <!-- Timeliness -->
+    <th>5</th><th>4</th><th>3</th><th>2</th><th>1</th><th>Avg</th>
+
+    <!-- Expenses -->
+    <th>CvSU</th>
+    <th>Partner</th>
+  </tr>
+</thead>
 
         <tbody>
           {% for e in entries %}
           <tr>
             <td>{{ forloop.counter }}</td>
-            <td>  </td>
-            <td class="ellipsis" title="{{ e.department }}">{{ e.department }}</td>
-            <td class="ellipsis" title="{{ e.contact_person }}">{{ e.contact_person }}</td>
-            <td class="ellipsis" title="{{ e.number_email }}">{{ e.number_email }}</td>
-            <td class="ellipsis" title="{{ e.related_curricular_offering }}">
-                {{ e.related_curricular_offering }}
-            </td>
-
-
-            <td class="ellipsis" title="{{ e.collaborating_agencies }}">{{ e.collaborating_agencies }}</td>
-            <td class="ellipsis" title="{{ e.contact_person }}">{{ e.contact_person }}</td>
-            <td class="ellipsis">Internal Funded Extension Projects</td>
-            <td class="ellipsis" title="{{ e.category }}">{{ e.category }}</td>
-            <td class="training-title ellipsis" title="{{ e.title }}">{{ e.title }}</td>
-            <td class="ellipsis" title="{{ e.date_conducted_text }}">{{ e.date_conducted_text }}</td>
-            <td class="ellipsis" title="{{ e.venue }}">{{ e.venue }}</td> 
+            <td></td>
+            <td>{{ e.department }}</td>
+            <td>{{ e.contact_person }}</td>
+            <td>{{ e.number_email }}</td>
+            <td>{{ e.related_curricular_offering }}</td>
+            <td>{{ e.collaborating_agencies }}</td>
+            <td>{{ e.contact_person }}</td>
+            <td>Internal Project</td>
+            <td>{{ e.category }}</td>
+            <td class="training-title">{{ e.title }}</td>
+            <td>{{ e.date_conducted_text }}</td>
+            <td>{{ e.venue }}</td>
 
             <td>{{ e.male_participants }}</td>
             <td>{{ e.female_participants }}</td>
@@ -148,27 +141,15 @@
             <td>{{ e.tvl_solo_parent }}</td>
             <td>{{ e.tvl_4ps }}</td>
             <td>{{ e.tvl_pwd }}</td>
-            <td class="disability ellipsis" title="{{ e.tvl_pwd_type }}">{{ e.tvl_pwd_type }}</td>
-            <td>{{ e.total_by_category }}</td> <!-- 🟢 Added -->
-<td>{% if e.number_of_days == 5 %}✓{% endif %}</td>
-<td>{% if e.number_of_days == 4 or e.number_of_days == 3 %}✓{% endif %}</td>
-<td>{% if e.number_of_days == 2 %}✓{% endif %}</td>
-<td>{% if e.number_of_days == 1 %}✓{% endif %}</td>
+            <td>{{ e.tvl_pwd_type }}</td>
 
-<td>
-  {% if e.number_of_days != 1 and e.number_of_days != 2 and e.number_of_days != 3 and e.number_of_days != 4 and e.number_of_days != 5 %}
-      ✓
-  {% endif %}
-</td>
+            <td>{{ e.total_participants }}</td>
 
-
-
-
-
-
-
-
-            
+            <td>{% if e.number_of_days == 5 %}✓{% endif %}</td>
+            <td>{% if e.number_of_days == 3 or e.number_of_days == 4 %}✓{% endif %}</td>
+            <td>{% if e.number_of_days == 2 %}✓{% endif %}</td>
+            <td>{% if e.number_of_days == 1 %}✓{% endif %}</td>
+            <td>{% if e.number_of_days > 5 or e.number_of_days == 0 %}✓{% endif %}</td>
 
             <td>{{ e.weight_multiplier }}</td>
             <td>{{ e.total_trainees_surveyed }}</td>
@@ -194,19 +175,18 @@
             <td>{{ e.timeliness_counts.1|default:0 }}</td>
             <td>{{ e.timeliness_average }}</td>
 
-          <td>{{ e.overall_average }}</td>
-          <td></td>
-          <td></td>
-          <td>{{ e.amount_charged_to_cvsu }}</td>
-          <td>{{ e.amount_charged_to_partner_agency }}</td>
-          <td></td>
-          
+            <td>{{ e.overall_average }}</td>
+            <td></td>
+            <td></td>
 
+            <td>{{ e.amount_charged_to_cvsu }}</td>
+            <td>{{ e.amount_charged_to_partner_agency }}</td>
+            <td></td>
           </tr>
           {% empty %}
           <tr>
             <td colspan="48" class="text-center py-3">
-              No training entries yet. Click Preview to parse uploaded files.
+              No training entries yet.
             </td>
           </tr>
           {% endfor %}
@@ -217,122 +197,45 @@
 </div>
 
 <style>
-/* ----------------- Responsive adjustments ----------------- */
-@media (max-width: 768px) {
-  h3 {
-    font-size: 1.2rem;
-  }
-  .table th,
-  .table td {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.25rem;
-  }
-  
-  /* Adjust sticky header positions for mobile */
-  .table thead tr:nth-child(1) th {
-    top: 0;
-    z-index: 9;
-  }
-  .table thead tr:nth-child(2) th {
-    top: 38px; /* Increased for mobile font/padding */
-    z-index: 8;
-  }
-  .table thead tr:nth-child(3) th {
-    top: 70px; /* Adjusted for mobile accumulated height */
-    z-index: 7;
-  }
-  
-  /* Ensure header cells don't collapse */
-  .table thead th {
-    padding: 0.5rem 0.25rem;
-    line-height: 1.3;
-    min-height: 38px;
-  }
-}
-
-/* ----------------- Table cells ----------------- */
-td,
-th {
-  vertical-align: middle !important;
-  min-width: 120px;
-  max-width: 350px;
-  white-space: normal;
-  word-wrap: break-word;
-  overflow-wrap: anywhere;
-}
-
-/* Specific column widths */
-.training-title {
-  min-width: 250px;
-  max-width: 600px;
-  font-weight: 500;
-  text-align: left;
-  white-space: normal !important;
-}
-
-.disability {
-  min-width: 200px;
-  max-width: 400px;
-  text-align: left;
-  white-space: normal !important;
-}
-
-/* ----------------- Table responsiveness ----------------- */
-.table-responsive {
-  max-height: 70vh; /* vertical scroll */
-  overflow-y: auto;
-  overflow-x: auto; /* horizontal scroll if needed */
-}
-
-/* ----------------- Sticky Multi-row Header ----------------- */
 .table thead th {
   position: sticky;
   background-color: #d4edda;
-  text-align: center;
-  background-clip: padding-box;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.3rem;
+  line-height: 1.2;
   z-index: 6;
-  padding: 0.6rem 0.5rem;
-  line-height: 1.4;
 }
 
-/* Adjust top offsets for each header row */
+/* Only TWO header rows now */
 .table thead tr:nth-child(1) th {
-  top: 0; /* first header row */
+  top: 0;
   z-index: 9;
 }
+
 .table thead tr:nth-child(2) th {
-  top: 32px; /* height of first header row */
-  z-index: 8;
-}
-.table thead tr:nth-child(3) th {
-  top: 53px; /* height of first + second rows */
-  z-index: 7;
+  top: 25px;   /* slightly increased for proper alignment */
+  z-index: 9;
 }
 
-/* Optional: subtle border to separate head from body */
-.table thead {
-  border-bottom: 2px solid #c3e6cb;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.05);
+/* Remove any phantom spacing */
+.table thead tr {
+  height: auto;
 }
 
-/* ----------------- Subtext ----------------- */
-.subtext {
-  display: block;
-  font-size: 10px;
-  color: #8c8c8c;
-  font-weight: 400;
-  margin-top: 2px;
-  line-height: 1.3;
+.table td {
+  font-size: 0.75rem;
+  padding: 0.3rem;
 }
 
-/* ----------------- Ellipsis ----------------- */
-.ellipsis {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.training-title {
+  min-width: 250px;
+  text-align: left;
+}
+
+.table-responsive {
+  max-height: 70vh;
+  overflow: auto;
 }
 </style>
-
-
 
 {% endblock %}
