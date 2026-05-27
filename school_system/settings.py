@@ -20,14 +20,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#xf$e7x4)@_isvkz#(2jqwq7hky%!(6-684y!d_0*pa!j4*gfl'
-
+#SECRET_KEY = 'django-insecure-#xf$e7x4)@_isvkz#(2jqwq7hky%!(6-684y!d_0*pa!j4*gfl'
+SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False   
 
-ALLOWED_HOSTS = ["extension-ah4y.onrender.com", "localhost", "127.0.0.1", "*"]
-
-CSRF_TRUSTED_ORIGINS = ['https://extension-services-production.up.railway.app']
+#ALLOWED_HOSTS = [
+#    ".railway.app",
+#    "localhost",
+#    "127.0.0.1",
+#]
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "").split(",")
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.railway.app"
+]
 
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
@@ -37,13 +43,19 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
-EMAIL_HOST_PASSWORD = 'muer kekq rwrh hgtb'
-DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
+#EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
+#EMAIL_HOST_PASSWORD = 'muer kekq rwrh hgtb'
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+#DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
+DEFAULT_FROM_EMAIL = os.environ.get("EMAIL_HOST_USER")
 EMAIL_TIMEOUT = 10 
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
+    'cloudinary',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,16 +69,17 @@ INSTALLED_APPS = [
 # Use WhiteNoise to serve static files in production
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    # Your custom middleware (LogoutDetection should come BEFORE RedirectAnd404)
-    'accounts.middleware.LogoutDetectionMiddleware',  # For debugging
-    'accounts.middleware.RedirectAnd404Middleware',   # Your 404 handler
+
+    'accounts.middleware.LogoutDetectionMiddleware',
+    'accounts.middleware.RedirectAnd404Middleware',
 ]
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -78,6 +91,14 @@ ROOT_URLCONF = 'school_system.urls'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUD_NAME'),
+    'API_KEY': os.environ.get('API_KEY'),
+    'API_SECRET': os.environ.get('API_SECRET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 TEMPLATES = [
     {
@@ -103,12 +124,21 @@ WSGI_APPLICATION = 'school_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(
+        os.environ.get("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
 #DATABASES = {
 #    'default': {
 #        'ENGINE': 'django.db.backends.postgresql',
