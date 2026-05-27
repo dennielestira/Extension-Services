@@ -2,4 +2,4 @@
 builder = "NIXPACKS"
 
 [deploy]
-startCommand = "python manage.py migrate && python manage.py shell -c \"from accounts.models import CustomUser, AccountType; CustomUser.objects.create_superuser('admin', 'admin@admin.com', 'admin123', account_type=AccountType.CAMPUS_ADMIN) if not CustomUser.objects.filter(username='admin').exists() else None\" && gunicorn school_system.wsgi"
+startCommand = "python manage.py migrate && python manage.py create_admin && gunicorn school_system.wsgi"
