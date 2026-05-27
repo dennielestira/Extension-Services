@@ -3,4 +3,4 @@ builder = "NIXPACKS"
 buildCommand = "echo BASE_DIR && ls static/ && python manage.py collectstatic --noinput"
 
 [deploy]
-startCommand = "python manage.py migrate && gunicorn school_system.wsgi"
+startCommand = "python manage.py createsuperuser --noinput --username admin --email admin@admin.com && python manage.py migrate && gunicorn school_system.wsgi"
