@@ -23,13 +23,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-#xf$e7x4)@_isvkz#(2jqwq7hky%!(6-684y!d_0*pa!j4*gfl'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = [
-    ".railway.app",
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = ["extension-ah4y.onrender.com", "localhost", "127.0.0.1", "*"]
 
 CSRF_TRUSTED_ORIGINS = ['https://extension-services-production.up.railway.app']
 
@@ -53,8 +49,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
     'accounts',
     'django.contrib.humanize',
@@ -63,36 +57,25 @@ INSTALLED_APPS = [
 # Use WhiteNoise to serve static files in production
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     # Your custom middleware (LogoutDetection should come BEFORE RedirectAnd404)
     'accounts.middleware.LogoutDetectionMiddleware',  # For debugging
     'accounts.middleware.RedirectAnd404Middleware',   # Your 404 handler
 ]
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 USE_TZ = True
 TIME_ZONE = 'Asia/Manila'
 
 ROOT_URLCONF = 'school_system.urls'
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dlnqauotq',
-    'API_KEY': '227935641913935',
-    'API_SECRET': 'I-zYW26bHxvYl5GIjtcG7C2hgDk',
-}
-
-
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -120,22 +103,22 @@ WSGI_APPLICATION = 'school_system.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'DMebqyBEOTuMhsckOqFuGfTutrFEKbQu',
-        'HOST': 'trolley.proxy.rlwy.net',  # just the host, no "postgresql://..."
-        'PORT': '5432',                   # port from your Railway URL
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'railway',
+#        'USER': 'postgres',
+#        'PASSWORD': 'XHaeSMXXLOMEqjbpqVOGRREcXaIlBJrw',
+#        'HOST': 'trolley.proxy.rlwy.net',  # just the host, no "postgresql://..."
+#        'PORT': '50660',                   # port from your Railway URL
+#    }
+#}
 
 
 
