@@ -632,8 +632,8 @@ def get_redirect_path(user):
     if user.account_type == AccountType.CAMPUS_ADMIN:
         return 'campus_admin_dashboard'
     if user.account_type == AccountType.STAFF_EXTENSIONIST:
-        return 'staff_extensionist_view'
-    return 'home'  # fallback
+        return 'staff_extensionist_dashboard'  # fix this name
+    return 'home'
 
 @login_required
 def upload_moa(request):
