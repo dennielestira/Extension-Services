@@ -1,1 +1,1 @@
-web: python manage.py seed_departments && gunicorn school_system.wsgi
+web: gunicorn school_system.wsgi

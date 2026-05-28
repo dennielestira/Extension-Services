@@ -43,12 +43,12 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-#EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
-#EMAIL_HOST_PASSWORD = 'muer kekq rwrh hgtb'
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-#DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
+EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
+EMAIL_HOST_PASSWORD = 'muer kekq rwrh hgtb'
+#EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+#EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
+#DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 EMAIL_TIMEOUT = 10 
 # Application definition
 
@@ -95,12 +95,14 @@ ROOT_URLCONF = 'school_system.urls'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# settings.py
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUD_NAME'),
     'API_KEY': os.environ.get('API_KEY'),
     'API_SECRET': os.environ.get('API_SECRET'),
     'TIMEOUT': 600,
     'MAX_MEMORY_SIZE': 104857600,  # 100MB
+    'RESOURCE_TYPE': 'raw',  # ✅ Add this line
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
