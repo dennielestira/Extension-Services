@@ -14,17 +14,19 @@ class AccountType(models.TextChoices):
     EXTENSIONIST = 'Extensionist', 'Extensionist'
 
 class Department(models.Model):
-    name = models.CharField(max_length=100, choices=[
+    DEPARTMENT_CHOICES = [
         ('DCS', 'DCS (IT-CS)'),
-        ('DMS (HM)', 'DMS (HM)'),
-        ('DMS (BM)', 'DMS (BM)'),
+        ('DMS_HM', 'DMS (HM)'),
+        ('DMS_BM', 'DMS (BM)'),
         ('DC', 'DC (Criminology)'),
         ('DAS', 'DAS (Psychology)'),
-        ('DTE', 'DTE (Education)')
-    ])
-    
+        ('DTE', 'DTE (Education)'),
+    ]
+
+    name = models.CharField(max_length=100, choices=DEPARTMENT_CHOICES)
+
     def __str__(self):
-        return self.get_name_display()
+        return dict(self.DEPARTMENT_CHOICES).get(self.name, self.name)
 
 class CustomUser(AbstractUser):
     GENDER_CHOICES = [
