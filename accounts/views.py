@@ -1313,44 +1313,38 @@ def upload_document(request):
 
             document.save()
 
-            # -------- EMAIL NOTIFICATION --------
-            try:
-                from django.core.mail import send_mail
-                from django.conf import settings
+        # -------- EMAIL NOTIFICATION --------
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings
 
-                subject = f"📄 New Document Uploaded: {document.name}"
-                message = f"""
-Hi Staff Extensionist,
+            subject = f"📄 New Document Uploaded: {document.name}"
+            message = f"""..."""
 
-Uploaded by: {document.uploaded_by.username} ({document.uploaded_by.email})
+            recipients = [
+                user.email
+                for user in CustomUser.objects.filter(
+                    account_type=AccountType.STAFF_EXTENSIONIST
+                )
+                if user.email
+            ]
 
-Title: {document.name}
-Department: {document.department.name if document.department else 'N/A'}
+            print("[DEBUG] Recipients:", recipients)  # ← add this
 
-Please review it in the system.
+            if recipients:
+                send_mail(
+                    subject,
+                    message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    recipients,
+                    fail_silently=False,
+                )
+                print("[DEBUG] Email sent successfully!")  # ← add this
+            else:
+                print("[DEBUG] No recipients found!")  # ← add this
 
-Best,
-The System ✨
-"""
-
-                recipients = [
-                    user.email
-                    for user in CustomUser.objects.filter(
-                        account_type=AccountType.STAFF_EXTENSIONIST
-                    )
-                    if user.email
-                ]
-
-                if recipients:
-                    send_mail(
-                        subject,
-                        message,
-                        settings.DEFAULT_FROM_EMAIL,
-                        recipients,
-                        fail_silently=False,
-                    )
-            except Exception as e:
-                print("[DEBUG] Email failed:", e)
+        except Exception as e:
+            print("[DEBUG] Email failed:", e)  # this already exists
 
             messages.success(request, "Document uploaded successfully.")
             return redirect('pending_documents')
