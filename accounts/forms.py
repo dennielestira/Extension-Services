@@ -55,7 +55,12 @@ class UserEditForm(forms.ModelForm):
 
 
 class DepartmentCoordinatorRegistrationForm(UserCreationForm):
-    department = forms.ModelChoiceField(queryset=Department.objects.none(), required=True, label='Department')
+    department = forms.ModelChoiceField(
+        queryset=Department.objects.all(),  # ✅ Change from .none() to .all() here directly
+        required=True,
+        label='Department',
+        empty_label='----------'
+    )
 
     class Meta:
         model = CustomUser
@@ -63,7 +68,7 @@ class DepartmentCoordinatorRegistrationForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['department'].queryset = Department.objects.all()
+        self.fields['department'].queryset = Department.objects.all()  # keep this too
 
 
 class ExtensionistRegistrationForm(UserCreationForm):
