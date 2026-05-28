@@ -105,7 +105,7 @@ CLOUDINARY_STORAGE = {
     'RESOURCE_TYPE': 'raw',  # ✅ Add this line
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
 
 TEMPLATES = [
     {
