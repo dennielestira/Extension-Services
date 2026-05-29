@@ -182,9 +182,10 @@
           </strong>
 
           <!-- Filename -->
-          <a href="{{ file.url }}" target="_blank" class="text-break">
-            {{ file.name|cut:"documents/" }}
-          </a>
+          <!-- Filename -->
+              <a href="https://docs.google.com/viewer?url={{ file.url }}" target="_blank" class="text-break">
+                {{ file.name|cut:"documents/" }}
+              </a>
               {% if uploaded_by or uploaded_at %}
                 <small class="text-muted">
                   - Updated by 
