@@ -110,11 +110,12 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.environ.get('API_KEY'),
     'API_SECRET': os.environ.get('API_SECRET'),
     'TIMEOUT': 600,
-    'MAX_MEMORY_SIZE': 104857600,  # 100MB
-    'RESOURCE_TYPE': 'raw',  # ✅ Add this line
+    'MAX_MEMORY_SIZE': 104857600,
+    'RESOURCE_TYPE': 'raw',
+    'ACCESS_MODE': 'public',  # ← Add this
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 TEMPLATES = [
     {
