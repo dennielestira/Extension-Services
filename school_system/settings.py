@@ -62,8 +62,8 @@ GMAIL_CLIENT_ID = os.environ.get("GMAIL_CLIENT_ID")
 GMAIL_CLIENT_SECRET = os.environ.get("GMAIL_CLIENT_SECRET")
 GMAIL_REFRESH_TOKEN = os.environ.get("GMAIL_REFRESH_TOKEN")
 INSTALLED_APPS = [
-    #'cloudinary_storage',
-    #'cloudinary',
+    'cloudinary_storage',
+    'cloudinary',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -105,28 +105,28 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # settings.py
-#CLOUDINARY_STORAGE = {
-#    'CLOUD_NAME': os.environ.get('CLOUD_NAME'),
-#    'API_KEY': os.environ.get('API_KEY'),
-#    'API_SECRET': os.environ.get('API_SECRET'),
-#    'TIMEOUT': 600,
-#    'MAX_MEMORY_SIZE': 104857600,
-#    'UNSIGNED_PRESET': 'ml_default',  # ← add this
-#}
-
-#DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-AWS_ACCESS_KEY_ID = os.environ.get('B2_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('B2_APP_KEY')
-AWS_STORAGE_BUCKET_NAME = os.environ.get('B2_BUCKET_NAME')
-AWS_S3_ENDPOINT_URL = os.environ.get('B2_ENDPOINT_URL')
-AWS_DEFAULT_ACL = None
-AWS_QUERYSTRING_AUTH = False
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUD_NAME'),
+    'API_KEY': os.environ.get('API_KEY'),
+    'API_SECRET': os.environ.get('API_SECRET'),
+    'TIMEOUT': 600,
+    'MAX_MEMORY_SIZE': 104857600,
+    'UNSIGNED_PRESET': 'ml_default',  # ← add this
 }
-AWS_S3_FILE_OVERWRITE = False
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
+#DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+#AWS_ACCESS_KEY_ID = os.environ.get('B2_KEY_ID')
+#AWS_SECRET_ACCESS_KEY = os.environ.get('B2_APP_KEY')
+#AWS_STORAGE_BUCKET_NAME = os.environ.get('B2_BUCKET_NAME')
+#AWS_S3_ENDPOINT_URL = os.environ.get('B2_ENDPOINT_URL')
+#AWS_DEFAULT_ACL = None
+#AWS_QUERYSTRING_AUTH = False
+#AWS_S3_OBJECT_PARAMETERS = {
+#    'CacheControl': 'max-age=86400',
+#}
+#AWS_S3_FILE_OVERWRITE = False
 
 TEMPLATES = [
     {
