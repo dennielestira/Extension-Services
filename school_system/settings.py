@@ -39,19 +39,28 @@ AUTH_USER_MODEL = 'accounts.CustomUser'
 
 LOGIN_REDIRECT_URL = 'home'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
-EMAIL_HOST_PASSWORD = 'muer kekq rwrh hgtb'
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_HOST = 'smtp.gmail.com'
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+#EMAIL_HOST_USER = 'ExtensionServices10@gmail.com'
+#EMAIL_HOST_PASSWORD = 'muer kekq rwrh hgtb'
 #EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 #EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
+#DEFAULT_FROM_EMAIL = 'ExtensionServices10@gmail.com'
 #DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
-EMAIL_TIMEOUT = 10 
+#EMAIL_TIMEOUT = 10 
 # Application definition
+import os
 
+# Email Backend
+EMAIL_BACKEND = "gmail_oauth2_backend.GmailOAuth2Backend"
+DEFAULT_FROM_EMAIL = "extensionbacoor@gmail.com"
+
+# Gmail OAuth2
+GMAIL_CLIENT_ID = os.environ.get("GMAIL_CLIENT_ID")
+GMAIL_CLIENT_SECRET = os.environ.get("GMAIL_CLIENT_SECRET")
+GMAIL_REFRESH_TOKEN = os.environ.get("GMAIL_REFRESH_TOKEN")
 INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
