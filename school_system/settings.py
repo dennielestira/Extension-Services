@@ -111,9 +111,10 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('API_SECRET'),
     'TIMEOUT': 600,
     'MAX_MEMORY_SIZE': 104857600,
+    'UNSIGNED_PRESET': 'ml_default',  # ← add this
 }
 
-DEFAULT_FILE_STORAGE = 'school_system.custom_storage.PublicRawStorage'
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'
 
 TEMPLATES = [
     {
