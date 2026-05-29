@@ -111,11 +111,9 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('API_SECRET'),
     'TIMEOUT': 600,
     'MAX_MEMORY_SIZE': 104857600,
-    'RESOURCE_TYPE': 'raw',
-    'ACCESS_MODE': 'public',  # ← Add this
 }
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = 'school_system.custom_storage.PublicRawStorage'
 
 TEMPLATES = [
     {
